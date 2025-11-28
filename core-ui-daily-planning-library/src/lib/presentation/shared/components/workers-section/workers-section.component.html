@@ -1,0 +1,69 @@
+<p-accordion-panel class="border-0 mb-2" value="1" #unassignedWorkerPanelRef>
+  <p-accordion-header (click)="onHeaderClicked(unassignedWorkerPanelRef)"
+    class="w-100 gap-13 justify-content-end align-items-center bg-gray-300 px-3 py-14 header-bottom-rounded-0 rounded-px-6">
+    <div class="d-flex justify-content-between align-items-start w-100">
+      <div>
+        <h6 class="fw-semibold m-0 fs-15 color-gray-900">Workers</h6>
+        <span class="fs-14 color-gray-600 fw-normal">{{filteredWorkers.length}} workers</span>
+      </div>
+    </div>
+  </p-accordion-header>
+  <p-accordion-content class="rounded-bottom-end-6 rounded-bottom-start-6 accordion-content-p-0">
+    <div class="bg-gray-300 pb-14 px-3" *ngIf="isPanelActive">
+      <div class="py-1">
+        <div class="position-relative">
+          <input type="text" class="form-control pe-52" placeholder="Search worker..." 
+            (input)="onSearchInput($event)" [(ngModel)]="searchQuery"/>
+          <div class="input-group-media icon position-absolute end-0 top-0 cursor-pointer d-flex">
+            <button (click)="clearSearch()" *ngIf="searchQuery" type="button" title="Clear search" class="btn p-0 text-primary"><span class="pi pi-times fs-13 color-gray-600"></span></button>
+            <span
+              class="pi pi-search fw-semibold color-gray-600 pe-px-12 ps-2 height-px-40 d-flex justify-content-center align-items-center fs-14"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="vh-393 border border-gray-300 rounded-bottom-start-6 rounded-bottom-end-6 overflow-auto pb-1 position-relative"
+      cdkScrollable [ngClass]="{'card-overlay-placeholder' : filteredWorkers.length == 0 || isDragginWorkerLastItem}">
+        <div id="unassignedWorkersList" #unassignedWorkersList="cdkDropList" cdkDropList
+          [cdkDropListData]="filteredWorkers" (cdkDropListDropped)="dropUnassignedWorkers($event)" [cdkDropListDisabled]="!isActionAllowed"
+          [cdkDropListAutoScrollDisabled]="false" [cdkDropListAutoScrollStep]="10"
+          class="h-98" cdkScrollable>
+          @for(unassignedWorker of filteredWorkers; let i = $index; track unassignedWorker.workerId || $index){
+          <div class="d-flex justify-content-between align-items-center border-bottom border-gray-300 cursor-move
+            hover-child-opacity-100 min-h-px-68 px-3 py-14 hover-bg-gray-200" cdkDrag [cdkDragData]="unassignedWorker"
+            (cdkDragStarted)="workerdragStarted(filteredWorkers)" (cdkDragEnded)="workerdragEnded()" [cdkDragDisabled]="!isActionAllowed">
+            <div class="d-flex gap-12 align-items-center w-100">
+              <img class="img-fluid avatar-sm rounded-circle object-fit-cover"
+                src="https://saas-ui-assets-test.cubivue.com/assets/img/placeholder.svg" />
+              <div class="w-80 pe-2">
+                <h6 class="fw-medium m-0 fs-14 line-clamp-1 color-gray-900"
+                  [title]="unassignedWorker.firstName">
+                  {{ unassignedWorker.firstName + " " + (unassignedWorker?.lastName || "") }}
+                </h6>
+                <span class="fs-14 color-gray-600"
+                  *ngIf="unassignedWorker.workerId !==null">{{unassignedWorker.workerId}}<br /></span>
+              </div>
+            </div>
+            <div>
+              <i class="fa fa-arrows-alt fs-14 color-gray-600 hover-opacity-100 opacity-30"></i>
+            </div>
+            <div class="custom-placeholder min-h-px-68 bg-warning-100 border-warning-400 my-2 worker-placeholder" *cdkDragPlaceholder>
+            </div>
+          </div>
+          }
+          @if(filteredWorkers.length === 0 || isDragginWorkerLastItem){
+          <div class="empty-state vh-400">
+            <div class="illustration bg-white">
+              <svg class="height-6 width-8">
+                <use xlink:href="#empty-state-5"></use>
+              </svg>
+            </div>
+            <p class="bg-white p-0 color-gray-700">{{searchQuery ? 'No workers matched your search.' : 'No workers available at the moment. Check again later.'}}</p>
+          </div>
+          }
+        </div>
+    </div>
+
+  </p-accordion-content>
+</p-accordion-panel>

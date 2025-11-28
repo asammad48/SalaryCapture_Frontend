@@ -1,0 +1,491 @@
+
+<div class="position-relative">
+    <salary-calculation-portal-progress-loading loaderKey="SalaryCapture_GetAllSalaries"></salary-calculation-portal-progress-loading>
+
+  <div class="d-flex align-items-center gap-2 mt-2" *ngIf="!loading && isTableFiltersApplied">
+    <label class="fs-14 fw-semibold color-gray-800">Applied Filters:</label>
+
+    <!-- Loop over appliedFilters array -->
+    <ng-container *ngFor="let filter of appliedFilters">
+      <div
+      class="badge py-px-6 color-gray-800 bg-gray-100 d-inline-flex align-items-center justify-content-between gap-10 fs-12">
+      <div class="fw-normal lh-1-3 d-flex gap-1" [title]="filter.label">
+        <span class="text-capitalize">{{ filter.label }}:</span>
+        <span class="d-inline-block max-w-5 text-truncate" [title]="filter.value">
+          {{ filter.value }}
+        </span>
+      </div>
+      <span class="close" (click)="removeFilter(filter.key)" id="remove-{{filter.label}}-filter-btn">
+        <i class="fa-regular fa-circle-xmark fs-13 hover-gray-600 color-gray-700"></i>
+      </span>
+    </div>
+  </ng-container>
+  </div>
+ @if(allSalaryLines.length > 0){
+  <div class="my-2">
+            <p-table [value]="allSalaryLines" [(selection)]="checkedSalaryLines" [dataKey]="'id'"
+                    [scrollable]="true" tableStyleClass="table manual-line-table"
+                    [styleClass]="  'thead-sticky pt-px-2 p-datatable-gridlines p-datatable-md p-datatable-white' + ' ' + (isTableFiltersApplied ? (allSalaryLines.length > pageSize ? 'datawrapper-vh-319' : 'datawrapper-vh-255')
+                    : (allSalaryLines.length > pageSize ? 'datawrapper-vh-275' : 'datawrapper-vh-220')
+                    )"
+                    [paginator]="allSalaryLines.length > pageSize"
+                    [rows]="pageSize"
+                    [first]="first"
+                    (onPage)="onPageChange($event)"
+                    [customSort]="true"
+                    (sortFunction)="customSort($event)"
+                    [showCurrentPageReport]="true"
+                    currentPageReportTemplate="Showing {first} to {last} out of {totalRecords}"
+                    [paginatorStyleClass]="'position-relative paginator-current-start py-3'">
+
+              <ng-template #header>
+                <tr>
+
+                  @if(canShowCheckboxesForSalaryLine()){
+                  <th class="min-w-px-40 max-w-px-40 text-center" pFrozenColumn *ngIf="this.allSalaryLines.length > 0">
+                    <p-checkbox
+                      [ngClass]="{'indeterminate-checkbox' : areSomeSalaryLinesChecked()}"
+                      [binary]="true"
+                      [ngModel]="areAllSalaryLinesChecked()"
+                      [indeterminate]="areSomeSalaryLinesChecked()"
+                      (onChange)="onAllSalaryLinesCheckboxChange($event.checked)"
+                      inputId="headerCheckbox"
+                      id="capture-header-checkbox">
+                    </p-checkbox>
+                  </th>
+                  }
+                  <th class="min-w-px-120 max-w-px-120 text-nowrap border-start-0 position-relative"
+                      pSortableColumn="productionDate">
+                    <div class="d-flex align-items-center gap-6">
+                    Date
+                    <p-sortIcon field="productionDate" class="icon-me-0 icon-flex height-px-16"/>
+                   </div>
+                    <ng-container *ngIf="false">
+                    <p-popover #dateFilter styleClass="popover-content-p-0 popover-arrow-none mt-0 min-w-16" id="date-filter-popover">
+                        <div class="p-10">
+                            <div class="input-group-wrapper end">
+                                <input type="date" class="form-control focus-none border-gray-400" id="date-filter-input"
+                                    [(ngModel)]="dateFilterValue" (keyup.enter)="applyFilters()">
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-end p-10">
+                            <div class="btn-group">
+                                <button class="btn btn-link btn-sm fw-normal py-1" (click)="resetDateFilter()" id="date-filter-reset-btn">Reset</button>
+                                <button class="btn btn-primary btn-sm fw-normal py-1 rounded-5" (click)="applyFilters()" id="date-filter-apply-btn">Apply</button>
+                            </div>
+                        </div>
+                      </p-popover>
+                      <div (click)="dateFilter.toggle($event); $event.stopPropagation()"
+                      class="color-gray-600 d-inline-block position-absolute top-2 end-4 p-1" id="region-filter-toggle-btn">
+                      <i class="fa-filter fa-solid fs-12"></i>
+                    </div>
+                  </ng-container>
+                  </th>
+                  <th class="text-nowrap max-w-px-156 min-w-px-156 position-relative" 
+                          pSortableColumn="serviceWorkerName">
+                    <div class="d-flex align-items-center gap-6">
+                      Service Worker
+                      <p-sortIcon field="serviceWorkerName" class="icon-me-0 icon-flex height-px-16"/>
+                    </div>
+                    <p-popover #workerFilter styleClass="popover-content-p-0 popover-arrow-none mt-0 min-w-16" id="worker-filter-popover">
+                        <div class="p-10">
+                            <div class="input-group-wrapper end">
+                                <input type="text" class="form-control focus-none border-gray-400" id="worker-filter-input"
+                                    placeholder="Search..." [(ngModel)]="workerFilterValue" (keyup.enter)="applyFilters()">
+                                <div class="input-group-media icon">
+                                    <svg aria-label="dropdown">
+                                        <use xlink:href="#search"></use>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-end p-10">
+                            <div class="btn-group">
+                                <button class="btn btn-link btn-sm fw-normal py-1" (click)="resetWorkerFilter()" id="worker-filter-reset-btn">Reset</button>
+                                <button class="btn btn-primary btn-sm fw-normal py-1 rounded-5" (click)="applyFilters()" id="worker-filter-apply-btn">Apply</button>
+                            </div>
+                        </div>
+                    </p-popover>
+                    <div (click)="workerFilter.toggle($event); $event.stopPropagation()"
+                        class="color-gray-600 d-inline-block position-absolute top-2 end-4 p-1" id="worker-filter-toggle-btn">
+                        <i class="fa-filter fa-solid fs-12"></i>
+                    </div>
+                  </th>
+                  <th class="text-nowrap min-w-px-120 position-relative"
+                      pSortableColumn="statusId">
+                    <div class="d-flex align-items-center gap-6">
+                    Status
+                    <p-sortIcon field="statusId" class="icon-me-0 icon-flex height-px-16"/>
+                    </div>
+                    <ng-container *ngIf="false">
+                    <p-popover  #statusFilter styleClass="popover-content-p-0 popover-arrow-none mt-0 min-w-16" id="status-filter-popover">
+                        <div class="p-10">
+                            <div class="input-group-wrapper end">
+                                <select class="form-control focus-none border-gray-400" id="status-filter-input"
+                                    [(ngModel)]="statusFilterValue" (change)="applyFilters()">
+                                    <option value="">All</option>
+                                    <option value="1">Pending</option>
+                                    <option value="2">Rejected</option>
+                                    <option value="3">Approved</option>
+                                    <option value="4">Completed</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-end p-10">
+                            <div class="btn-group">
+                                <button class="btn btn-link btn-sm fw-normal py-1" (click)="resetStatusFilter()" id="status-filter-reset-btn">Reset</button>
+                                <button class="btn btn-primary btn-sm fw-normal py-1 rounded-5" (click)="applyFilters()" id="status-filter-apply-btn">Apply</button>
+                            </div>
+                        </div>
+                    </p-popover>
+                      <div (click)="statusFilter.toggle($event); $event.stopPropagation()"
+                        class="color-gray-600 d-inline-block position-absolute top-2 end-4 p-1" id="status-filter-toggle-btn">
+                        <i class="fa-filter fa-solid fs-12"></i>
+                    </div>
+                    </ng-container>
+                  </th>
+                  <th class="" 
+                      pSortableColumn="hasConflict"
+                      *ngIf="this.allSalaryLines.length > 0">
+                      <div class="d-flex align-items-center gap-6">
+                      Conflict
+                      <p-sortIcon field="hasConflict" class="icon-me-0 icon-flex height-px-16"/>
+                      </div>
+                  </th>
+                  <!-- <th class="text-nowrap max-w-px-80 min-w-px-80 position-relative"
+                      pSortableColumn="jobNumber">
+                    <div class="d-flex align-items-center gap-6">
+                    Job
+                    <p-sortIcon field="jobNumber" class="icon-me-0 icon-flex height-px-16"/>
+                    </div>
+                       <p-popover #jobFilter styleClass="popover-content-p-0 popover-arrow-none mt-0 min-w-16" id="code-filter-popover">
+                        <div class="p-10">
+                            <div class="input-group-wrapper end">
+                                <input type="text" class="form-control focus-none border-gray-400" id="code-filter-input"
+                                    placeholder="Search..." [(ngModel)]="jobFilterValue" (keyup.enter)="applyFilters()">
+                                <div class="input-group-media icon">
+                                    <svg aria-label="dropdown">
+                                        <use xlink:href="#search"></use>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-center justify-content-end p-10">
+                            <div class="btn-group">
+                                <button class="btn btn-link btn-sm fw-normal py-1" (click)="resetJobFilter()" id="job-filter-reset-btn">Reset
+                                </button>
+                                <button class="btn btn-primary btn-sm fw-normal py-1 rounded-5"
+                                    (click)="applyFilters()" id="job-filter-apply-btn">Apply
+                                </button>
+                            </div>
+                        </div>
+                    </p-popover>
+                    <div (click)="jobFilter.toggle($event); $event.stopPropagation()"
+                        class="color-gray-600 d-inline-block position-absolute top-2 end-4 p-1" id="code-filter-toggle-btn">
+                        <i class="fa-filter fa-solid fs-12"></i>
+                    </div>
+
+                  </th> -->
+                  <th class="min-w-px-156 max-w-px-156 text-nowrap border-start-0 position-relative"
+                      pSortableColumn="salaryCode">
+                    <div class="d-flex align-items-center gap-6">
+                    Code
+                    <p-sortIcon field="salaryCode" class="icon-me-0 icon-flex height-px-16"/>
+                    </div>
+                    <ng-container *ngIf="false">
+                    <p-popover #codeFilter styleClass="popover-content-p-0 popover-arrow-none mt-0 min-w-16" id="code-filter-popover">
+                        <div class="p-10">
+                            <div class="input-group-wrapper end">
+                                <input type="text" class="form-control focus-none border-gray-400" id="code-filter-input"
+                                    placeholder="Search..." [(ngModel)]="codeFilterValue" (keyup.enter)="applyFilters()">
+                                <div class="input-group-media icon">
+                                    <svg aria-label="dropdown">
+                                        <use xlink:href="#search"></use>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-center justify-content-end p-10">
+                            <div class="btn-group">
+                                <button class="btn btn-link btn-sm fw-normal py-1" (click)="resetCodeFilter()" id="code-filter-reset-btn">Reset
+                                </button>
+                                <button class="btn btn-primary btn-sm fw-normal py-1 rounded-5"
+                                    (click)="applyFilters()" id="code-filter-apply-btn">Apply
+                                </button>
+                            </div>
+                        </div>
+                    </p-popover>
+                    <div (click)="codeFilter.toggle($event); $event.stopPropagation()"
+                        class="color-gray-600 d-inline-block position-absolute top-2 end-4 p-1" id="code-filter-toggle-btn">
+                        <i class="fa-filter fa-solid fs-12"></i>
+                    </div>
+                    </ng-container>
+                  </th>
+
+
+                  <th class="text-nowrap min-w-px-200 max-w-px-200"
+                      pSortableColumn="salaryName">
+                    <div class="d-flex align-items-center gap-6">
+                    Type
+                    <p-sortIcon field="salaryName" class="icon-me-0 icon-flex height-px-16"/>
+                    </div>
+                    <p-popover #typeFilter styleClass="popover-content-p-0 popover-arrow-none mt-0 min-w-16" id="type-filter-popover">
+                        <div class="p-10">
+                            <div class="input-group-wrapper end">
+                                <input type="text" class="form-control focus-none border-gray-400" id="type-filter-input"
+                                    placeholder="Search..." [(ngModel)]="typeFilterValue" (keyup.enter)="applyFilters()">
+                                <div class="input-group-media icon">
+                                    <svg aria-label="dropdown">
+                                        <use xlink:href="#search"></use>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-end p-10">
+                            <div class="btn-group">
+                                <button class="btn btn-link btn-sm fw-normal py-1" (click)="resetTypeFilter()" id="type-filter-reset-btn">Reset</button>
+                                <button class="btn btn-primary btn-sm fw-normal py-1 rounded-5" (click)="applyFilters()" id="type-filter-apply-btn">Apply</button>
+                            </div>
+                        </div>
+                    </p-popover>
+                  </th>
+
+                  <th class="text-nowrap min-w-px-200 max-w-px-200" pSortableColumn="salaryDescription">
+                    <div class="d-flex align-items-center gap-6">
+                      Description
+                      <p-sortIcon field="salaryDescription" class="icon-me-0 icon-flex height-px-16"/>
+                    </div>
+                  </th>
+                  
+                  <th class="text-nowrap min-w-px-120 max-w-px-120"
+                      pSortableColumn="salaryUnit">
+                    <div class="d-flex align-items-center gap-6">
+                    Unit
+                    <p-sortIcon field="salaryUnit" class="icon-me-0 icon-flex height-px-16"/>
+                    </div>
+                  </th>
+                  <th class="text-nowrap min-w-px-120 max-w-px-120"
+                      pSortableColumn="salaryCodeValue">
+                    <div class="d-flex align-items-center gap-6">
+                    Value
+                    <p-sortIcon field="salaryCodeValue" class="icon-me-0 icon-flex height-px-16"/>
+                    </div>
+                  </th>
+                  <!-- <th class="text-nowrap min-w-px-120 position-relative"
+                      pSortableColumn="startTime">
+                    <div class="d-flex align-items-center gap-6">
+                    Start Time
+                    <p-sortIcon field="startTime" class="icon-me-0 icon-flex height-px-16"/>
+                    </div>
+                  </th>
+                  <th class="text-nowrap min-w-px-120 position-relative"
+                      pSortableColumn="endTime">
+                    <div class="d-flex align-items-center gap-6">
+                    End Time
+                    <p-sortIcon field="endTime" class="icon-me-0 icon-flex height-px-16"/>
+                    </div>
+                  </th> -->
+                  <th class="text-nowrap min-w-px-200"
+                      pSortableColumn="reviewedBy">
+                    <div class="d-flex align-items-center gap-6">
+                    Reviewed By
+                    <p-sortIcon field="reviewedBy" class="icon-me-0 icon-flex height-px-16"/>
+                    </div>
+                  </th>
+                  <th class="text-nowrap min-w-px-120"
+                      pSortableColumn="reviewedAt">
+                    <div class="d-flex align-items-center gap-6">
+                    Reviewed At
+                    <p-sortIcon field="reviewedAt" class="icon-me-0 icon-flex height-px-16"/>
+                    </div>
+                  </th>
+
+                  @if(canShowCheckboxesForSalaryLine()){
+                  <th class="position-sticky" pFrozenColumn alignFrozen="right"
+                      [ngClass]="canShowCheckboxesForSalaryLine() ? 'width-px-0':'width-px-0'">
+                    Actions
+                  </th>
+                  }
+                </tr>
+              </ng-template>
+
+              <ng-template #body let-salaryLine let-i="rowIndex">
+                <tr [ngClass]="{'new-salary-line' : newlyAddedSalaryLineIds.includes(salaryLine.id),
+                              'height-px-47':!canShowCheckboxesForSalaryLine()
+                             }"
+                    [id]="salaryLine.id">
+
+                 
+
+                  @if(canShowCheckboxesForSalaryLine()){
+                  <td class="text-center position-sticky px-8 width-px-40" pFrozenColumn>
+                    <p-checkbox class="keyboard-support" [binary]="true"
+                              [ngModel]="isSalaryLineChecked(salaryLine.id)"
+                              (onChange)="onSalaryLineCheckboxChange(salaryLine, $event.checked)"
+                              [attr.inputId]="'rowCheckbox' + i + '_' + salaryLine.id"
+                              id="salaryline-checkbox{{i}}_{{salaryLine.id}}">
+                    </p-checkbox>
+                  </td>
+                  }
+                  <td class="text-nowrap text-truncate px-8 max-w-px-156">
+                    {{formateProductionDate(salaryLine.productionDate)}}
+                  </td>
+                  <td class="border-start-0 text-nowrap px-8 text-truncate">
+                    {{salaryLine.serviceWorkerName}} <div class="color-gray-600" *ngIf="salaryLine.userName">({{ salaryLine.userName || ''}})</div>
+                  </td>
+
+                  <td class="px-8">
+                    <ng-container *ngIf="salaryLine.statusId === 1">
+                      <span class="text-secondary">Pending</span>
+                    </ng-container>
+                    <ng-container *ngIf="salaryLine.statusId === 2">
+                      <span class="text-danger">Rejected</span>
+                    </ng-container>
+                    <ng-container *ngIf="salaryLine.statusId === 3">
+                      <span class="text-success">Approved</span>
+                    </ng-container>
+                    <ng-container *ngIf="salaryLine.statusId === 4">
+                      <span class="text-primary">Completed</span>
+                    </ng-container>
+                  </td>
+                  <td class="text-center px-8" (click)="this.seeConflict(salaryLine)">
+                   <i *ngIf="showConflictTooltip(salaryLine)" [pTooltip]="'Conflict'" tooltipPosition="top"
+                      tooltipStyleClass="p-tooltip-fs-11 cutomized-tooltip max-w-11"
+                      class="fa-solid fa-triangle-exclamation fs-16 text-danger cursor-pointer"></i>
+                 </td>
+                  <!-- <td class="border-start-0 text-nowrap px-8 text-truncate">
+                    {{salaryLine.jobNumber}}
+                  </td> -->
+                  <td class="text-nowrap text-truncate px-8 max-w-px-156">
+                    {{salaryLine.salaryCode}}
+                  </td>
+
+                  <td class="text-nowrap text-truncate px-8 max-w-px-220">{{salaryLine.salaryName}}</td>
+                  <td class="text-nowrap text-truncate px-8 max-w-px-200">{{salaryLine.salaryDescription}}</td>
+
+                  <td class="max-w-px-156 text-truncate text-nowrap px-8">{{salaryLine.salaryUnit}}</td>
+                  <td class="max-w-px-156 text-truncate text-nowrap px-8">{{salaryLine.salaryCodeValue}}</td>
+
+                  <!-- <td class="px-8">{{ formatDateToDDMMYYYY(salaryLine.startTime) || '' }}
+                    <div class="color-gray-600">
+                      {{ getHHMMFromTime(salaryLine.startTime) || '' }}
+                    </div>
+                  </td>
+
+                  <td class="px-8">{{ formatDateToDDMMYYYY(salaryLine.endTime) || '' }}
+                    <div class="color-gray-600">
+                      {{ getHHMMFromTime(salaryLine.endTime) || '' }}
+                    </div>
+                  </td> -->
+
+                  <td class="px-8">{{ salaryLine.statusId !== 1 ? salaryLine.reviewedBy : ''}}
+                    <div class="color-gray-600">
+                      {{ salaryLine.statusId !== 1 ? salaryLine.reviewedByUserName : ''}}
+                    </div>
+                  </td>
+
+                  <td class="px-8">{{ formatDateToDDMMYYYY(salaryLine.reviewedAt) || '' }}
+                    <div class="color-gray-600">
+                      {{ getHHMMFromTime(salaryLine.reviewedAt) || '' }}
+                    </div>
+                  </td>
+
+                  @if(canShowCheckboxesForSalaryLine()){
+                  <td class="position-sticky pe-3 ps-3" pFrozenColumn alignFrozen="right">
+                    <div class="d-flex gap-2 height-px-26 justify-content-end">
+                      <ng-container *ngIf="accessService.hasPermission(Permissions.SALARY_CAPTURE_REJECT_BUTTON) && !isSalaryLineReadOnly(salaryLine)">
+                        <button type="button"
+                                [disabled]="!canRejectSalaryLine(salaryLine)"
+                                (click)="salaryLineInlineActions(salaryLine, 2)"
+                                class="btn btn-sm btn-soft-danger width-px-26 border-0 d-flex justify-content-center align-items-center p-0"
+                                [attr.id]="'reject-btn' + i">
+                          <i class="fa-solid fa-xmark m-0 fs-14"></i>
+                        </button>
+                      </ng-container>
+
+                      <ng-container *ngIf="accessService.hasPermission(Permissions.SALARY_CAPTURE_APPROVE_BUTTON) && !isSalaryLineReadOnly(salaryLine)">
+                        <button type="button"
+                                [disabled]="!canApproveSalaryLine(salaryLine)"
+                                (click)="salaryLineInlineActions(salaryLine, 3)"
+                                class="btn btn-sm btn-soft-success width-px-26 border-0 d-flex justify-content-center align-items-center p-0"
+                                [attr.id]="'accept-btn' + i">
+                          <i class="fa-solid fa-check m-0 fs-14"></i>
+                        </button>
+                      </ng-container>
+
+                      <ng-container *ngIf="(
+                        accessService.hasPermission(Permissions.SALARY_CAPTURE_EDIT_BUTTON) ||
+                        accessService.hasPermission(Permissions.SALARY_CAPTURE_RESET_BUTTON) ||
+                        accessService.hasPermission(Permissions.SALARY_CAPTURE_REMOVEENTRY_SALARY_BUTTON)) && !isSalaryLineReadOnly(salaryLine)">
+                        <div>
+                          <p-menu #menu [popup]="true" appendTo="body"
+                                  [attr.id]="'menu-popup' + i" class="list-menu" styleClass="menu-content-p-0 menu-link-py-px-11">
+                          </p-menu>
+
+                          <button pButton type="button" icon="fa fa-ellipsis-v"
+                                  class="p-button-text p-button-sm btn btn-sm btn-soft-secondary width-px-26 border-0 d-flex justify-content-center align-items-center p-0 mt-0 h-100"
+                                  (click)="openSalaryLineMenu($event, menu, salaryLine)"
+                                  [attr.id]="'action-menu-btn' + i">
+                          </button>
+                        </div>
+                      </ng-container>
+                    </div>
+                  </td>
+                  }
+                </tr>
+              </ng-template>
+
+              <ng-template #emptymessage *ngIf="!loading">
+                <tr>
+                  <td colspan="14" class="bg-white fs-18 p-0 fw-medium text-center">
+                    <div class="empty-state">
+                      <div class="illustration bg-white">
+                        <svg class="height-12 width-12">
+                          <use xlink:href="#empty-state"></use>
+                        </svg>
+                      </div>
+                      <p class="bg-white fs-18 p-0 fw-medium color-gray-700 text-uppercase">
+                        No salary lines found
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              </ng-template>
+            </p-table>
+          </div>
+          @if(!allSalaryLines.length){
+          <!-- <tr>
+            <td colspan="14" class="text-center pt-4">
+              <div class="empty-state" *ngIf="!loading">
+                <div class="illustration bg-white">
+                  <svg class="height-12 width-12">
+                    <use xlink:href="#empty-state"></use>
+                  </svg>
+                </div>
+                <p class="bg-white fs-18 p-0 fw-medium color-gray-700 text-uppercase">
+                  No salary lines found
+                </p>
+              </div>
+            </td>
+          </tr> -->
+          }
+        }
+
+        @else{
+      <div class="card border-0 h-100 shadow-md mt-2" [ngClass]="isTableFiltersApplied ?'vh-254':'vh-220'">
+        <div class="empty-state" *ngIf="!loading">
+          <div class="illustration bg-white">
+            <svg class="height-12 width-12">
+              <use xlink:href="#empty-state"></use>
+            </svg>
+          </div>
+          <p class="bg-white fs-18 p-0 fw-medium color-gray-700 text-uppercase">
+            {{isFilterApplied && serviceWorkers.length === 0 ? 'No data found' : 'Apply filters to proceed'}}
+          </p>
+        </div>
+      </div>
+      }
+
+</div>

@@ -1,0 +1,11 @@
+{
+  "BASE_PLAN_CREATED_SUCCESS": "Base plan created successfully",
+  "BASE_PLAN_CREATED_ERROR": "Failed to create base plan",
+  "BASE_PLAN_CREATE_TITLE": "Create Base Plan",
+  "BASE_PLAN_UPDATED_SUCCESS": "Base plan updated successfully",
+  "BASE_PLAN_UPDATED_ERROR": "Failed to update base plan",
+  "BASE_PLAN_UPDATE_TITLE": "Update Base Plan",
+  "BASE_PLAN_DELETED_SUCCESS": "Base plan deleted successfully",
+  "BASE_PLAN_DELETED_ERROR": "Failed to delete base plan",
+  "BASE_PLAN_DELETE_TITLE": "Delete Base Plan"
+}

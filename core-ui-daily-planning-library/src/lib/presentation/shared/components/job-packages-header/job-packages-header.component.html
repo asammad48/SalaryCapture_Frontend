@@ -1,0 +1,68 @@
+<div class="card border-0 rounded-6 sticky-top shadow-md mb-2">
+  <div class="card-header bg-white border-0 height-px-70 d-flex align-items-center justify-content-between ps-24 rounded-top-start-6 rounded-top-end-6">
+
+    <div>
+
+      <h6 class="fw-bold m-0">Job Packages</h6>
+
+      <!-- When searchValue is not empty -->
+      <span *ngIf="searchValue && searchValue.trim().length > 0; else noSearch"
+            class="fs-14 color-gray-600">
+        {{ filteredRecords }} / {{ totalRecords }} records
+      </span>
+
+      <!-- When searchValue is empty -->
+      <ng-template #noSearch>
+        <span class="fs-14 color-gray-600">
+          {{ totalRecords }} records
+        </span>
+      </ng-template> 
+
+    </div>
+
+    <div class="d-flex align-items-center gap-1">
+      
+      <!-- Read Mode Badge - Now BEFORE search -->
+      <div *ngIf="showReadModeBadge()" class="d-flex align-items-center gap-2 me-2">
+        <span class="badge bg-secondary fs-10 fw-normal px-2 py-1">Read Mode</span>
+      </div>
+
+      <div class="position-relative height-px-38" (click)="stopProp($event)">
+      <p-autocomplete
+        styleClass="d-none-spinner clearable-search"
+        #searchJob
+        [(ngModel)]="searchValue"
+        (ngModelChange)="onSearchInputChange($event)"
+        [suggestions]="[]"
+        field="name"
+        (focus)="onFocus()"
+        (blur)="onBlur($event)"
+        [ngClass]="isSearchOpen ? 'animated-search-visible' : 'animated-search-hidden'"
+        [inputStyleClass]="isSearchOpen ? 'width-14' : 'width-px-0'"
+        [placeholder]="isSearchOpen ? 'Search...' : ''">
+      </p-autocomplete>
+
+        <div class="input-group-media icon position-absolute end-2 top-2 cursor-pointer bg-white height-px-35 d-flex justify-content-center align-items-center cursor-default" [ngClass]="isSearchOpen ? 'pe-px-2 ps-px-4':'width-px-34'">
+          <button *ngIf="searchValue" type="button" title="Clear search" class="btn p-0 text-primary"><span class="pi pi-times fs-13 color-gray-600" (click)="onSearchInputChange('')"></span></button>
+          <span class="pi pi-search fw-semibold color-gray-600 fs-15 cursor-pointer p-2"
+            tooltipStyleClass="p-tooltip-fs-11 cutomized-tooltip" pTooltip="Search a job package" tooltipPosition="top" (click)="openSearch($event,searchJob)"
+            [tooltipDisabled]="isSearchOpen">
+          </span>
+        </div>
+      </div>
+
+      <a class="p-2" type="button" tooltipStyleClass="p-tooltip-fs-11 cutomized-tooltip" pTooltip="Sort Job packages"
+        tooltipPosition="top" (click)="toggleSort()">
+        <i class="fa fa-arrow-right-arrow-left hover-gray-700 color-gray-600 fa-rotate-270 fs-16"></i>
+      </a>
+
+      @if(isBasePlanRoute()){
+      <a class="p-2" type="button" tooltipStyleClass="p-tooltip-fs-11 cutomized-tooltip" pTooltip="New job package"
+        tooltipPosition="top" (click)="newJobPackage()">
+        <i class="fa fa-plus hover-gray-700 color-gray-600 fs-17"></i>
+      </a>
+      }
+    </div>
+  </div>
+</div>
+

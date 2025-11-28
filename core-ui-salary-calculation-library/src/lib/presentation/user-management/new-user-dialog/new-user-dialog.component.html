@@ -1,0 +1,196 @@
+<div class="p-dialog-body pe-0 my-0 py-0 overflow-hidden" [formGroup]="formGroup">
+    <salary-calculation-portal-progress-loading
+        loaderKey="UserMgt_AddUsers"></salary-calculation-portal-progress-loading>
+    <div class="d-flex">
+        <div class="flex-1 border-end border-gray-300 pe-20">
+            <div class="py-20">
+                <div class="w-100">
+                    <div class="mb-3">
+                        <label for="location" class="form-label text-capitalize">Name</label>
+                        <input *ngIf="!selectedUser" placeholder="Enter name" class="form-control" />
+                        <input *ngIf="selectedUser" placeholder="Enter name" class="form-control"
+                            value="{{selectedUser.name}}" disabled />
+                    </div>
+                    <div class="mb-3 d-flex flex-column">
+                        <label for="roleSelect" class="form-label">Role</label>
+                        <p-select inputId="roleSelect" [loading]="isRoleLoading" [options]="options"
+                            optionLabel="roleName" optionValue="roleId" placeholder="Select role" formControlName="role"
+                            class="w-full"
+                            [ngClass]="!accessService.hasPermission(Permissions.USER_MANAGEMENT_EDIT_USER_ROLE) ? 'color-gray-500 pe-none' : ''"></p-select>
+
+                    </div>
+                    <ng-container *ngIf="canEditModuleAccess">
+                        <label class="form-label">
+                            Module Access
+                        </label>
+                        <div class="d-flex gap-4">
+                            <div class="mb-3 d-flex gap-2" *ngIf="canEditSalaryAccess">
+                                <p-checkbox class="d-flex" [binary]="true" formControlName="hasSalaryCapture">
+                                </p-checkbox>
+                                <label class="fs-14">Salary Capture</label>
+                            </div>
+
+                            <div class="mb-3 d-flex gap-2" *ngIf="canEditDailyPlanningAccess">
+                                <p-checkbox class="d-flex" [binary]="true" formControlName="hasDailyPlanning">
+                                </p-checkbox>
+                                <label class="fs-14">Daily Planning</label>
+                            </div>
+                        </div>
+                    </ng-container>
+
+
+
+                    <div *ngIf="!selectedUser">
+                        <hr class="color-gray-500 my-4">
+                        <div class="mb-3">
+                            <label for="location" class="form-label text-capitalize">Username</label>
+                            <input placeholder="Enter username" class="form-control" />
+                        </div>
+
+
+                        <div class="mb-3">
+                            <label for="exampleFormControlInputEnd" class="form-label">Setup Password</label>
+                            <div class="input-group-wrapper end">
+                                <input [type]="isPasswordVisible ? 'text':'password'" class="form-control"
+                                    placeholder="Enter password">
+                                <div class="input-group-media icon cursor-pointer">
+                                    <i class="fa fs-15" [ngClass]="isPasswordVisible ? 'fa-eye-slash':'fa-eye'"
+                                        [title]="isPasswordVisible ? 'Hide Password':'Show Password'"
+                                        (click)="showPassword()"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+        </div>
+        <div class="flex-1">
+            <div>
+                <div class="px-lg-20 px-0 py-12 border-bottom border-gray-300">
+                    Region and Areas
+                </div>
+
+                <div class="w-100 py-10 vh-370 overflow-auto pe-20 ps-lg-12 ps-0">
+                    <p-accordion class="accordion" id="accordionExample" formArrayName="areasCtrl"
+                        showToggleIcon="false">
+                        @for(area of getAreasCtrl.controls; track area; let i = $index){
+                        <p-accordion-panel
+                            class="accordion-item hierarchical-form checkbox-timeline timeline-top-20 timeline-h-calc-30 border-0 gap-2 mt-3 d-block"
+                            [formGroupName]="i">
+                            <p-accordion-header class="p-0">
+                                <ng-template #toggleicon>
+                                    <span class="d-none"></span>
+                                </ng-template>
+                                <div class="accordion-button flex-row-reverse bg-white shadow-none border-0 py-0 pe-0 ps-10 chevron-bottom after-content-unset"
+                                    type="button" aria-expanded="true" aria-controls="collapseOne">
+                                    <div class="d-flex w-100 line align-items-center justify-content-between">
+                                        <div class="d-flex gap-2 align-items-center" (click)="$event.stopPropagation()">
+                                            <!-- Replaced p-triStateCheckbox with p-checkbox for PrimeNG v19 compatibility -->
+                                            <p-checkbox class="d-flex" [binary]="true"
+                                                [ngClass]="!accessService.hasPermission(Permissions.USER_MANAGEMENT_ASSIGN_AREAS_SUBAREAS) ? 'color-gray-500 pe-none' : ''"
+                                                inputId="{{regions[i].areaId}}" [formControlName]="'areaState'"
+                                                (onChange)="onAreaCheckboxChange($event, regions[i], i)">
+                                            </p-checkbox>
+
+
+                                            <label for="{{regions[i].areaId}}"
+                                                class="fs-14 color-gray-800 fw-normal">{{regions[i].displayName}}</label>
+                                        </div>
+
+
+                                        <!-- <div class="max-w-px-180 min-w-px-180 pe-2 py-1" (click)="$event.stopPropagation()"> -->
+                                        <!-- <p-dropdown placeholder="Select role" appendTo="body"
+                                                panelStyleClass="p-dropdown-panel-sm" [options]="areaRoles"
+                                                optionLabel="name" styleClass="w-100 p-dropdown-sm height-px-34"
+                                                formControlName="areaRole" optionValue="id"
+                                                (onChange)="onChangeAreaDropdown($event, areas[i], i)" /> -->
+                                        <!-- <p-select placeholder="Select role" [options]="areaRoles" optionLabel="name"
+                                                optionValue="id" formControlName="areaRole"  appendTo="body"
+                                                inputId="areaRole"
+                                                class="w-100 fw-normal height-px-34"
+                                                styleClass="p-selectlabel-fs-14"
+                                                panelStyleClass="fs-14"
+                                                (onChange)="onChangeAreaDropdown($event, areas[i], i)" /> -->
+
+                                        <!-- </div> -->
+                                    </div>
+                                    <i class="fa fa-angle-right p-1 fs-18 color-gray-1000 me-7 mt-px-2"
+                                        data-bs-toggle="collapse" [attr.data-bs-target]="'#id_' + regions[i].areaId"
+                                        [ngClass]="i === 0 ? '' : 'collapsed'"></i>
+                                </div>
+                            </p-accordion-header>
+                            <div id="id_{{regions[i].areaId}}" class="accordion-collapse collapse"
+                                [ngClass]="i === 0 ? 'show' : ''" data-bs-parent="#accordionExample">
+                                <p-accordion-content class="pe-0 accordion-content-p-0">
+                                    <div class="ps-42" formArrayName="subareaCtrl">
+                                        @for(subArea of regions[i].subAreas; track subArea.areaId; let x = $index){
+                                        <div class="circle" [formGroupName]="x">
+                                            <div
+                                                class="d-flex w-100 mt-3 line line-top-per-50 align-items-center justify-content-between">
+                                                <div class="d-flex gap-2 pe-2 align-items-center"
+                                                    (click)="$event.stopPropagation()">
+                                                    <p-checkbox class="d-flex"
+                                                        [ngClass]="!accessService.hasPermission(Permissions.USER_MANAGEMENT_ASSIGN_AREAS_SUBAREAS) ? 'color-gray-500 pe-none' : ''"
+                                                        [value]="subArea.areaId" inputId="{{subArea.areaId}}"
+                                                        formControlName="subareaState"
+                                                        (onChange)="onSubAreaCheckboxChange($event, subArea, i, x)"
+                                                        [binary]="true"></p-checkbox>
+                                                    <label for="{{subArea.areaId}}"
+                                                        class="fs-14 fw-normal">{{subArea.displayName}}
+                                                        ({{subArea.postalCode}})</label>
+                                                </div>
+
+                                                <!-- <div class="max-w-px-180 min-w-px-180 pb-1 pe-2 py-1" (click)="$event.stopPropagation()">
+                                                    <p-select inputId="subareaRole" placeholder="Select role"
+                                                        [options]="areaRoles" optionLabel="name" optionValue="id"
+                                                        formControlName="subareaRole" styleClass="p-selectlabel-fs-14" appendTo="body" [required]="true"
+                                                        class="w-100 fw-normal height-px-34" panelStyleClass="fs-14" />
+                                                </div> -->
+                                            </div>
+                                        </div>
+                                        }
+                                    </div>
+                                </p-accordion-content>
+                            </div>
+                        </p-accordion-panel>
+                        }
+                    </p-accordion>
+                </div>
+
+
+
+                <!-- <div class="w-100 py-10 px-20 max-h-64vh overflow-auto">
+                    <p-accordion class="border-less"
+                        styleClass="accordion-shadow-0 mb-10 bg-transparent p-accordion-radius-4 p-header-border-bottom-0 mb-3"
+                        [activeIndex]="0">
+                        @for(area of areas; track area.id;){
+                        <p-accordionTab tabStyleClass="hierarchical-form checkbox-timeline"
+                            headerStyleClass="align-items-start justify-content-between ps-3 pe-2 py-14"
+                            contentStyleClass="accordion-content-p-0">
+                            <ng-template pTemplate="header">
+
+                            </ng-template>
+
+                        </p-accordionTab>
+                        }
+                    </p-accordion>
+
+                </div>
+                <div>
+                </div> -->
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="p-dialog-footer border-top-0">
+    <button type="button" class="btn btn-sm color-gray-600" (click)="closeModal(false)">
+        Cancel
+    </button>
+    <button type="submit" class="btn btn-primary btn-sm me-0" (click)="closeModal(true)">
+        Submit
+    </button>
+</div>

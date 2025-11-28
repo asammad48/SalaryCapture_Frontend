@@ -1,0 +1,38 @@
+<div class="card border-gray-200 max-w-18 transition-ease-in-1s rounded-6"
+  [ngClass]=" resourcePanelCollapsed ? 'width-4' : 'min-w-18'">
+  <div class="card-header bg-white border-bottom-2 border-gray-300 d-flex align-items-center height-px-70"
+    [ngClass]=" resourcePanelCollapsed ? 'justify-content-center' : 'ps-3 justify-content-between'">
+    <div [ngClass]=" resourcePanelCollapsed ? 'd-none' : 'd-block'">
+      <h6 class="fw-bold m-0">Resources</h6>
+      <span class="fs-14 color-gray-600">Drag &amp; Drop to Assign</span>
+    </div>
+    <span [title]="resourcePanelCollapsed ? 'Open Panel':'Close Panel'" id="capture-filter-toggler"
+      class="cursor-pointer focus-visible rounded-2" (click)="resourcePanelToggler()"
+      (keydown.enter)="resourcePanelToggler()" tabindex="0" #filterToggler>
+      <svg class="width-px-24 height-px-24 fill-600 hover-fill-gray-700">
+        <use [attr.xlink:href]="resourcePanelCollapsed ? '#left-panel-close' : '#left-panel-open'"></use>
+      </svg>
+    </span>
+  </div>
+  <div class="card-body overflow-auto p-2 vh-164">
+    <span class="fa-rotate-270 mt-px-64 fw-bold fs-16 text-nowrap"
+      [ngClass]=" resourcePanelCollapsed ? 'd-block' : 'd-none'">Resources</span>
+    <div [ngClass]="resourcePanelCollapsed ? 'd-none' : 'd-block'">
+      <div class="unassigned-jobs-selection">
+        <p-accordion value="0" expandIcon="fa fa-chevron-down fs-14 color-gray-800 width-px-18"
+          collapseIcon="fa fa-chevron-up fs-14 color-gray-800 mt-px-1 width-px-18">
+          <app-unassigned-jobs-selection 
+            [isActionAllowed]="isActionAllowed()"
+            [planningMode]="planningMode"
+            [unassignedJobs]="unassignedJobs"
+            [planId]="planId"
+            [currentDayOfWeek]="currentDayOfWeek"
+            [currentAreaId]="currentAreaId"
+            (jobModified)="jobModified.emit($event)">
+          </app-unassigned-jobs-selection>
+          <app-workers-section [serviceWorkers]="serviceWorkers" [isActionAllowed]="isActionAllowed()"></app-workers-section>
+        </p-accordion>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,57 @@
+<div class="d-flex gap-3 mt-3">
+   <app-filters-sidebar 
+      [isDailyPlanReadMode]="isDailyPlanReadMode"
+      [isDailyPlanEditMode]="isDailyPlanEditMode"
+      [totalRecords]="jobPackages.length"
+      [planningMode]="PlanningMode.DailyPlan" 
+      (filtersApplied)="onFiltersApplied($event)"
+      (dailyPlanReset)="onDailyPlanReset($event)"
+      (dailyPlanCreate)="createDailyPlan($event)">
+   </app-filters-sidebar>
+   <div class="flex-auto position-relative">
+      <div class="vh-92 overflow-auto" cdkScrollable>
+         <app-job-packages-header 
+            [isDailyPlanReadMode]="isDailyPlanReadMode"
+            [isDailyPlanEditMode]="isDailyPlanEditMode"
+            [planningMode]="PlanningMode.DailyPlan"
+            (searchChanged)="onSearchInputChange($event)"
+            [filteredRecords]="filteredRecords" 
+            [totalRecords]="jobPackages.length"
+            (sortToggled)="onSortToggled($event)" 
+            (confirmedCreate)="newJobPackage($event)">
+         </app-job-packages-header>
+         <app-job-package-accordion
+            [isDailyPlanReadMode]="isDailyPlanReadMode"
+            [isDailyPlanEditMode]="isDailyPlanEditMode"
+            [planningMode]="PlanningMode.DailyPlan"
+            [isLoadingJobPackages]="isLoadingJobPackages"
+            (setFilteredRecords)="setFilteredRecords($event)"
+            [jobPackagesData]="jobPackages"
+            [vehicles]="vehicles"
+            [packageDetailsMap]="packageDetailsMap"
+            [planId]="planId"
+            [currentDayOfWeek]="undefined"
+            [currentAreaId]="lastFilters?.area || undefined"
+            (editJobPackage)="onEditJobPackage($event)"
+            (assignVehicle)="onAssignVehicle($event)"
+            (assignWorker)="onAssignWorker($event)"
+            (unAssignWorker)="onUnassignWorker($event)"
+            (accordionOpened)="loadPackageDetails($event)"
+            (jobModified)="onJobModified($event)"
+            (deleteJobPackageEvent)="deleteJobPackage($event)">
+         </app-job-package-accordion>
+      </div>
+   </div>
+   <app-resources-sidebar
+      [isDailyPlanReadMode]="isDailyPlanReadMode"
+      [isDailyPlanEditMode]="isDailyPlanEditMode"
+      [planningMode]="PlanningMode.DailyPlan"
+      [unassignedJobs]="unassignedJobs"
+      [serviceWorkers]="serviceWorkers"
+      [planId]="planId"
+      [currentDayOfWeek]="undefined"
+      [currentAreaId]="lastFilters?.area || undefined"
+      (jobModified)="onJobModified($event)">
+   </app-resources-sidebar>
+</div>
+

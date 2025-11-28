@@ -1,0 +1,81 @@
+trigger:
+  branches:
+    include:
+      - none
+parameters:
+  - name: buildConfiguration
+    displayName: Select Build Configuration
+    type: string
+    default: qa
+    values:
+      - dev
+      - qa
+      - prod
+variables:
+  acrLoginServer: crcubivueqa001.azurecr.io
+  acrName: crcubivueqa001
+  imageName: salarycapturefe
+  imageTag: $(Build.BuildId)
+  containerAppName: ca-salarycapturefe-qa
+  resourceGroup: rg-containers-qa-001
+  location: westeurope
+  dockerfilePath: 'DockerFile'
+  azureSubscription: 'sc-rg-containers-qa-001'
+  dockerContext: '.'
+  BUILD_CONFIGURATION: ${{ parameters.buildConfiguration }}
+
+stages:
+- stage: BuildAndPush
+  displayName: Build and Push Docker Image to ACR
+  jobs:
+  - job: BuildPushImage
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    - checkout: self
+
+    - task: AzureCLI@2
+      name: BuildPush
+      inputs:
+        azureSubscription: $(azureSubscription)
+        scriptType: bash
+        scriptLocation: inlineScript
+        inlineScript: |
+          echo "Logging into ACR..."
+          az acr login --name $(acrName)
+
+          echo "Building Docker image with tags: $(imageTag) and latest..."
+          docker build -f $(dockerfilePath) \
+            -t $(acrLoginServer)/$(imageName):$(imageTag) \
+            -t $(acrLoginServer)/$(imageName):latest \
+            --build-arg BUILD_CONFIGURATION=$(BUILD_CONFIGURATION)  \
+            $(dockerContext)
+
+          echo "Pushing Docker image with tag: $(imageTag)..."
+          docker push $(acrLoginServer)/$(imageName):$(imageTag)
+
+          echo "Pushing Docker image with tag: latest..."
+          docker push $(acrLoginServer)/$(imageName):latest
+
+- stage: DeployToContainerApp
+  displayName: Deploy Image to Azure Container App
+  dependsOn: BuildAndPush
+  jobs:
+  - job: Deploy
+    displayName: Deploy to ACA
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    - task: AzureCLI@2
+      name: DeployContainerApp
+      inputs:
+        azureSubscription: $(azureSubscription)
+        scriptType: bash
+        scriptLocation: inlineScript
+        inlineScript: |
+          echo "Updating ACA image..."
+          az containerapp update \
+            --name $(containerAppName) \
+            --resource-group $(resourceGroup) \
+            --image $(acrLoginServer)/$(imageName):latest
+          echo "Deployment complete."

@@ -1,0 +1,181 @@
+export const timelineEventsDummy = [
+    {
+      id: '1',
+      resourceId: 'job',
+      timelineType: 'job',
+      title: 'P-1410',
+      start: '2025-09-16T02:00:00',
+      end: '2025-09-16T03:00:00',
+      editable: false,
+    },
+    {
+      id: '2',
+      resourceId: 'job',
+      timelineType: 'job',
+      title: 'P-7009',
+      start: '2025-09-16T03:00:00',
+      end: '2025-09-16T04:00:00',
+      editable: false,
+    },
+    {
+      id: '3',
+      resourceId: 'job',
+      timelineType: 'job',
+      title: '1410',
+      start: '2025-09-16T06:00:00',
+      end: '2025-09-16T08:00:00',
+      editable: false,
+    },
+    {
+      id: '6',
+      resourceId: 'job',
+      timelineType: 'job',
+      title: '7009',
+      start: '2025-09-16T11:00:00',
+      end: '2025-09-16T12:00:00',
+      editable: false,
+    },
+    {
+      id: '7',
+      resourceId: 'job',
+      timelineType: 'job',
+      title: '2310',
+      start: '2025-09-16T12:00:00',
+      end: '2025-09-16T13:00:00',
+      editable: false,
+    },
+    {
+      id: '8',
+      resourceId: 'job',
+      timelineType: 'job',
+      title: '7009',
+      start: '2025-09-16T13:00:00',
+      end: '2025-09-16T14:00:00',
+      editable: false,
+    },
+  ];
+  export const manualLineEventsDummy = [
+    {
+      id: 'm1',
+      resourceId: 'manualLine',
+      statusId: 1,
+      timelineType: 'manualLine',
+      title: '3210',
+      start: '2025-09-16T00:10:00',
+      end: '2025-09-16T01:00:00',
+      hasConflicts: false,
+      editable: false,
+    },
+    {
+      id: 'm1',
+      resourceId: 'manualLine',
+      statusId: 2,
+      timelineType: 'manualLine',
+      title: '1200',
+      start: '2025-09-16T05:00:00',
+      end: '2025-09-16T06:30:00',
+      hasConflicts: true,
+      editable: true,
+    },
+    {
+      id: 'm2',
+      resourceId: 'manualLine',
+      statusId: 2,
+      timelineType: 'manualLine',
+      title: '1820',
+      start: '2025-09-16T08:30:00',
+      end: '2025-09-16T10:30:00',
+      hasConflicts: false,
+      editable: true,
+    },
+    {
+      id: 'm3',
+      resourceId: 'manualLine',
+      statusId: 3,
+      timelineType: 'manualLine',
+      title: '1800',
+      start: '2025-09-16T13:00:00',
+      end: '2025-09-16T14:00:00',
+      hasConflicts: false,
+      editable: false,
+    },
+  ];
+
+export const ActivityTimelineEvents = [
+  {
+    id: 'a1',
+    resourceId: 'activity',
+    timelineType: 'activity',
+    title: 'At Start Terminal',
+    start: '2025-09-16T01:00:00',
+    end: '2025-09-16T04:00:00',
+    type: 'terminal',
+    editable: false,
+    activityFrequencies: [
+      { start: '2025-09-16T01:00:00', end: '2025-09-16T01:15:00', value: 0.0 },
+      { start: '2025-09-16T01:15:00', end: '2025-09-16T01:20:00', value: 1.0 },
+      { start: '2025-09-16T01:20:00', end: '2025-09-16T02:18:00', value: 0.6 },
+      { start: '2025-09-16T02:25:00', end: '2025-09-16T02:30:00', value: 0.8 },
+      { start: '2025-09-16T02:30:00', end: '2025-09-16T03:00:00', value: 0.4 },
+      { start: '2025-09-16T03:00:00', end: '2025-09-16T04:00:00', value: 0.9 },
+    ],
+  },
+  {
+    id: 'a2',
+    resourceId: 'activity',
+    timelineType: 'activity',
+    title: 'Performing Job',
+    start: '2025-09-16T04:00:00',
+    end: '2025-09-16T14:00:00',
+    type: 'active',
+    editable: false,
+    activityFrequencies: [
+      { start: '2025-09-16T04:00:00', end: '2025-09-16T04:30:00', value: 0.1 },
+      { start: '2025-09-16T04:30:00', end: '2025-09-16T05:45:00', value: 0.7 },
+      { start: '2025-09-16T05:45:00', end: '2025-09-16T06:00:00', value: 0.0 },
+      { start: '2025-09-16T06:00:00', end: '2025-09-16T07:00:00', value: 0.0 },
+      { start: '2025-09-16T07:00:00', end: '2025-09-16T08:00:00', value: 0.5 },
+      { start: '2025-09-16T08:00:00', end: '2025-09-16T09:30:00', value: 0.8 },
+      { start: '2025-09-16T09:30:00', end: '2025-09-16T10:00:00', value: 0.3 },
+      { start: '2025-09-16T10:00:00', end: '2025-09-16T11:00:00', value: 0.0 },
+      { start: '2025-09-16T12:00:00', end: '2025-09-16T13:00:00', value: 1.0 },
+      { start: '2025-09-16T13:00:00', end: '2025-09-16T14:00:00', value: 0.3 },
+    ],
+  },
+  {
+    id: 'a3',
+    resourceId: 'activity',
+    timelineType: 'activity',
+    title: 'At End Terminal',
+    start: '2025-09-16T14:00:00',
+    end: '2025-09-16T17:00:00',
+    type: 'terminal',
+    editable: false,
+    activityFrequencies: [
+      { start: '2025-09-16T14:00:00', end: '2025-09-16T14:20:00', value: 1.0 },
+      { start: '2025-09-16T14:20:00', end: '2025-09-16T14:50:00', value: 0.7 },
+      { start: '2025-09-16T14:50:00', end: '2025-09-16T15:30:00', value: 0.5 },
+      { start: '2025-09-16T15:30:00', end: '2025-09-16T16:00:00', value: 0.8 },
+      { start: '2025-09-16T16:00:00', end: '2025-09-16T16:30:00', value: 0.4 },
+      { start: '2025-09-16T16:30:00', end: '2025-09-16T17:00:00', value: 0.2 },
+    ],
+  },
+];
+
+export const ActivityTimelineIcons = [
+    { eventTime: '2025-09-16T01:00:00', eventId: 1 }, // event start icon
+    { eventTime: '2025-09-16T06:00:00', eventId: 2 }, // event paused icon
+    { eventTime: '2025-09-16T08:00:00', eventId: 3 }, // event play icon
+    { eventTime: '2025-09-16T12:00:00', eventId: 4 }, // event switch icon
+    { eventTime: '2025-09-16T13:00:00', eventId: 4 }, // event switch icon
+    { eventTime: '2025-09-16T17:00:00', eventId: 5 }, // event end icon
+];
+
+export const jobEventsSwappedDummy = [
+      { start: '2025-10-02T02:00:00', end: '2025-10-02T02:15:00', typeId: 1 },
+      { start: '2025-10-02T02:45:00', end: '2025-10-02T03:20:00', typeId: 1 },
+      { start: '2025-10-02T04:20:00', end: '2025-10-02T04:18:00', typeId: 2 },
+      { start: '2025-10-02T05:25:00', end: '2025-10-02T06:30:00', typeId: 2 },
+      { start: '2025-10-02T07:30:00', end: '2025-10-02T08:00:00', typeId: 1 },
+      { start: '2025-10-02T09:00:00', end: '2025-10-02T11:00:00', typeId: 1 },
+]

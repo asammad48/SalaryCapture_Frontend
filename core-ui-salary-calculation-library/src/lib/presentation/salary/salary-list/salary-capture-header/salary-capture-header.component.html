@@ -1,0 +1,220 @@
+<div class="card border-0 mb-px-2 rounded-6 sticky-top" [ngClass]="isScrolling ? '':'shadow-md'">
+  <div
+    class="card-header bg-white border-0 d-flex justify-content-between height-px-70 rounded-top-start-6 rounded-top-end-6"
+    [ngClass]="[isScrolling ? 'border-bottom border-gray-300':'',currentView === SalaryCaptureViewType.WORKER_ACCORDION ? '':'ps-10']">
+    <div class="d-flex justify-content-center gap-3 align-items-center">
+      <!-- Skeleton for checkbox -->
+      <div *ngIf="isLoading">
+        <p-skeleton shape="square" width="20px" height="22.5px"></p-skeleton>
+      </div>
+      <!-- Actual checkbox -->
+      <div *ngIf="!isLoading && showAllCheckbox()">
+        <p-checkbox [binary]="true"
+              [ngModel]="isAllChecked"
+              [indeterminate]="isAllIndeterminate"
+              [ngClass]="{'indeterminate-checkbox' : isAllIndeterminate}"
+              (onChange)="onSelectAllWorkersChange($event.checked)"
+              [disabled]="!hasDeadline"
+              inputId="selectAllWorkers" id="selectAllWorkers" #selectAllWorkers>
+        </p-checkbox>
+      </div>
+      <div class="d-flex flex-column justify-content-center">
+        <h6 class="fw-bold m-0">Salary Capture</h6>
+        <span class="small text-muted">
+          <ng-container *ngIf="isLoading">Loading...</ng-container>
+          <ng-container *ngIf="!isLoading && currentView === SalaryCaptureViewType.WORKER_ACCORDION">{{totalRecords}} {{totalRecords > 1 ? 'workers' : 'worker'}}</ng-container>
+          <ng-container *ngIf="!isLoading && currentView === SalaryCaptureViewType.WORKER_SALARY">{{totalRecords}} {{totalRecords > 1 ? 'salaries' : 'salary'}}</ng-container>
+        </span>
+      </div>
+    </div>
+    <div class="d-flex align-items-center">
+
+      <div class="d-flex align-items-center gap-15 gap-3 h-100 position-relative"
+        [ngClass]="{'pe-14 border-dotted-after-5px' : accessService.hasPermission(Permissions.SALARY_CAPTURE_REJECT_BUTTON) || accessService.hasPermission(Permissions.SALARY_CAPTURE_APPROVE_BUTTON)}">
+
+        <div class="position-relative h-100 d-flex align-items-center"
+          [ngClass]="{'border-dotted-after-5px' : deadLineText||fullDate}" *ngIf="false"> <!-- ngIf* = !isLoadingDeadlinePeriod-->
+
+          <span tooltipPosition="top" class="d-flex fs-14 me-30 text-dark max-w-xxxl-unset"
+            tooltipStyleClass="p-tooltip-fs-11 cutomized-tooltip cursor-pointer"
+            [ngClass]=" filterPanelCollapsed ? '' : 'max-w-px-156'" [pTooltip]="fullDate"
+            *ngIf="showCurrentDeadlinePeriod">
+
+            <i class="fa-solid fa-triangle-exclamation me-2 pt-px-3 fs-16 text-warning"></i>
+
+            Deadline: {{ deadLineText }} left
+
+          </span>
+
+          <span *ngIf="showPastDeadlinePeriod" class="d-flex fs-14 me-20 text-dark max-w-xxxl-unset"
+            [ngClass]=" filterPanelCollapsed ? '' : 'max-w-px-156'">
+
+            <i class="fa-solid fa-triangle-exclamation me-2 pt-px-3 fs-16 text-warning"></i>
+
+            Deadline: {{fullDate}}
+          </span>
+
+        </div>
+
+        <div class="d-flex align-items-center">
+
+          <div class="btn-group btn-group-outline-secondary height-px-33 me-15" (click)="onViewToggle()">
+            <button class="btn btn-sm px-2 d-flex align-items-center z-index-unset" title="Switch to Detailed View" tabindex="0" id="accordionView"
+                [ngClass]="currentView === SalaryCaptureViewType.WORKER_ACCORDION ? 'bg-secondary btn-secondary border-0 border-top-0 border-bottom-0':'btn-outline-secondary bg-white'">
+                <svg class="width-px-18 height-px-18 m-0"
+                    [ngClass]="currentView === SalaryCaptureViewType.WORKER_ACCORDION ? 'fill-white':'fill-600'">
+                    <use xlink:href="#map"></use>
+                </svg>
+            </button>
+            <button class="btn btn-sm px-2 d-flex align-items-center z-index-unset" title="Switch to List View" tabindex="0" id="gridView"
+                [ngClass]="currentView === SalaryCaptureViewType.WORKER_SALARY ? 'bg-secondary btn-secondary border-0 border-top-0 border-bottom-0':'btn-outline-secondary bg-white'">
+                <svg class="width-px-18 height-px-18 m-0"
+                    [ngClass]="currentView === SalaryCaptureViewType.WORKER_SALARY ? 'fill-white':'fill-600'">
+                    <use xlink:href="#format-list-bulleted"></use>
+                </svg>
+            </button>
+        </div>
+
+          <div class="position-relative">
+
+            <p-autocomplete
+              [group]="true"
+              [suggestions]="filteredGroups"
+              (completeMethod)="onFilterRegionalWorkers($event)"
+              [(ngModel)]="globalSearchTerm"
+              (ngModelChange)="globalSearchTermChange.emit($event)"
+              [attr.id]="'autocompleteWorkerInput'"
+              [field]="'firstName'"
+              placeholder="Search worker..."
+              (onSelect)="onWorkerFilterSelected($event)" [group]="true"
+              (onClear)="onWorkerFilterCleared()"
+              [readonly]="!allServiceWorkersForAutocomplete || allServiceWorkersForAutocomplete.length === 0 || !hasDeadline"
+              inputStyleClass="width-12 fs-14 pe-px-50"
+              styleClass="w-100 d-none-spinner height-px-33 clearable-search"
+              appendTo="body"
+              [virtualScroll]="true"
+              [virtualScrollItemSize]="50"
+              showClear="true"
+              id="capture-search-worker-input" #workerAutoCompleteRef>
+
+              <ng-template let-group #group>
+                  <h1 class="fs-14 color-gray-1000 mb-0 fw-semibold">{{ group.label }}</h1>
+              </ng-template>
+
+              <ng-template let-worker pTemplate="item">
+                <div class="d-flex gap-12 w-100">
+                  <img class="img-fluid avatar-sm rounded-circle object-fit-cover"
+                    src="https://saas-ui-assets-test.cubivue.com/assets/img/placeholder.svg" />
+                  <div class="w-80 pe-2">
+                    <h6 class="fw-medium m-0 fs-14 text-truncate max-w-8" [title]="worker.firstName || ''">
+                      {{ worker.firstName }}
+                    </h6>
+                    <span class="fs-14 color-gray-600 text-truncate max-w-8" [title]="worker.userName">
+                      {{ worker.userName }}
+                    </span>
+                  </div>
+                </div>
+              </ng-template>
+
+            </p-autocomplete>
+
+            <div class="input-group-media icon position-absolute end-0 top-0 cursor-pointer" [class.pe-none]="!allServiceWorkersForAutocomplete || allServiceWorkersForAutocomplete.length === 0 || !hasDeadline"
+              [attr.id]="'autocompleteSearchIcon'">
+              <span
+                class="pi pi-search fw-semibold color-gray-600 width-px-40 height-px-34 d-flex justify-content-center align-items-center fs-13"></span>
+            </div>
+          </div>
+        </div>
+
+        <ng-container *ngIf="accessService.hasPermission(Permissions.SALARY_CAPTURE_ADD_SALARYLINE_BUTTON)">
+          <button #addSalaryLineBtn type="button" class="btn btn-sm btn-primary py-px-4 lh-1 px-10" pButton
+            pRipple (click)="onAddSalaryLineGlobal($event)" [disabled]="!canAddSalaryLine()" (keydown.enter)="onAddSalaryLineGlobal($event)" (keydown.space)="onAddSalaryLineGlobal($event)"
+            id="add-salary-line-global-btn">
+            <span class="d-flex align-items-center gap-1">
+              <i class="fa-solid fa-clipboard-list me-1"></i>
+              <span>
+                Add Salary Lines <small class="d-block fs-8 mt-px-1">(CTRL + L)</small>
+              </span>
+            </span>
+          </button>
+        </ng-container>
+      </div>
+
+      <!-- For worker accordion bulk actions -->
+      <ng-container
+        *ngIf="currentView === SalaryCaptureViewType.WORKER_ACCORDION && (
+            accessService.hasPermission(Permissions.SALARY_CAPTURE_REJECT_BUTTON) ||
+            accessService.hasPermission(Permissions.SALARY_CAPTURE_APPROVE_BUTTON)
+          )">  
+      <div class="d-flex gap-15 ps-14">
+          <ng-container *ngIf="accessService.hasPermission(Permissions.SALARY_CAPTURE_REJECT_BUTTON)">
+            <button #rejectGlobalBtn type="button" class="btn btn-sm btn-soft-danger border-0 px-3" pButton
+              pRipple [disabled]="!canRejectAll" (click)="onRejectGlobal()"
+              id="reject-global-btn">
+              <i class="fa-solid fa-xmark me-2"></i>Reject
+            </button>
+          </ng-container>
+          <ng-container *ngIf="accessService.hasPermission(Permissions.SALARY_CAPTURE_APPROVE_BUTTON)">
+            <button #approveGlobalBtn type="button" class="btn btn-sm btn-soft-success border-0 px-3" pButton
+              pRipple [disabled]="!canApproveAll" (click)="onApproveGlobal()"
+              id="approve-global-btn">
+              <i class="fa-solid fa-check me-px-6"></i>Approve
+            </button>
+          </ng-container>
+        </div>
+      </ng-container>
+
+      <!-- For salary line bulk actions in worker salary view -->
+      <div class="d-flex gap-2 height-px-26 justify-content-end ps-14" *ngIf="currentView === SalaryCaptureViewType.WORKER_SALARY">
+
+        <!-- Reject Button -->
+        <ng-container *ngIf="accessService.hasPermission(Permissions.SALARY_CAPTURE_REJECT_BUTTON)">
+          <button
+             class="btn btn-sm btn-soft-danger width-px-26 border-0 d-flex justify-content-center align-items-center p-0"
+            (click)="onRejectGlobal()"
+            type="button"
+            #rejectGlobalBtn
+            [disabled]="!canRejectAll">
+            <i class="fa-solid fa-xmark m-0 fs-14"></i>
+          </button>
+        </ng-container>
+
+        <!-- Approve Button -->
+        <ng-container *ngIf="accessService.hasPermission(Permissions.SALARY_CAPTURE_APPROVE_BUTTON)">
+          <button
+            class="btn btn-sm btn-soft-success width-px-26 border-0 d-flex justify-content-center align-items-center p-0"
+            #subLineApproveBtn
+            (click)="onApproveGlobal()"
+            [disabled]="!canApproveAll">
+            <i class="fa-solid fa-check m-0 fs-14"></i>
+          </button>
+        </ng-container>
+        
+        <!-- Menu Button for Worker Accordion View -->
+        <ng-container>
+        <div>
+          <p-menu 
+            #salaryMenu 
+            [model]="salaryMenuItems" 
+            [popup]="true" 
+            appendTo="body" 
+            class="capture-acc-menu"  
+            styleClass="menu-content-p-0 menu-link-py-px-11">
+          </p-menu>
+
+          <button 
+            pButton 
+            type="button" 
+            icon="fa fa-ellipsis-v"
+            class="p-button-text p-button-sm btn btn-sm btn-soft-secondary width-px-26 border-0 d-flex justify-content-center align-items-center p-0 mt-0 h-100"
+            (click)="onMenuClick($event, salaryMenu)"
+            #accordionMenuBtn>
+          </button>
+        </div>
+      </ng-container>
+
+      </div>
+
+    </div>
+  </div>
+</div>

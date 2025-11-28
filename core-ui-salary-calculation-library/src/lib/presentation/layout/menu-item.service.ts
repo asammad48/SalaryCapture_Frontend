@@ -1,0 +1,121 @@
+import { Injectable } from '@angular/core';
+import { Observable, of } from 'rxjs';
+import { MenuItem } from 'primeng/api';
+import { AccessService } from '../../data/repositories/access/access.service';
+import { Permissions } from '../../core/domain/constants/claims.constants';
+import { LocalStorageService } from '../../presentation/services/local-storage.service';
+import { LocalStorageKeys } from '../../data/repositories/access/local-storage-keys';
+import { TenantConfigurationService } from '../services/tenant-configuration.service';
+
+@Injectable()
+export class MenuItemService {
+  constructor(
+    public accessService: AccessService,
+    private localStorageService: LocalStorageService,
+    private tenantConfig: TenantConfigurationService
+  ) { }
+
+  // tenant-wide license flags
+  private get isSalaryLicensed(): boolean {
+    return this.tenantConfig.isSalaryCaptureEnabled();
+  }
+
+  private get isDailyPlanningLicensed(): boolean {
+    return this.tenantConfig.isDailyPlanningEnabled();
+  }
+
+  private get isNewMode(): boolean {
+    return this.tenantConfig.isModuleAccessEditable();
+  }
+
+  // combined user+tenant checks
+  private get hasSalaryAccess(): boolean {
+    // FALLBACK TENANT: salary for everyone
+    if (!this.isNewMode) {
+      return this.isSalaryLicensed;
+    }
+
+    const raw = this.localStorageService.get(LocalStorageKeys.HAS_SALARY_CAPTURE);
+    const flag = raw === true || raw === 'true';
+    return flag && this.isSalaryLicensed;
+  }
+
+  private get hasDailyPlanningAccess(): boolean {
+    // FALLBACK TENANT: DP never visible
+    if (!this.isNewMode) {
+      return false;
+    }
+
+    const raw = this.localStorageService.get(LocalStorageKeys.HAS_DAILY_PLANNING);
+    const flag = raw === true || raw === 'true';
+    return flag && this.isDailyPlanningLicensed;
+  }
+
+  mainMenuItems: MenuItem[] = [
+    {
+      id: 'salary-capture-menu-item',
+      icon: 'payments',
+      label: 'Salary Capture',
+      routerLink: ['/salary-capture'],
+      visible:
+        this.accessService.hasPermission(Permissions.SALARY_CAPTURE_ACCESS) &&
+        this.hasSalaryAccess,
+    },
+    {
+      id: 'salary-report-menu-item',
+      icon: 'report',
+      label: 'Salary Report',
+      routerLink: ['/salary-calculations-report'],
+      visible:
+        this.accessService.hasPermission(Permissions.SALARY_CAPTURE_EXPORT_BUTTON) &&
+        this.hasSalaryAccess,
+    },
+    {
+      id: 'salary-history-menu-item',
+      icon: 'history',
+      label: 'Salary History',
+      routerLink: ['/salary-calculations-report/salary-calculations-history'],
+      visible:
+        this.accessService.hasPermission(Permissions.SALARY_CAPTURE_EXPORT_BUTTON) &&
+        this.hasSalaryAccess,
+    },
+    {
+      id: 'daily-jobs-menu-item',
+      icon: 'report',
+      label: 'Daily Jobs',
+      routerLink: ['/daily-jobs'],
+      visible: this.accessService.hasPermission(Permissions.DAILY_JOBS_PAGE_ACCESS),
+    },
+    {
+      id: 'base-plan-menu-item',
+      icon: 'event-note',
+      label: 'Base Plan',
+      routerLink: ['/daily-planning/base-plan'],
+      visible: this.hasDailyPlanningAccess,
+    },
+    {
+      id: 'daily-plan-menu-item',
+      icon: 'today',
+      label: 'Daily Plan',
+      routerLink: ['/daily-planning/daily-plan'],
+      visible: this.hasDailyPlanningAccess,
+    },
+    {
+      icon: 'manage-accounts',
+      label: 'User Management',
+      routerLink: ['/user-management'],
+      visible: this.accessService.hasPermission(Permissions.USER_MANAGEMENT_PAGE_ACCESS),
+    },
+    {
+      id: 'settings-menu-item',
+      icon: 'settings',
+      label: 'Settings',
+      routerLink: ['/settings'],
+      visible: this.accessService.hasPermission(Permissions.SETTINGS_PAGE_ACCESS),
+    }
+  ];
+
+  getMainMenu(): Observable<MenuItem[]> {
+    return of(this.mainMenuItems.filter((x: any) => x.visible === true));
+  }
+}

@@ -1,0 +1,147 @@
+<nav aria-label="breadcrumb" class="d-flex align-items-center justify-content-between my-3 height-2">
+  <p-breadcrumb tabindex="-1" class="max-w-full fw-medium" [model]="items" [home]="home"></p-breadcrumb>
+</nav>
+
+<section class="mx-0 shadow-none">
+
+  <div class="d-flex gap-3 ">
+
+    <lib-salary-filters-list
+      (salaryCodeChange)="onSalaryCodeChange($event)"
+      (subAreaChange)="onSubAreaChange($event)"
+      (dataEvent)="getSalaryFilterData($event)"
+      (filterPanelState)="filterPanelToggler($event)"
+      (getDeadLinePeriod)="getDeadLineDates($event)"
+      (getSalaryCode)="getSalaryCode($event)"
+      (allSalaryCodes)="onSalaryCodesChange($event)">
+    </lib-salary-filters-list>
+
+    <div class="flex-auto transition-ease-in-1s position-relative" [ngClass]=" filterPanelCollapsed ? 'col-md-11' : 'col-md-9'" tabindex="-1">
+
+      <div class="overflow-auto" tabindex="-1" (scroll)="onScroll($event)">
+
+        @if(this.isFilterApplied){
+
+            <lib-salary-capture-header
+              [isLoading]="isLoading"
+              [isScrolling]="isScrolling"
+              [filterPanelCollapsed]="filterPanelCollapsed"
+              [totalRecords]="totalRecords"
+              [allServiceWorkersForAutocomplete]="allServiceWorkersForAutocomplete"
+              [filteredGroups]="filteredGroups"
+              [globalSearchTerm]="globalSearchTerm"
+              [(globalSearchTerm)]="globalSearchTerm"
+              [deadLineText]="deadLineText"
+              [fullDate]="fullDate"
+              [showCurrentDeadlinePeriod]="showCurrentDeadlinePeriod"
+              [showPastDeadlinePeriod]="showPastDeadlinePeriod"
+              [hasDeadline]="hasDeadline"
+              [isFilterApplied]="isFilterApplied"
+              [canApproveAll]="canApproveAll()"
+              [canRejectAll]="canRejectAll()"
+              [canShowBulkMenu]="canShowBulkMenu()"
+              [isAllChecked]="isAllChecked()"
+              [isAllIndeterminate]="isAllIndeterminate()"
+              [currentView]="currentView"
+              (selectAllWorkersChange)="onSelectAllWorkersChange($event)"
+              (workerFilterSelected)="onWorkerFilterSelected($event)"
+              (workerFilterCleared)="onWorkerFilterCleared()"
+              (filterRegionalWorkers)="filterRegionalWorkers($event)"
+              (addSalaryLineGlobal)="addSalaryLineGlobal($event)"
+              (addSalaryLineButtonRef)="onAddSalaryLineButtonRefReceived($event)"
+              (rejectGlobalButtonRef)="onRejectGlobalButtonRefReceived($event)"
+              (approveGlobalButtonRef)="onApproveGlobalButtonRefReceived($event)"
+              (rejectGlobal)="headerConfirmationDialog(2)"
+              (approveGlobal)="headerConfirmationDialog(3)"
+              (viewToggle)="onViewToggle($event)"
+              (bulkMenuActionClicked)="onBulkMenuActionClicked($event)">
+            </lib-salary-capture-header>
+
+            @if(currentView === SalaryCaptureViewType.WORKER_ACCORDION) {
+
+              <lib-worker-accordion-view
+                (currentlyOpenedWorker)="currentlyOpenedWorkerIndex"
+                (setCurrentlyOpenedWorker)="setCurrentlyOpenedWorker($event)"
+                [isFilterApplied]="isFilterApplied"
+                [filterData]="filterData"
+                [salaryCodes]="salaryCodes"
+                [areaWorkersWithRegion]="areaWorkersWithRegion"
+                [areaWorkersWithoutRegion]="areaWorkersWithoutRegion"
+                [allRegionalWorkersForAutocomplete]="allRegionalWorkersForAutocomplete"
+                [allServiceWorkersForAutocomplete]="allServiceWorkersForAutocomplete"
+                [salaryCodes]="salaryCodes"
+                [selectedSalaryCodeForDialog]="selectedSalaryCodeForDialog"
+                [organizationUnitId]="organizationUnitId"
+                [selectedStartDateForDialog]="selectedStartDateForDialog"
+                [selectedEndDateForDialog]="selectedEndDateForDialog"
+                [startDate]="startDate"
+                [endDate]="endDate"
+                [hasDeadline]="hasDeadline"
+                [showDeadLine]="showDeadLine"
+                [hideDeadLineIcon]="hideDeadLineIcon"
+                [selectedDuration]="selectedDuration"
+                [selectedDurationId]="selectedDurationId"
+                [conflictedSalaryLineData]="conflictedSalaryLineData"
+                [addSalaryLineGlobalBtn]="addSalaryLineGlobalBtn"
+                [rejectGlobalBtn]="rejectGlobalBtn"
+                [approveGlobalBtn]="approveGlobalBtn"
+                (setGlobalSearchTerm)="setGlobalSearchTerm($event)"
+                (setTotalRecords)="setTotalRecords($event)"
+                (setLoadingState)="setLoadingState($event)">
+              </lib-worker-accordion-view>
+
+            }
+
+            @if(currentView === SalaryCaptureViewType.WORKER_SALARY) {
+
+              <lib-worker-salary-view
+                [isFilterApplied]="isFilterApplied"
+                [filterData]="filterData"
+                [salaryCodes]="salaryCodes"
+                [areaWorkersWithRegion]="areaWorkersWithRegion"
+                [areaWorkersWithoutRegion]="areaWorkersWithoutRegion"
+                [allRegionalWorkersForAutocomplete]="allRegionalWorkersForAutocomplete"
+                [allServiceWorkersForAutocomplete]="allServiceWorkersForAutocomplete"
+                [salaryCodes]="salaryCodes"
+                [selectedSalaryCodeForDialog]="selectedSalaryCodeForDialog"
+                [organizationUnitId]="organizationUnitId"
+                [selectedStartDateForDialog]="selectedStartDateForDialog"
+                [selectedEndDateForDialog]="selectedEndDateForDialog"
+                [startDate]="startDate"
+                [endDate]="endDate"
+                [hasDeadline]="hasDeadline"
+                [showDeadLine]="showDeadLine"
+                [hideDeadLineIcon]="hideDeadLineIcon"
+                [selectedDuration]="selectedDuration"
+                [selectedDurationId]="selectedDurationId"
+                (setGlobalSearchTerm)="setGlobalSearchTerm($event)"
+                (setTotalRecords)="setTotalRecords($event)"
+                (seeConflictClicked)="onSeeConflictClicked($event)"
+                [addSalaryLineGlobalBtn]="addSalaryLineGlobalBtn"
+                (setLoadingState)="setLoadingState($event)">
+              </lib-worker-salary-view>
+            }
+          }
+
+          @else {
+            <div class="card border-0 vh-140 shadow-md">
+              <div class="empty-state">
+                <div class="illustration bg-white">
+                  <svg class="height-12 width-12">
+                    <use xlink:href="#empty-state"></use>
+                  </svg>
+                </div>
+                <h2 class="bg-white fs-18 p-0 fw-medium color-gray-700 text-uppercase">
+                  {{isFilterApplied ? 'No data found' : 'Apply filters to proceed'}}
+                </h2>
+                <p class="fs-16 color-gray-600" *ngIf="!isFilterApplied">Define one or more filters to populate this view with relevant information.</p>
+              </div>
+            </div>
+          }
+
+      </div>
+    </div>
+
+  </div>
+
+</section>

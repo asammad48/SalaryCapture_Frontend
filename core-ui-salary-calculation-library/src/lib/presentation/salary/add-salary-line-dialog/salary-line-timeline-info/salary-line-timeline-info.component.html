@@ -1,0 +1,67 @@
+<div class="px-20 mb-px-45" [formGroup]="addSalaryLineForm">
+
+  <label class="form-label">Timeline Information <span class="text-danger">*</span></label>
+
+  <div class="d-flex gap-2 mb-10">
+
+    <div class="flex-1">
+      <input
+        class="form-control"
+        value="From"
+        disabled
+      />
+    </div>
+
+    <div class="flex-1">
+      <p-datepicker
+        inputId="calendar-timeonly-start"
+        [hourFormat]="'24'"
+        [timeOnly]="true"
+        placeholder="00:00"
+        formControlName="startTime"
+        id="salary-line-start-time"
+        [stepMinute]="stepMinute" 
+
+      />
+
+      <div class="invalid-feedback d-block" *ngIf="addSalaryLineForm.controls['startTime'].touched &&addSalaryLineForm.controls['startTime'].hasError('required')">
+        <span>Start time is required</span>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="d-flex gap-2 mb-10">
+
+    <div class="flex-1">
+      <input
+        class="form-control"
+        value="To"
+        disabled
+        />
+    </div>
+
+    <div class="flex-1">
+      <p-datepicker
+        inputId="calendar-timeonly-end"
+        [timeOnly]="true"
+        [hourFormat]="'24'"
+        placeholder="00:00"
+        formControlName="endTime"
+        id="salary-line-end-time"
+        [stepMinute]="stepMinute"
+      />
+
+      <div class="invalid-feedback d-block" *ngIf="addSalaryLineForm.controls['endTime'].touched && addSalaryLineForm.controls['endTime'].hasError('required')">
+        <span>End time is required</span>
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="invalid-feedback d-block" *ngIf="showTimelineError">
+    <span>{{ timelineError }}</span>
+  </div>
+
+</div>

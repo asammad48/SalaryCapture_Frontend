@@ -1,0 +1,84 @@
+
+variables:
+  - name: projectName
+    value: 'salary-calculation'
+
+trigger:
+- none
+name: $(date:yyyyMMdd)$(rev:.r)
+resources:
+  repositories:
+  - repository: self
+    type: git
+    ref: main
+
+#Pipeline Stages#
+stages:
+  - stage: Build
+    jobs:
+    - job: BuildJob
+      displayName: BuildJob
+
+      pool:
+        vmImage: ubuntu-latest
+      variables:
+        CI: 'true'
+      steps:
+        - task: NodeTool@0
+          inputs:
+            versionSpec: '19.x'
+          displayName: 'Install Node.js'
+
+        - script: npm install
+          displayName: 'npm install'
+
+        - script: npm install -g env-cmd
+          displayName: 'npm env-cmd'
+
+        - script: npm run build
+          displayName: 'ng build'
+        #   workingDirectory: '$(Build.SourcesDirectory)'
+
+        # - task: CopyFiles@2
+        #   inputs:
+        #     contents: 'dist/salary-calculation/'
+        #     targetFolder: $(Build.ArtifactStagingDirectory)
+
+        - task: ArchiveFiles@2
+          displayName: 'Archive files'
+          inputs:
+            rootFolderOrFile: '$(System.DefaultWorkingDirectory)/dist/salary-calculation/'
+            includeRootFolder: false
+            archiveType: zip
+            archiveFile: $(Build.ArtifactStagingDirectory)/$(projectName).zip
+            replaceExistingArchive: true
+
+        - task: PublishBuildArtifacts@1
+          inputs:
+            PathtoPublish: '$(Build.ArtifactStagingDirectory)/$(projectName).zip'
+            ArtifactName: 'drop'
+            publishLocation: 'Container'
+
+
+  - stage: 'Deploy_Salary_Calculation_Web'
+    displayName: 'Deploy_Salary_Calculation_Web'
+    dependsOn: 'Build'
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    jobs:
+    - deployment: Deploy_Salary_Calculation_Web
+      displayName: 'Deploy_Salary_Calculation_Web'
+      environment: 
+        name: 'eLiga-salary-calculation-Prod'
+        resourceType: VirtualMachine
+        tags: 'eliga, salary-calculation, frontend, prod'
+      variables:
+        websiteName: 'SalaryCalculation-Web'
+      strategy:
+        runOnce:
+          deploy:
+            steps: 
+            - task: IISWebAppDeploymentOnMachineGroup@0
+              inputs:
+                WebSiteName: '$(websiteName)'
+                Package: '$(Pipeline.Workspace)/drop/$(projectName).zip'
+                RemoveAdditionalFilesFlag: true

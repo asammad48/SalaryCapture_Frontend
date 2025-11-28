@@ -1,0 +1,26 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "sourceMap": true,
+    "declaration": false,
+    "moduleResolution": "node",
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "target": "ES2022",
+    "module": "ES2022",
+    "lib": ["ES2022", "dom"],
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@embrace-it/core-ui-salary-calculation-library": [
+        "core-ui-salary-calculation-library/src/index.ts"
+      ],
+      "@embrace-it/salary-calculation-library": [
+        "core-ui-salary-calculation-library/src/index.ts"
+      ],
+      "@embrace-it/core-ui-daily-planning-library": [
+        "core-ui-daily-planning-library/src/index.ts"
+      ]
+    }
+  }
+}

@@ -1,0 +1,23 @@
+.dp-progress-spinner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.8);
+  z-index: 1000;
+  backdrop-filter: blur(2px);
+
+  ::ng-deep .p-progress-spinner {
+    width: 60px;
+    height: 60px;
+  }
+
+  ::ng-deep .p-progress-spinner-circle {
+    stroke: var(--primary-color, #007bff);
+    animation: p-progress-spinner-dash 1.5s ease-in-out infinite;
+  }
+}

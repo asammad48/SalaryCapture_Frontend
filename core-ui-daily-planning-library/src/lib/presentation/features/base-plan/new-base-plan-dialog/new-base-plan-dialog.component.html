@@ -1,0 +1,175 @@
+<dp-progress-loading loaderKey="BasePlan_Add_Edit"></dp-progress-loading>
+<form [formGroup]="basePlanForm">
+    <div class="p-dialog-body my-0 py-20" [ngClass]="isFileUploaded ? 'min-h-29':''">
+        <div>
+            <!-- Name Field -->
+            <div class="mb-3">
+                <label for="name" class="form-label">
+                    Name <span class="text-danger">*</span>
+                </label>
+                <input
+                    id="name"
+                    formControlName="name"
+                    class="form-control"
+                    [class.is-invalid]="nameControl?.invalid && nameControl?.touched"
+                    placeholder="Enter base plan name"
+                />
+                <div class="invalid-feedback" *ngIf="nameControl?.invalid && nameControl?.touched">
+                    <small *ngIf="nameControl?.errors?.['required']">Name is required</small>
+                    <small *ngIf="!nameControl?.errors?.['required'] && nameControl?.errors?.['whitespace']">Name cannot be empty</small>
+                </div>
+            </div>
+
+            <!-- Date Fields -->
+            <div class="d-flex w-100 mb-3">
+                <div class="flex-1 pe-2">
+                    <label for="plan-from-date" class="form-label">
+                        Start Date <span class="text-danger">*</span>
+                    </label>
+                    <p-datepicker
+                        id="plan-from-date"
+                        formControlName="startDate"
+                        appendTo="body"
+                        styleClass="w-100 mb-2"
+                        [class.is-invalid]="startDateControl?.invalid && startDateControl?.touched"
+                        [maxDate]="maxStartDate"
+                        showIcon
+                        iconDisplay="input"
+                        placeholder="dd-mm-yy"
+                        dateFormat="dd-mm-yy"
+                        panelStyleClass="z-index-1"
+                    />
+                    <div class="text-danger" *ngIf="startDateControl?.invalid && startDateControl?.touched">
+                        <small *ngIf="startDateControl?.errors?.['required']">Start date is required</small>
+                    </div>
+                </div>
+
+                <div class="flex-1 ps-2">
+                    <label for="plan-to-date" class="form-label">
+                        End Date <span class="text-danger">*</span>
+                    </label>
+                    <p-datepicker
+                        id="plan-to-date"
+                        formControlName="endDate"
+                        appendTo="body"
+                        styleClass="w-100 mb-2"
+                        [class.is-invalid]="endDateControl?.invalid && endDateControl?.touched"
+                        [minDate]="minEndDate"
+                        showIcon
+                        iconDisplay="input"
+                        placeholder="dd-mm-yy"
+                        dateFormat="dd-mm-yy"
+                        panelStyleClass="z-index-1"
+                    />
+                    <div class="text-danger" *ngIf="endDateControl?.invalid && endDateControl?.touched">
+                        <small *ngIf="endDateControl?.errors?.['required']">End date is required</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Date Range Validation Error -->
+            <div class="text-danger mb-3" *ngIf="isDateRangeInvalid">
+                <small>End date cannot be before start date</small>
+            </div>
+
+            <!-- File Upload -->
+            <div>
+                <label for="masterPlanId" class="form-label d-block mb-2">
+                    Upload File <span class="text-danger" *ngIf="!isEditMode">*</span><span *ngIf="isEditMode">(Optional)</span>
+                </label>
+                <p-fileUpload
+                    name="planZipFile"
+                    (onSelect)="onSelect($event)"
+                    styleClass="p-progressbar-none drag-area upload-files-outside upload-files-top-170 upload-content-h-160 upload-choose-top-10 deadline-uploader"
+                    [multiple]="false"
+                    [auto]="true"
+                    [customUpload]="true"
+                    [maxFileSize]="maxFileSize">
+                    <ng-template #header let-chooseCallback="chooseCallback" class="py-0 flex-column">
+                        <div class="z-index-99 d-flex flex-column align-items-center">
+                            <h5 class="fs-16 fw-semibold mt-2">Drag & Drop your file here or</h5>
+                            <button
+                                type="button"
+                                class="btn btn-text btn-link fs-16 py-0 fileupload-choose"
+                                (click)="choose($event, chooseCallback)"
+                                id="browse-file-btn">
+                                Browse File
+                            </button>
+                            <h5 class="fs-13 fw-regular mt-2">CSV or XLSX - Maximum file size: 5 MB</h5>
+
+                            <a class="d-block fs-16 fw-regular text-decoration-underline color-gray-900 mt-2"
+                                id="download-sample-file-link">
+                                <i class="z-index-1 fa fa-sign-in fa-rotate-90 fs-22 color-gray-600 me-2"></i>
+                                Download sample file
+                            </a>
+                        </div>
+                    </ng-template>
+
+                    <ng-template let-file pTemplate="file">
+                        <div class="custom-file-item">
+                            <div *ngIf="isFileUploaded">
+                                <label for="masterPlanId" class="form-label d-block">File</label>
+                                <div class="border border-gray-400 rounded-px-4 px-12 py-2 d-flex align-items-center justify-content-between height-px-38 gap-2">
+                                    <div class="d-flex align-items-center gap-3 flex-1">
+                                        <i class="color-gray-600 fa fa-file"></i>
+                                        <div class="fs-14 fw-regular line-clamp-1 text-break" [title]="file.name">
+                                            {{ file.name }}
+                                        </div>
+                                    </div>
+                                    <div class="d-flex justify-content-end align-items-center gap-4">
+                                        <ng-container>
+                                            <div class="d-flex gap-2 w-100">
+                                                <p-progressBar
+                                                    [value]="progressBarValue"
+                                                    class="d-block w-100"
+                                                    styleClass="height-px-6 width-15 position-relative mt-2 start-0 bg-gray-400 p-progressbar-label-none d-block">
+                                                </p-progressBar>
+                                                <span class="color-gray-600 fs-12">{{ progressBarValue }}%</span>
+                                            </div>
+                                        </ng-container>
+                                        <a>
+                                            <i
+                                                (click)="cancelFile(file)"
+                                                id="remove-plan-uploaded-file-icon"
+                                                class="color-gray-600 fa fa-times fs-14 hover-danger cursor-pointer">
+                                            </i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </ng-template>
+                </p-fileUpload>
+
+                <!-- File Error Message -->
+                <div class="text-danger mt-2" *ngIf="fileErrorMessage">
+                    <small>{{ fileErrorMessage }}</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="p-dialog-footer border-top-0 px-0">
+        <button
+            type="button"
+            class="btn btn-sm color-gray-600 me-2 btn-tabindex-focus"
+            id="newBasePlanDialogCancelBtn"
+            tabindex="0"
+            (click)="cancel()"
+            pButton
+            pRipple>
+            Cancel
+        </button>
+        <button
+            type="button"
+            class="btn btn-primary btn-sm me-0 btn-tabindex-focus"
+            id="newBasePlanDialogCreateBtn"
+            [disabled]="!isFormValid"
+            (click)="closeModal(true)"
+            pButton
+            pRipple
+            #createBtn>
+            Save
+        </button>
+    </div>
+</form>

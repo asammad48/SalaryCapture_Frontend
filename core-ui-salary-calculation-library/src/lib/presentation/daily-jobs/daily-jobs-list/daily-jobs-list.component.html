@@ -1,0 +1,288 @@
+<div class="d-flex align-items-center gap-2 mb-2 ps-1" *ngIf="isFilterApplied">
+  <label class="fs-14 fw-semibold color-gray-800">Applied Filters:</label>
+
+  <!-- Loop over appliedFilters array -->
+  <ng-container *ngFor="let filter of appliedFilters">
+    <div
+      class="badge py-px-6 color-gray-800 bg-gray-100 d-inline-flex align-items-center justify-content-between gap-10 fs-12">
+      <div class="fw-normal lh-1-3 d-flex gap-1" [title]="filter.label">
+        <span class="text-capitalize">{{ filter.label }}:</span>
+        <span class="d-inline-block max-w-5 text-truncate" [title]="filter.value">
+          {{ filter.value }}
+        </span>
+      </div>
+      <span class="close" (click)="removeFilter(filter.key)" id="remove-{{filter.label}}-filter-btn">
+        <i class="fa-regular fa-circle-xmark fs-13 hover-gray-600 color-gray-700"></i>
+      </span>
+    </div>
+  </ng-container>
+</div>
+
+<div class="card d-flex flex-column shadow-md h-64 border-0">
+  <salary-calculation-portal-progress-loading loaderKey="DailyJobs_GetWorkerDailyJobs"></salary-calculation-portal-progress-loading>
+
+    <p-table
+        #dt
+        stripedRows
+        id="dailyJobsTable"
+        [value]="dailyJobs"
+        [lazy]="true"
+        appendTo="body"
+        dataKey="productionDate"
+        [paginator]="true"
+        [first]="first"
+        [rows]="pageSize"
+        [totalRecords]="totalRecords"
+        showGridlines
+        [showCurrentPageReport]="true"
+        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+        [rowsPerPageOptions]="rowsPerPageOptions"
+        [styleClass]="'thead-sticky p-datatable-gridlines p-datatable-md p-datatable-white' + ' ' + (isFilterApplied ? (dailyJobs.length > pageSize ? 'datawrapper-vh-233' : 'datawrapper-vh-233') 
+        : (dailyJobs.length > pageSize ? 'datawrapper-vh-197' : 'datawrapper-vh-220'))"
+        tableStyleClass="table table-p-3 daily-jobs-table th-top-n1"
+        [paginatorStyleClass]="'position-relative paginator-current-start'"
+        [scrollable]="true"
+        (onPage)="onPageChange($event)">
+
+        <ng-template pTemplate="header">
+            <tr>
+                <th class="position-relative min-w-8">Region
+                    <p-popover #regionFilter styleClass="popover-content-p-0 popover-arrow-none mt-0 min-w-16" id="region-filter-popover">
+                        <div class="p-10">
+                            <div class="input-group-wrapper end">
+                                <input type="text" class="form-control focus-none border-gray-400" id="region-filter-input"
+                                    placeholder="Search..." [(ngModel)]="regionFilterValue" (keyup.enter)="applyFilters()">
+                                <div class="input-group-media icon">
+                                    <svg aria-label="dropdown">
+                                        <use xlink:href="#search"></use>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-center justify-content-end p-10">
+                            <div class="btn-group">
+                                <button class="btn btn-link btn-sm fw-normal py-1" (click)="resetFilter()" id="region-filter-reset-btn">Reset
+                                </button>
+                                <button class="btn btn-primary btn-sm fw-normal py-1 rounded-5"
+                                    (click)="applyFilters()" id="region-filter-apply-btn">Apply
+                                </button>
+                            </div>
+                        </div>
+                    </p-popover>
+                    <div (click)="regionFilter.toggle($event)"
+                        class="color-gray-600 d-inline-block position-absolute top-2 end-4 p-1" id="region-filter-toggle-btn">
+                        <i class="fa-filter fa-solid fs-12"></i>
+                    </div>
+                </th>
+                <th class="position-relative min-w-8">Area
+                    <p-popover #areaFilter styleClass="popover-content-p-0 popover-arrow-none mt-0 min-w-16" id="area-filter-popover">
+                        <div class="p-10">
+                            <div class="input-group-wrapper end">
+                                <input type="text" class="form-control focus-none border-gray-400" id="area-filter-input"
+                                    placeholder="Search..." [(ngModel)]="areaFilterValue" (keyup.enter)="applyFilters()">
+                                <div class="input-group-media icon">
+                                    <svg aria-label="dropdown">
+                                        <use xlink:href="#search"></use>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-center justify-content-end p-10">
+                            <div class="btn-group">
+                                <button class="btn btn-link btn-sm fw-normal py-1" (click)="resetFilter()" id="area-filter-reset-btn">Reset
+                                </button>
+                                <button class="btn btn-primary btn-sm fw-normal py-1 rounded-5"
+                                    (click)="applyFilters()" id="area-filter-apply-btn">Apply
+                                </button>
+                            </div>
+                        </div>
+                    </p-popover>
+                    <div (click)="areaFilter.toggle($event)"
+                        class="color-gray-600 d-inline-block position-absolute top-2 end-4 p-1" id="area-filter-toggle-btn">
+                        <i class="fa-filter fa-solid fs-12"></i>
+                    </div>
+                </th>
+                <th class="position-relative min-w-8">Date
+                    <p-popover #dateFilter [dismissable]="isDismissable" styleClass="popover-content-p-0 popover-arrow-none mt-0 min-w-16" id="date-filter-popover">
+                        <div class="p-10">
+                            <div class="input-group-wrapper end">
+                                <p-datepicker styleClass="w-100"
+                                    (keyup.enter)="applyFilters()"
+                                    [(ngModel)]="dateFilterValue"
+                                    dateFormat="dd/mm/yy"
+                                    [showIcon]="true"
+                                    iconDisplay="input"
+                                    inputId="date-filter-input"
+                                    placeholder="Select date" />
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-center justify-content-end p-10">
+                            <div class="btn-group">
+                                <button class="btn btn-link btn-sm fw-normal py-1" (click)="resetFilter()" id="date-filter-reset-btn">Reset
+                                </button>
+                                <button class="btn btn-primary btn-sm fw-normal py-1 rounded-5"
+                                    (click)="applyFilters()" id="date-filter-apply-btn">Apply
+                                </button>
+                            </div>
+                        </div>
+                    </p-popover>
+                    <div (click)="dateFilter.toggle($event)"
+                        class="color-gray-600 d-inline-block position-absolute top-2 end-4 p-1" id="date-filter-toggle-btn">
+                        <i class="fa-filter fa-solid fs-12"></i>
+                    </div>
+                </th>
+                <th class="position-relative min-w-8">Worker
+                    <p-popover #workerFilter styleClass="popover-content-p-0 popover-arrow-none mt-0 min-w-16" id="worker-filter-popover">
+                        <div class="p-10">
+                            <div class="input-group-wrapper end">
+                                <input type="text" class="form-control focus-none border-gray-400" id="worker-filter-input"
+                                    placeholder="Search..." [(ngModel)]="workerFilterValue" (keyup.enter)="applyFilters()">
+                                <div class="input-group-media icon">
+                                    <svg aria-label="dropdown">
+                                        <use xlink:href="#search"></use>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-center justify-content-end p-10">
+                            <div class="btn-group">
+                                <button class="btn btn-link btn-sm fw-normal py-1" (click)="resetFilter()" id="worker-filter-reset-btn">Reset
+                                </button>
+                                <button class="btn btn-primary btn-sm fw-normal py-1 rounded-5"
+                                    (click)="applyFilters()" id="worker-filter-apply-btn">Apply
+                                </button>
+                            </div>
+                        </div>
+                    </p-popover>
+                    <div (click)="workerFilter.toggle($event)"
+                        class="color-gray-600 d-inline-block position-absolute top-2 end-4 p-1" id="worker-filter-toggle-btn">
+                        <i class="fa-filter fa-solid fs-12"></i>
+                    </div>
+                </th>
+                <th class="position-relative min-w-8">Job
+                    <p-popover #jobFilter styleClass="popover-content-p-0 popover-arrow-none mt-0 min-w-16" id="job-filter-popover">
+                        <div class="p-10">
+                            <div class="input-group-wrapper end">
+                                <input type="text" class="form-control focus-none border-gray-400" id="job-filter-input"
+                                    placeholder="Search..." [(ngModel)]="jobFilterValue" (keyup.enter)="applyFilters()">
+                                <div class="input-group-media icon">
+                                    <svg aria-label="dropdown">
+                                        <use xlink:href="#search"></use>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-center justify-content-end p-10">
+                            <div class="btn-group">
+                                <button class="btn btn-link btn-sm fw-normal py-1" (click)="resetFilter()" id="job-filter-reset-btn">Reset
+                                </button>
+                                <button class="btn btn-primary btn-sm fw-normal py-1 rounded-5"
+                                    (click)="applyFilters()" id="job-filter-apply-btn">Apply
+                                </button>
+                            </div>
+                        </div>
+                    </p-popover>
+                    <div (click)="jobFilter.toggle($event)"
+                        class="color-gray-600 d-inline-block position-absolute top-2 end-4 p-1" id="job-filter-toggle-btn">
+                        <i class="fa-filter fa-solid fs-12"></i>
+                    </div>
+                </th>
+                <th class="position-relative min-w-8">Started At</th>
+                <th class="position-relative min-w-8">Completed At</th>
+                <th class="position-relative min-w-8">Status
+                    <p-popover #statusFilter styleClass="popover-content-p-0 popover-arrow-none mt-0 min-w-14" id="status-filter-popover">
+                        <div class="p-10" [formGroup]="statusFilterForm">
+                            <ul class="list-unstyled mb-0 max-h-10 min-h-6 overflow-y-auto">
+
+                                <!-- All checkbox -->
+                                <li class="py-2">
+                                    <div class="d-flex align-items-center gap-6">
+                                        <p-checkbox
+                                            formControlName="all"
+                                            [binary]="true"
+                                            [indeterminate]="allStatusIndeterminate"
+                                            inputId="status-all"
+                                        />
+                                        <label for="status-all" class="mb-0 fs-14">All</label>
+                                    </div>
+                                </li>
+
+                                @for (opt of statusOptions; track opt.key) {
+                                <li class="py-2">
+                                    <div class="d-flex align-items-center gap-6">
+                                        <p-checkbox
+                                            [formControlName]="opt.key"
+                                            [binary]="true"
+                                            [inputId]="'status-' + opt.key"
+                                        />
+                                        <label [for]="'status-' + opt.key" class="mb-0 fs-14">{{ opt.label }}</label>
+                                    </div>
+                                </li>
+                                }
+                            </ul>
+                        </div>
+
+                        <div class="d-flex align-items-center justify-content-end p-10">
+                            <div class="btn-group">
+                                <button class="btn btn-link btn-sm fw-normal py-1" (click)="resetFilter()" id="status-filter-reset-btn">Reset
+                                </button>
+                                <button class="btn btn-primary btn-sm fw-normal py-1 rounded-5"
+                                    (click)="applyFilters()" id="status-filter-apply-btn">Apply
+                                </button>
+                            </div>
+                        </div>
+                    </p-popover>
+                    <div (click)="statusFilter.toggle($event)"
+                        class="color-gray-600 d-inline-block position-absolute top-2 end-4 p-1" id="status-filter-toggle-btn">
+                        <i class="fa-filter fa-solid fs-12"></i>
+                    </div>
+                </th>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-job>
+            <tr>
+                <td>{{ job.regionName || '-' }}</td>
+                <td>{{ job.areaName || '-' }}</td>
+                <td>{{ job.productionDate || '-' }}</td>
+                <td>{{ job.serviceWorkerName || '' }}
+                    <div class="color-gray-600">{{ job.serviceWorkerUserName || ''}}</div>
+                </td>
+                <td>{{ job.jobNumber || '-' }}</td>
+                
+                <td class="px-8">{{ formatDateToDDMMYYYY(job.startedAt) || '' }}
+                    <div class="color-gray-600">
+                      {{ getHHMMFromTime(job.startedAt) || '' }}
+                    </div>
+                </td>
+
+                <td class="px-8">{{ formatDateToDDMMYYYY(job.completedAt) || '' }}
+                    <div class="color-gray-600">
+                      {{ getHHMMFromTime(job.completedAt) || '' }}
+                    </div>
+                </td>
+            
+                <td>
+                    <span *ngIf="job.status === 'Pending'" class="text-secondary">Pending</span>
+                    <span *ngIf="job.status === 'Completed'" class="text-success">Completed</span>
+                </td>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+            <div class="empty-state grid">
+                <div class="illustration bg-white">
+                    <svg class="height-12 width-12">
+                        <use xlink:href="#empty-state"></use>
+                    </svg>
+                </div>
+                <p class="bg-white fs-18 p-0 fw-medium color-gray-700">No Record Found</p>
+            </div>
+        </ng-template>
+    </p-table>
+</div>

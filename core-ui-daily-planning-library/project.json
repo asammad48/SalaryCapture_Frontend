@@ -1,0 +1,45 @@
+{
+  "name": "core-ui-daily-planning-library",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "core-ui-daily-planning-library/src",
+  "prefix": "lib",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "nswag": {
+      "executor": "nx:run-commands",
+      "outputs": ["{projectRoot}/src/lib/data/api-clients/daily-planning-api.client.ts"],
+      "options": {
+        "command": "nswag run core-ui-daily-planning-library/nswag.json",
+        "cwd": "{workspaceRoot}"
+      },
+      "cache": true
+    },
+    "build": {
+  "executor": "@nx/angular:package",
+  "outputs": ["{workspaceRoot}/dist/{projectRoot}"],
+  "options": {
+    "project": "core-ui-daily-planning-library/ng-package.json"
+  },
+  "configurations": {
+    "production": {
+      "tsConfig": "core-ui-daily-planning-library/tsconfig.lib.json",
+      "buildOptimizer": false,
+      "optimization": false,
+      "extractLicenses": false,
+      "namedChunks": true
+    }
+  }
+},
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "core-ui-daily-planning-library/jest.config.ts"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}

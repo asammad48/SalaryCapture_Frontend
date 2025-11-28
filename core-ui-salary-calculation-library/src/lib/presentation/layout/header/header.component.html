@@ -1,0 +1,47 @@
+<header role="banner" class="header fixed">
+    <div class="d-flex justify-content-end align-items-center w-100 px-2 px-md-4">
+        <div class="d-flex gap-15 ps-14">
+            <!-- <button type="button" class="btn btn-sm btn-soft-info btn-tabindex-focus" (click)="syncWorkers()">
+          <i class="fa-solid fa-sync me-2"></i>
+          Sync Workers
+      </button> -->
+            <!-- <button type="button" class="btn btn-sm btn-soft-info btn-tabindex-focus" (click)="syncCarriers()">
+            <i class="fa-solid fa-sync me-2"></i>
+            Sync Carriers
+        </button> -->
+            <!-- <button type="button" class="btn btn-sm btn-soft-info btn-tabindex-focus" (click)="syncVehicles()">
+          <i class="fa-solid fa-sync me-2"></i>
+          Sync Vehicles
+        </button> -->
+        </div>
+        <div class="profile ms-3">
+            <a (click)="profilePopover.toggle($event)" class="dropdown-icon icon-btn cursor-pointer" id="dropdownMenuIcon" aria-expanded="false" tabindex="-1" id="header-user-profile">
+                <img src="https://saas-ui-assets-test.cubivue.com/assets/img/placeholder.svg" alt="User"
+                            class="width-px-30 height-px-30 rounded-circle object-fit-cover">
+            </a>
+            <p-popover #profilePopover styleClass="popover-content-p-0 popover-arrow-none mt-0 min-w-12 z-index-1">
+                <div class="fw-semibold px-3 py-12 border-bottom border-gray-300">
+                    <div class="d-flex align-items-start gap-10">
+                        <img src="https://saas-ui-assets-test.cubivue.com/assets/img/placeholder.svg" alt="User"
+                            class="width-px-30 height-px-30 rounded-circle object-fit-cover">
+                       <div>
+                        <h1 class="fs-16 mb-px-6">
+                            {{fullName}}
+                        </h1>
+                        <h2 class="mb-0 fw-normal color-gray-500 fs-14">{{role}}</h2>
+                       </div>
+                    </div>
+                </div>
+                <ul class="py-8 list-unstyled">
+                    <li>
+                        <button (click)="logout()" type="button"
+                            class="dropdown-item btn btn-primary btn-sm me-3 rounded-0" id="header-logout-btn">
+                            <i class="fa-solid fa-right-from-bracket color-gray-600 me-2"></i>
+                            Logout
+                        </button>
+                    </li>
+                </ul>
+           </p-popover>
+        </div>
+    </div>
+</header>

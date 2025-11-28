@@ -1,0 +1,279 @@
+<dp-progress-loading loaderKey="LoadingJobPackages"></dp-progress-loading>
+@if(!isLoadingJobPackages && jobPackagesData.length > 0){
+  <div class="overflow-auto" [ngClass]="filteredJobPackages.length > pageSize ? 'vh-243':'vh-170'" cdkScrollable>
+      <p-accordion [value]="ActivePlanAccordion"
+        collapseIcon="fa fa-chevron-down fs-14 color-gray-700 min-w-px-16"
+        expandIcon="fa fa-chevron-right fs-14 color-gray-700 min-w-px-16" (onOpen)="onAccordionOpenEvent($event)">
+        @for(jobPackage of paginatedJobPackages; track jobPackage.id; let i = $index){
+        <p-accordion-panel class="border-0 mb-2 bg-white rounded-px-6 job-package-panel position-relative" [value]="i"
+          #jobPackagesList="cdkDropList" cdkDropList [id]="jobPackage.id || ''" [cdkDropListData]="workerJobPackageDetails"
+          (cdkDropListDropped)="dropJobPackage($event)">
+          <p-accordion-header
+            class="w-100 gap-13 justify-content-end align-items-center px-3 py-14 header-bottom-rounded-0 rounded-px-6 flex-row-reverse bg-white border-start-6" [ngClass]="getPackageStatusClass(jobPackage)">
+            <div class="d-flex justify-content-between align-items-center w-100">
+              <div>
+                <h6 class="fw-semibold m-0 fs-14 color-gray-900">{{jobPackage.heading}}</h6>
+                <div class="fs-14 color-gray-600 fw-normal max-w-20 text-truncate" [pTooltip]="jobPackage.description"
+                  tooltipStyleClass="p-tooltip-fs-11 customized-tooltip" tooltipPosition="top">{{jobPackage.description}}
+                </div>
+              </div>
+              <div class="d-flex align-items-center gap-2">
+                @for(tag of getVisibleTags(jobPackage); track tag) {
+                <div
+                  class="badge bg-gray-300 color-gray-800 fs-12 py-px-6 fw-normal px-2 height-px-28 d-flex align-items-center"
+                  [pTooltip]="tag" tooltipStyleClass="p-tooltip-fs-11 customized-tooltip" tooltipPosition="top">
+                  <span class="text-truncate lh-1-2" [ngClass]="getTagWidthClass(tag)">{{ tag }}</span>
+                </div>
+                }
+
+                @if(getRemainingTags(jobPackage).length > 0) {
+                <div
+                  class="badge bg-gray-300 color-gray-800 fs-12 py-px-6 fw-normal px-2 height-px-28 d-flex align-items-center cursor-pointer"
+                  [pTooltip]="getRemainingTooltipText(jobPackage)" tooltipStyleClass="p-tooltip-fs-11 customized-tooltip"
+                  tooltipPosition="top">
+                  +{{ getRemainingTags(jobPackage).length }} more
+                </div>
+                }
+
+                <span (click)="stopEvent($event)" *ngIf="jobPackage.jobCount !== null && jobPackage.jobCount !== undefined"
+                  [ngClass]="(jobPackage.jobCount || 0) < 1 ? 'badge-soft-warning' : 'badge-soft-success'"
+                  class="badge fw-normal p-2 d-flex align-items-center px-2 py-6 fs-13">
+                  <i [ngClass]="(jobPackage.jobCount || 0) < 1 ? 'bg-warning' : 'bg-success'"
+                    class="fst-normal width-px-16 height-px-16 fs-10 rounded-circle d-flex justify-content-center align-items-center text-white me-2">
+                    {{ jobPackage.jobCount || 0 }}
+                  </i>
+                  Jobs
+                </span>
+
+                <div class="d-flex align-items-center">
+                  <p-menu #salaryMenu [model]="jobPackageMenuItems" [popup]="true" appendTo="body" class="capture-acc-menu"
+                    styleClass="menu-content-p-0 menu-link-py-px-11">
+                  </p-menu>
+
+                  <button type="button" id="package-acc-menu-{{i}}" class="py-0 px-10 btn"
+                    (click)="onAccordionMenuClick($event,salaryMenu ,jobPackage)">
+                    <i class="fa fa-ellipsis-v m-0 text-secondary fs-16"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </p-accordion-header>
+          <p-accordion-content class="rounded-bottom-end-6 rounded-bottom-start-6 accordion-content-p-0">
+            <ng-container *ngIf="getPackageDetails(jobPackage.id!) as packageDetails">
+              <div class="border-top border-gray-300 position-relative">
+                <dp-progress-loading loaderKey="ModifyingJobsInPackage"></dp-progress-loading>
+                <div class="w-100 d-flex gap-2">
+                  <div class="flex-1 height-32 overflow-auto pe-2 ps-3 py-10" cdkScrollable>
+                    <div class="rounded-px-6 border border-gray-300">
+                      <div
+                        class="d-flex justify-content-between align-items-center px-18 py-px-14 position-relative border-bottom border-gray-300">
+                        <div class="lh-1">
+                          <h6 class="mb-0 fw-semibold fs-14 color-gray-900 max-w-20 text-truncate"
+                            [pTooltip]="packageDetails.worker ? packageDetails.worker.fullName + ' (' + packageDetails.worker.userName + ')' : 'Unassigned worker'"
+                            tooltipStyleClass="p-tooltip-fs-11 customized-tooltip" 
+                            tooltipPosition="top">
+                            {{ packageDetails.worker ? packageDetails.worker.fullName + ' (' + packageDetails.worker.userName + ')' : 'Unassigned' }}
+                          </h6>
+                          <span class="fs-13">{{packageDetails.defaultJobs?.length || 0}} job(s)</span>
+                        </div>
+                        <div
+                          *ngIf="packageDetails.worker != null && packageDetails.worker != undefined && packageDetails.vehicle != null && packageDetails.vehicle != undefined"
+                          class="width-px-30 height-px-30 d-flex justify-content-center align-items-center rounded-circle bg-secondary"
+                          [pTooltip]="'Assigned Vehicle - ' + (packageDetails.vehicle?.typeName || 'Walk')"
+                          tooltipStyleClass="p-tooltip-fs-11 customized-tooltip" tooltipPosition="top">
+                          <i class="fas m-0 text-center fs-10 text-white"
+                            [ngClass]="getIconForVehicleType(packageDetails.vehicle?.typeName || 'Walk')"></i>
+                        </div>
+                      </div>
+
+                      <div class="min-h-12 max-h-17 overflow-auto" cdkScrollable>
+                        <div class="py-3 px-2">
+                          <div class="job-package-timeline">
+                            <div class="d-flex gap-4 align-items-center pb-10 px-10">
+                              <div
+                                class="d-flex align-items-center justify-content-center width-px-26 height-px-26 rounded-circle bg-gray-300 border border-gray-400 z-index-99">
+                                <i class="fa fa-home fs-10 m-0 color-gray-700"></i>
+                              </div>
+
+                              <div class="lh-sm">
+                                <h6 class="fw-semibold m-0 fs-12 color-gray-900">
+                                  {{packageDetails.startTerminal?.name || 'Start Location'}}
+                                </h6>
+                                <span class="fs-11 color-gray-600 fw-normal">Start Location</span>
+                              </div>
+                            </div>
+
+                            <div #assignedJobsList="cdkDropList" cdkDropList [id]="'assigned-' + jobPackage.id" [cdkDropListData]="packageDetails.defaultJobs || []"
+                              (cdkDropListDropped)="dropAssignedJobs($event)" [cdkDropListAutoScrollDisabled]="false"
+                              [cdkDropListAutoScrollStep]="10" [cdkDropListDisabled]="!isActionAllowed()">
+                              @for(job of packageDetails.defaultJobs; track job.id; let i = $index){
+                              <div cdkDrag [cdkDragData]="job" class="px-10 py-10 rounded-px-6 cursor-move" (cdkDragStarted)="assignJobdragStarted(packageDetails.defaultJobs)" (cdkDragEnded)="assignJobdragEnded()">
+                                <div class="d-flex gap-23 align-items-center">
+                                  <div class="d-flex align-items-center justify-content-center width-px-26 height-px-26 rounded-circle bg-gray-300
+                                          border border-gray-400 color-gray-700 z-index-99">
+                                    <span class="fs-11 lh-1">{{i+1}}</span>
+                                  </div>
+
+                                  <div class="lh-sm">
+                                    <h6 class="fw-semibold m-0 fs-12 color-gray-900">{{job.jobName}}</h6>
+                                    <span class="fs-11 color-gray-600 fw-normal">{{job.totalLocations || 0}} Locations</span>
+                                  </div>
+                                </div>
+                                <div
+                                  class="custom-placeholder min-h-px-58 bg-warning-100 border-warning-400 my-2 rounded-px-6 z-index-99 position-relative"
+                                  *cdkDragPlaceholder>
+                                </div>
+                              </div>
+                              }
+                              @if(!packageDetails.defaultJobs || packageDetails.defaultJobs.length === 0 || isDraggingAssignLastItem){
+                              <div
+                                class="d-flex justify-content-between pe-10 ps-10 py-10 rounded-px-6 border-gray-400 border  position-relative bg-white">
+                                <div class="d-flex gap-4 align-items-center w-100">
+                                  <div class="d-flex align-items-center justify-content-center min-w-px-26 height-px-26 rounded-circle bg-gray-300
+                                          border border-gray-400 color-gray-700 z-index-99">
+                                    <span class="fs-11 lh-1"></span>
+                                  </div>
+                                  <div class="flex-1">
+                                    <div class="bg-gray-200 w-60 height-px-16"></div>
+                                  </div>
+                                </div>
+                              </div>
+                              }
+                            </div>
+
+                            <div class="d-flex gap-4 align-items-center pt-10 px-10">
+                              <div
+                                class="d-flex align-items-center justify-content-center width-px-26 height-px-26 rounded-circle bg-gray-300 border border-gray-400 z-index-99">
+                                <i class="fa fa-home fs-10 m-0 color-gray-700"></i>
+                              </div>
+
+                              <div class="lh-sm">
+                                <h6 class="fw-semibold m-0 fs-12 color-gray-900">{{packageDetails.endTerminal?.name || 'End Location'}}
+                                </h6>
+                                <span class="fs-11 color-gray-600 fw-normal">End Location</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Separator - Only show when otherJobs exist -->
+                    <div class="height-px-36 d-flex flex-column align-items-center justify-content-center">
+                      <div class="bg-striped height-px-7 w-100 rounded-4"></div>
+                    </div>
+
+
+                    <!-- Other Jobs Section - Single drop list for all other jobs -->
+                    <div #manualJobsList="cdkDropList" cdkDropList [id]="'manual-' + jobPackage.id" [cdkDropListData]="packageDetails.otherJobs || emptyJobsList"
+                      (cdkDropListDropped)="dropManualJobs($event)" [cdkDropListAutoScrollDisabled]="false"
+                      [cdkDropListAutoScrollStep]="10" class="min-h-px-68" [cdkDropListDisabled]="!isActionAllowed()">
+
+                      @if(packageDetails.otherJobs && packageDetails.otherJobs.length > 0){
+                        @for(otherJobPackage of packageDetails.otherJobs; track otherJobPackage.id; let pkgIndex = $index; let last = $last){
+                        <div
+                          class="d-flex justify-content-between pe-10 ps-18 py-10 rounded-px-6 border-gray-400 border cursor-move"
+                          [ngClass]="{'mb-2': !last}" cdkDrag [cdkDragData]="otherJobPackage">
+                          <div
+                            class="custom-placeholder min-h-px-58 bg-warning-100 border-warning-400 my-2 rounded-px-6 z-index-99 position-relative"
+                            *cdkDragPlaceholder>
+                          </div>
+                          <div class="d-flex gap-4 align-items-center">
+                            <div class="d-flex align-items-center justify-content-center width-px-26 height-px-26 rounded-circle bg-gray-300
+                                            border border-gray-400 color-gray-700 z-index-99">
+                              <span class="fs-11 lh-1">{{ (packageDetails.defaultJobs?.length || 0) + pkgIndex + 1 }}</span>
+                            </div>
+                            <div class="lh-sm">
+                              <h6 class="fw-semibold m-0 fs-12 color-gray-900">{{otherJobPackage.defaultJobs?.[0]?.jobName}}</h6>
+                              <span class="fs-11 color-gray-600 fw-normal">{{otherJobPackage.defaultJobs?.[0]?.totalLocations || 0}} Locations</span>
+                            </div>
+                          </div>
+
+                        <div>
+                          <div class="position-relative">
+                            <p-select
+                            
+                            [options]="vehicles" optionLabel="typeName" [filter]="true"
+                              [ngModel]="otherJobPackage.vehicle || getSelectedVehicle(pkgIndex)"
+                              (onChange)="onVehicleChange($event, pkgIndex)" panelStyleClass="width-13 translate-x-n170"
+                              id="select-vehicle-base-plan" appendTo="body"
+                              class="circle-select circle-select-primary circle-select-size-30" [disabled]="!isActionAllowed()">
+                              <ng-template #selectedItem let-selectedOption>
+                                <div class="d-flex align-items-center gap-2" *ngIf="selectedOption">
+                                  <i class="fas m-0 width-px-19 text-center text-white fs-10"
+                                    [ngClass]="getIconForVehicleType(selectedOption.typeName)"></i>
+                                </div>
+                              </ng-template>
+                              <ng-template pTemplate="item" let-vehicle>
+                                <div class="d-flex align-items-center gap-2">
+                                  <i class="fas m-0 width-px-19 text-center"
+                                    [ngClass]="getIconForVehicleType(vehicle.typeName)"></i>
+                                  <div class="max-w-7 text-truncate fs-14">{{ vehicle.typeName }}</div>
+                                </div>
+                              </ng-template>
+                            </p-select>
+                          </div>
+                        </div>
+                      </div>
+                      }
+                      } @else {
+                      <!-- Empty drop zone placeholder -->
+                      <div
+                        class="d-flex justify-content-between pe-10 ps-18 py-10 rounded-px-6 border-gray-400 border border-dashed">
+                        <div class="d-flex gap-4 align-items-center w-100">
+                          <div class="d-flex align-items-center justify-content-center min-w-px-26 height-px-26 rounded-circle bg-gray-300
+                                            border border-gray-400 color-gray-700 z-index-99">
+                            <span class="fs-11 lh-1"></span>
+                          </div>
+                          <div class="flex-1">
+                            <div class="bg-gray-200 w-60 height-px-16"></div>
+                          </div>
+                        </div>
+                      </div>
+                      }
+                    </div>
+
+                  </div>
+                  <div class="flex-1 height-32">
+                    <app-job-package-map 
+                      [packageDetails]="packageDetails"
+                      [height]="'100%'"
+                      [mapId]="'map-' + jobPackage.id">
+                    </app-job-package-map>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+          </p-accordion-content>
+        </p-accordion-panel>
+        }
+      </p-accordion>
+  </div>
+
+  <p-paginator
+          *ngIf="filteredJobPackages.length > pageSize"
+          (onPageChange)="onPageChange($event)"
+          [first]="first"
+          [rows]="pageSize"
+          [totalRecords]="filteredJobPackages.length"
+          [showCurrentPageReport]="true"
+          [showJumpToPageDropdown]="false"
+          [rowsPerPageOptions]="[20, 50, 100]"
+          currentPageReportTemplate="Showing {first} to {last} out of {totalRecords}" styleClass="position-relative paginator-current-start py-3" class="paginator-bg-white"/>
+}
+
+
+@if (!isLoadingJobPackages && jobPackagesData.length === 0) {
+  <div class="card border-0 shadow-md vh-170">
+    <div class="empty-state">
+      <div class="illustration bg-white">
+        <svg class="height-12 width-12">
+          <use xlink:href="#empty-state"></use>
+        </svg>
+      </div>
+      <p class="bg-white fs-18 p-0 fw-medium color-gray-700 text-uppercase">
+        No data found
+      </p>
+    </div>
+  </div>
+}

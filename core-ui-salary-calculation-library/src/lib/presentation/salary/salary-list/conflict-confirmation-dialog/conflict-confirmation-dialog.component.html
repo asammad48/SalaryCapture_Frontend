@@ -1,0 +1,65 @@
+<salary-calculation-portal-progress-loading loaderKey="SalaryCapture_UpdateSalaryLine"></salary-calculation-portal-progress-loading>
+
+<div class="mb-3" *ngIf="showConflictError || showConflictWarning">
+    <lib-warning-banner
+        severity="warning"
+        [show]="showConflictWarning"
+        title="Conflict Detected"
+        message="{{ conflictWarningMessage }}">
+    </lib-warning-banner>
+      <lib-warning-banner
+        severity="error"
+        [show]="showConflictError"
+        title="Conflict Detected"
+        message="{{ conflictErrorMessage }}">
+    </lib-warning-banner>
+</div>
+
+<div class="p-dialog-body">
+
+    <ng-container>
+
+        <p class="fs-15 color-gray-900 mb-20">Start and end time will be updated for the selected salary line on {{ data.productionDate }}.</p>
+    
+        <div class="mb-20">
+
+            <label class="fs-15 mb-0 color-gray-900 fw-regular">Worker:</label>
+            
+            <h1 class="fs-15 fw-semibold color-gray-900 mb-0">{{ data.workerFullName }}</h1>
+
+            <div class="mt-20 d-flex flex-wrap row-gap-0">
+                <label class="fs-15 fw-semibold color-gray-900 text-capitalize">Previous →</label>
+                <div class="ms-2">
+                    <div class="fs-15 fw-regular color-gray-900">Start: {{ data.previousStartTime }}, End: {{ data.previousEndTime }}</div>
+                </div>
+            </div>
+
+            <div class="mt-10 d-flex flex-wrap row-gap-0">
+                <label class="fs-15 fw-semibold color-gray-900 text-capitalize">New →</label>
+                <div class="ms-2">
+                    <div class="fs-15 fw-regular color-gray-900">Start: {{ data.newStartTime }}, End: {{ data.newEndTime }}</div>
+                </div>
+            </div>
+
+        </div>
+
+    </ng-container>
+    
+</div>
+
+<div class="p-dialog-footer border-top-0 px-0">
+
+    <button type="button" class="btn btn-sm color-gray-600 me-2" id="confirmationModalCancelBtn" tabindex="0" pButton pRipple (click)="close({revert: true, openUpdateSalaryLineDialog: false})">
+        Cancel
+    </button>
+
+    <button type="submit" 
+        #confirmBtn
+        class="btn btn-primary btn-sm me-0" 
+        id="confirmationModalConfirmBtn" 
+        (click)="confirm()" 
+        pButton pRipple>
+        {{ showConflictError ? 'Update' : 'Confirm' }}
+    </button>
+
+</div>

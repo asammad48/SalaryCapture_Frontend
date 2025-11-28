@@ -1,0 +1,6 @@
+<!-- <div class="p-spinner">
+  <p-progressSpinner></p-progressSpinner>
+</div> -->
+<div class="p-spinner" *ngIf="isLoading$ | async">
+  <p-progressSpinner></p-progressSpinner>
+</div>

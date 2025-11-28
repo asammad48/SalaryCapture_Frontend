@@ -1,0 +1,135 @@
+<div class="card border-gray-200 max-w-18 transition-ease-in-1s rounded-6"
+    [ngClass]=" filterPanelCollapsed ? 'width-4' : 'min-w-18'">
+    <div class="card-header bg-white border-bottom-2 border-gray-300 d-flex align-items-center height-px-70 justify-content-between"
+        [ngClass]=" filterPanelCollapsed ? 'justify-content-center' : 'ps-3 justify-content-between'">
+        <div [ngClass]=" filterPanelCollapsed ? 'd-none' : 'd-block'">
+            <h6 class="fw-bold m-0">Filters</h6>
+        </div>
+        <span [title]="filterPanelCollapsed ? 'Open Panel':'Close Panel'" id="capture-filter-toggler"
+            class="cursor-pointer focus-visible rounded-2" (click)="filterPanelToggler()"
+            (keydown.enter)="filterPanelToggler()" tabindex="0" #filterToggler>
+            <svg class="width-px-24 height-px-24 fill-600 hover-fill-gray-700">
+                <use [attr.xlink:href]="filterPanelCollapsed ? '#left-panel-open' : '#left-panel-close'">
+                </use>
+            </svg>
+        </span>
+    </div>
+    <div class="card-body overflow-auto px-3 py-3" [ngClass]=" filterPanelCollapsed ? 'vh-212' : 'vh-281'">
+        <span class="fa-rotate-270 mt-40 fw-bold fs-16 text-nowrap"
+            [ngClass]=" filterPanelCollapsed ? 'd-block' : 'd-none'">FILTERS</span>
+
+        <div [formGroup]="UsersFilters" class="" [ngClass]=" filterPanelCollapsed ? 'd-none' : 'd-block'">
+            <div class="mb-3 d-flex flex-column">
+                <label class="form-label">Region</label>
+                <p-select formControlName="region" [loading]="isLoadingRegions" [options]="regions"
+                    optionLabel="displayName" [filter]="true" #regionDropdown placeholder="Select region" class="w-100"
+                    panelClass="width-15" inputClass="w-100" [ngClass]="[
+                        !accessService.hasPermission(Permissions.SALARY_CAPTURE_SELECT_AREA_FILTER) ? 'color-gray-500 pe-none' : '',
+                        'bg-select-header-gray-200'
+                       ]" (onChange)="onRegionChange($event)" (onShow)="unfocusDropdownItems()"
+                    id="capture-region-select">
+                    <ng-template pTemplate="item" let-area>
+                        <div class="width-11" title="{{ area.displayName }}">
+                            <div class="text-truncate">
+                                {{ area.displayName }}
+                            </div>
+                        </div>
+                    </ng-template>
+                </p-select>
+
+            </div>
+
+            <div class="mb-3 d-flex flex-column">
+                <label class="form-label">Area</label>
+                <p-select formControlName="area" [options]="subAreasOptions" optionLabel="displayName" [filter]="true"
+                    [loading]="isLoadingRegions" #areaDropdown placeholder="Select area" class="w-100"
+                    panelClass="width-15" inputClass="w-100" appendTo="body" (onShow)="unfocusDropdownItems()"
+                    [ngClass]="[
+                        !accessService.hasPermission(Permissions.SALARY_CAPTURE_SELECT_REGION_FILTER) ? 'color-gray-500 pe-none' : '',
+                        'bg-select-header-gray-200'
+                       ]" (onChange)="onSubAreaChange($event)" id="capture-area-select">
+                    <ng-template pTemplate="item" let-area>
+                        <div class="width-11" title="{{ area.displayName }}">
+                            <div class="text-truncate">
+                                {{ area.displayName }}
+                            </div>
+                        </div>
+                    </ng-template>
+                </p-select>
+
+            </div>
+
+            <div class="mb-3 d-flex flex-column" *ngIf="!isCustomDurationSelected()">
+                <label class="form-label">Duration</label>
+                <p-select appendTo="body" formControlName="duration" [loading]="isLoadingDurations"
+                    [options]="salaryLineDurations" optionLabel="name" [filter]="true" placeholder="Select duration"
+                    class="w-100 text-capitalize placeholder-text-default" inputClass="w-100 text-capitalize"
+                    panelClass="width-15 text-capitalize" #durationSelect [ngClass]="[
+                        !accessService.hasPermission(Permissions.SALARY_CAPTURE_SELECT_DURATION_FILTER) ? 'color-gray-500 pe-none' : '',
+                        'bg-select-header-gray-200'
+                       ]" (onChange)="onDurationChange($event)" (onShow)="unfocusDropdownItems()"
+                    id="capture-duration-select">
+                </p-select>
+
+            </div>
+            <ng-container *ngIf="customDuration">
+                <label class="form-label">Duration</label>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between gap-2">
+
+                        <div class="flex-1">
+                            <p-datepicker id="custom-duration-from" formControlName="fromDate" [showIcon]="true"
+                                [iconDisplay]="'input'" inputStyleClass="pe-28 fs-15" appendTo="body" styleClass="w-100"
+                                [panelStyleClass]="isSmallScreen ? 'datepicker-panel-min-h-20 z-index-1' : 'z-index-1'"
+                                placeholder="From" dateFormat="dd-mm-yy" (onSelect)="onDateChange()"
+                                (onShow)="onCalendarShow()" (onHide)="onCalendarHide()" />
+                        </div>
+
+                        <div class="flex-1">
+                            <p-datepicker id="custom-duration-to" formControlName="toDate" [showIcon]="true"
+                                [iconDisplay]="'input'" inputStyleClass="pe-28 fs-15" appendTo="body" styleClass="w-100"
+                                [panelStyleClass]="isSmallScreen ? 'datepicker-panel-min-h-20 z-index-1' : 'z-index-1'"
+                                placeholder="To" dateFormat="dd-mm-yy"
+                                [minDate]="this.UsersFilters.controls['fromDate'].value || null"
+                                (onShow)="onCalendarShow()" (onHide)="onCalendarHide()" />
+                        </div>
+
+                    </div>
+                </div>
+            </ng-container>
+            <div class="mb-3 d-flex flex-column">
+                <label class="form-label">Salary Line(s)</label>
+                <p-multiselect formControlName="salaryLines" [loading]="isSalaryCodesLoading" [options]="salaryCodes"
+                    showClear="true" optionLabel="salaryCode" [filter]="true" appendTo="body" [maxSelectedLabels]="1"
+                    placeholder="Select salary line(s)" class="w-100" inputClass="w-100" panelStyleClass="width-15"
+                    [ngClass]="[
+                !accessService.hasPermission(Permissions.SALARY_CAPTURE_SELECT_SALARYLINE_FILTER) ? 'color-gray-500 pe-none' : '',
+                'bg-select-header-gray-200'
+                ]" (onChange)="onSalaryCodeChange($event)" (onClear)="onSalaryCodeClear($event)"
+                    (onPanelShow)="handlefocusMultiItems()" id="capture-salaryline-select">
+                    <ng-template let-option pTemplate="item">
+                        <div class="text-truncate" [title]="option.salaryCode">
+                            {{option.salaryCode}}
+                        </div>
+                    </ng-template>
+                </p-multiselect>
+            </div>
+
+            <div class="mb-3 d-flex flex-column">
+                <label class="form-label">Status</label>
+                <p-multiselect formControlName="salaryStatus" [options]="statusesOptions" showClear="true"
+                    optionLabel="name" optionValue="id" appendTo="body" [maxSelectedLabels]="2"
+                    placeholder="Select status" class="w-100" inputClass="w-100" panelStyleClass="width-15"
+                    id="capture-status-select" (onPanelShow)="handlefocusMultiItems()">
+                </p-multiselect>
+            </div>
+        </div>
+    </div>
+    <div class="card-footer bg-white border-gray-300 p-3" [ngClass]=" filterPanelCollapsed ? 'd-none' : 'd-block'">
+        <button type="button" class="btn btn-sm btn-primary w-100" pButton pRipple
+            [ngClass]="filterPanelCollapsed ? 'd-none' : 'd-block'" [disabled]="isApplyFiltersButtonDisabled()"
+            (click)="applyFilters(true)" id="capture-applyfilter-btn">
+            Apply Filters
+        </button>
+    </div>
+</div>

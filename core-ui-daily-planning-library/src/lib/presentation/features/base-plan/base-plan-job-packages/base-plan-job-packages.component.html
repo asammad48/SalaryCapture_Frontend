@@ -1,0 +1,43 @@
+<div class="d-flex gap-3 mt-3">
+   <app-filters-sidebar [planningMode]="PlanningMode.BasePlan" (filtersApplied)="onFiltersApplied($event)"></app-filters-sidebar>
+   <div class="flex-auto position-relative">
+      <div class="vh-92 overflow-auto" cdkScrollable>
+         <app-job-packages-header 
+            [planningMode]="PlanningMode.BasePlan"
+            [totalRecords]="jobPackages.length"
+            [filteredRecords]="filteredRecords" 
+            (sortToggled)="onSortToggled($event)" 
+            (confirmedCreate)="newJobPackage($event)"
+            (searchChanged)="onSearchInputChange($event)"
+            >
+         </app-job-packages-header>
+         <app-job-package-accordion
+            [planningMode]="PlanningMode.BasePlan"
+            [isLoadingJobPackages]="isLoadingJobPackages"
+            (setFilteredRecords)="setFilteredRecords($event)"
+            [jobPackagesData]="jobPackages"
+            [vehicles]="vehicles"
+            [packageDetailsMap]="packageDetailsMap"
+            [planId]="planId"
+            [currentDayOfWeek]="lastFilters && lastFilters.day !== null && lastFilters.day !== undefined ? dayOfWeekToString(lastFilters.day) : undefined"
+            [currentAreaId]="lastFilters?.area || undefined"
+            (editJobPackage)="onEditJobPackage($event)"
+            (assignVehicle)="onAssignVehicle($event)"
+            (assignWorker)="onAssignWorker($event)"
+            (unAssignWorker)="onUnassignWorker($event)"
+            (accordionOpened)="loadPackageDetails($event)"
+            (jobModified)="onJobModified($event)"
+            (deleteJobPackageEvent)="deleteJobPackage($event)">
+         </app-job-package-accordion>
+      </div>
+   </div>
+   <app-resources-sidebar
+      [planningMode]="PlanningMode.BasePlan"
+      [unassignedJobs]="unassignedJobs"
+      [serviceWorkers]="serviceWorkers"
+      [planId]="planId"
+      [currentDayOfWeek]="lastFilters && lastFilters.day !== null && lastFilters.day !== undefined ? dayOfWeekToString(lastFilters.day) : undefined"
+      [currentAreaId]="lastFilters?.area || undefined"
+      (jobModified)="onJobModified($event)">
+   </app-resources-sidebar>
+</div>

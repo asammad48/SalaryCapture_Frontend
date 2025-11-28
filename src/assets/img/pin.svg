@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="18.223" height="27.113" viewBox="0 0 18.223 27.113">
+  <g id="pin" transform="translate(0.5 0.5)">
+    <ellipse id="Ellipse_708" data-name="Ellipse 708" cx="6" cy="2.5" rx="6" ry="2.5" transform="translate(2.612 21.613)" fill="rgba(140,155,165,0.75)" opacity="0.5"/>
+    <path id="Icon_ionic-md-pin" data-name="Icon ionic-md-pin" d="M15.362,2.25A8.552,8.552,0,0,0,6.75,10.689c0,6.33,8.612,15.673,8.612,15.673s8.612-9.344,8.612-15.673A8.552,8.552,0,0,0,15.362,2.25Z" transform="translate(-6.75 -2.25)" fill="#f56" stroke="#ce4856" stroke-width="1"/>
+    <g id="Ellipse_709" data-name="Ellipse 709" transform="translate(4 4)" fill="#fff" stroke="#fff" stroke-width="1">
+      <circle cx="4.5" cy="4.5" r="4.5" stroke="none"/>
+      <circle cx="4.5" cy="4.5" r="4" fill="none"/>
+    </g>
+  </g>
+</svg>

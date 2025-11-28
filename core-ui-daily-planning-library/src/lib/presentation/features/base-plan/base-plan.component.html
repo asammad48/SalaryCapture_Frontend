@@ -1,0 +1,11 @@
+<nav aria-label="breadcrumb" class="d-flex align-items-center justify-content-between mt-3 height-2">
+    <h1 class="fs-16 m-0 fw-medium color-gray-900">{{items.label}}</h1>
+    <div>
+         <button type="button" class="btn btn-primary btn-sm" (click)="newBasePlan()">New Base Plan</button>
+    </div>
+</nav>
+
+<app-base-plan-list 
+  (editBasePlanRequest)="editBasePlan($event)"
+  (deleteBasePlanRequest)="deleteBasePlan($event)">
+</app-base-plan-list>

@@ -1,0 +1,7 @@
+{
+  "$schema": "../node_modules/ng-packagr/ng-package.schema.json",
+  "dest": "../dist/core-ui-daily-planning-library",
+  "lib": {
+    "entryFile": "src/index.ts"
+  }
+}

@@ -1,0 +1,72 @@
+<div class="p-dialog-body p-0 my-0 min-h-20">
+
+    <div class="px-20 py-2 bg-gray-200 position-sticky top-0">
+
+      <div class="position-relative">
+
+            <p-autoComplete (input)="onInputChange($event)" (completeMethod)="search($event)" [minLength]="0" [forceSelection]="true"
+                placeholder="Search area" styleClass="w-100" inputStyleClass="w-100 pe-58" appendTo="body" field="name"
+                [forceSelection]="false" class="d-none-spinner" [(ngModel)]="searchParam">
+            </p-autoComplete>
+
+            <div class="input-group-media icon position-absolute end-0 top-0 cursor-pointer d-flex">
+                <button *ngIf="searchParam" type="button" (click)="clearSearch()" class="btn p-0 text-primary"
+                    title="Clear search">
+                    <span class="pi pi-times color-gray-600"></span>
+                </button>
+                <span class="pi pi-search fw-semibold color-gray-600 width-px-40 height-px-40 d-flex justify-content-center align-items-center fs-14"></span>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="px-20 py-px-12 bg-gray-200 border-top border-card position-sticky top-54">
+
+        <div class="d-flex gap-4">
+
+            <div class="width-px-20 text-center fw-medium">
+                #
+            </div>
+
+            <div class="color-gray-800 fs-14 fw-medium">
+                Name
+            </div>
+
+        </div>
+
+    </div>
+
+    @for(area of areas; track area; let i = $index){
+    <div class="px-20 py-px-12 border-top border-card">
+        <div class="d-flex gap-4">
+            <div class="width-px-20 text-center">
+                {{i + 1}}
+            </div>
+            <div class="color-gray-800 fs-14">
+                {{area.subAreaDisplayName}}
+            </div>
+        </div>
+    </div>
+    }
+
+    @empty {
+    <div class="empty-state mt-4">
+        <div class="illustration bg-white">
+            <svg class="width-8 height-8">
+                <use xlink:href="#empty-state"></use>
+            </svg>
+        </div>
+        <h2 class="bg-white fs-15 p-0 fw-medium color-gray-700 text-uppercase">
+            No data found
+        </h2>
+    </div>
+    }
+
+</div>
+<div class="p-dialog-footer border-top-0 px-0">
+    <button type="button" class="btn btn-sm btn-primary" id="confirmationModalCancelBtn" tabindex="0"
+        (click)="closeModal(false)" pButton pRipple>
+        Close
+    </button>
+</div>

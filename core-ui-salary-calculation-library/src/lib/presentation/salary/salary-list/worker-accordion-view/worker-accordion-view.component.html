@@ -1,0 +1,536 @@
+<div class="position-relative overflow-auto" [ngClass]="serviceWorkers.length > pageSize ? 'vh-268':'vh-212'" id="salaryCaptureScrollbar" tabindex="-1">
+
+  <salary-calculation-portal-progress-loading loaderKey="SalaryCapture_LineWorkers"></salary-calculation-portal-progress-loading>
+
+  @if(serviceWorkers.length > 0){
+<!-- [ngModel]="isWorkerSelected(item)" -->
+<div class="my-2">
+  <p-accordion id="salaryCaptureAcc" [(value)]="active" (onOpen)="getSalary($event.index, true)"
+    (onClose)="onAccordionClose($event)" expandIcon="fa fa-chevron-right fs-14 color-gray-700 min-w-px-16"
+    collapseIcon="fa fa-chevron-down fs-14 color-gray-700 min-w-px-16">
+    @for (item of pagedServiceWorkers; track $index; let i = $index; let accordionIndex = $index) {
+    <p-accordion-panel id="salaryCaptureAccPanel{{i}}" [value]="i" class="mb-10">
+      <p-accordion-header id="salaryCaptureAccHeader{{i}}"
+        [ngClass]="this.currentUserRole !== 'BasicUser' ? 'gap-18':'gap-20'"
+        class="flex-row-reverse py-2 px-3 header-bottom-rounded-0 rounded-px-6 position-sticky top-0 z-index-1019 height-px-74"
+        (keydown.enter)="getSalary(i, true)" (keydown.space)="getSalary(i, true)">
+        <div class="d-flex align-items-center justify-content-between w-100  h-100">
+          <div class="d-flex align-items-center text-black gap-3">
+            @if(canShowCheckboxesForMultipleWorkers() ){
+            <p-checkbox [ngClass]="{'indeterminate-checkbox' : isWorkerIndeterminate(item)}" [binary]="true"
+              [ngModel]="isWorkerChecked(item.id)" [indeterminate]="isWorkerIndeterminate(item)"
+              (onChange)="onWorkerCheckboxChange(item, $event.checked)" (click)="stopProp($event)"
+              inputId="salaryCaptureAccCheckbox{{i}}"  id="capture-acc-checkbox{{i}}" (keydown)="stopProp($event)">
+            </p-checkbox>
+            }
+            <div>
+              <div class="d-flex align-items-center gap-2">
+                <h6 class="m-0">{{item.firstName}}</h6>
+                <span *ngIf="item.isExternal" class="color-gray-600 fs-14 fw-normal">(External)</span>
+              </div>
+              <span class="color-gray-600 fs-14 fw-normal">{{item.userName}}</span>
+            </div>
+          </div>
+          <div class="d-flex align-items-center cursor-default h-100" (click)="stopEventBubbling($event)">
+            <div class="border-danger color-danger-700 px-10 py-px-4 fs-14 rounded-pill border height-px-33"
+              [ngClass]="{'me-15':active === i}" *ngIf="item.hasConflict">
+              <i class="fa-solid fa-triangle-exclamation me-6"></i>conflict(s)
+            </div>
+            <ng-container
+              *ngIf="active === i && accessService.hasPermission(Permissions.SALARY_CAPTURE_ADD_SALARYLINE_BUTTON)">
+              <div class="position-relative h-100 d-flex align-items-center"
+                [ngClass]="{'pe-14 border-dotted-after-5px':accessService.hasPermission(Permissions.SALARY_CAPTURE_REJECT_BUTTON) || accessService.hasPermission(Permissions.SALARY_CAPTURE_APPROVE_BUTTON)}">
+                <button type="button" id="add-salary-line-btn{{i}}" (click)="addSalaryLine(item)" #addSalaryLineBtn
+                  class="btn btn-sm btn-primary py-px-4 px-15 height-px-33 border"
+                  [disabled]="!canAddSalaryLine()" (keydown)="stopProp($event)">
+                  <i class="fa-solid fa-clipboard-list me-1"></i>
+                  Add Salary Line
+                </button>
+              </div>
+            </ng-container>
+            <ng-container
+              *ngIf="active === i && (accessService.hasPermission(Permissions.SALARY_CAPTURE_REJECT_BUTTON) || accessService.hasPermission(Permissions.SALARY_CAPTURE_APPROVE_BUTTON))">
+              <div class="d-flex gap-15 ps-14">
+                <ng-container *ngIf="accessService.hasPermission(Permissions.SALARY_CAPTURE_REJECT_BUTTON)">
+                  <button tabindex="0" type="button"  #accRejectBtn
+                    (click)="serviceWorkerStatusChange(accordionIndex, item, 2)"
+                    [disabled]="!canRejectSingleWorker()" class="btn btn-sm btn-soft-danger px-3 border-0" (keydown)="stopProp($event)">
+                    <i class="fa-solid fa-xmark me-8"></i>Reject
+                  </button>
+                </ng-container>
+                <ng-container *ngIf="accessService.hasPermission(Permissions.SALARY_CAPTURE_APPROVE_BUTTON)">
+                  <button type="button" id="acc-approve-btn{{i}}" #accApproveBtn
+                    class="btn btn-sm btn-soft-success px-3 border-0" [disabled]="!canApproveSingleWorker()"
+                    (click)="serviceWorkerStatusChange(accordionIndex, item, 3)" pButton pRipple (keydown)="stopProp($event)">
+                    <i class="fa-solid fa-check me-px-6"></i>Approve
+                  </button>
+                </ng-container>
+              </div>
+            </ng-container>
+          </div>
+        </div>
+      </p-accordion-header>
+      <p-accordion-content id="salaryCaptureAccContent{{i}}"
+        class="accordion-content-p-0 rounded-bottom-end-6 rounded-bottom-start-6">
+        <ng-container *ngIf="active === i">
+          <div *ngIf="loadingSalary">
+            <table class="table w-100">
+              <thead>
+                <tr>
+                  <th class="width-px-40"><p-skeleton width="100%" height="16px"></p-skeleton></th>
+                  <th class="width-px-40"><p-skeleton width="100%" height="16px"></p-skeleton></th>
+                  <th><p-skeleton width="60%" height="16px"></p-skeleton></th>
+                  <th><p-skeleton width="50%" height="16px"></p-skeleton></th>
+                  <th><p-skeleton width="50%" height="16px"></p-skeleton></th>
+                  <th><p-skeleton width="60%" height="16px"></p-skeleton></th>
+                  <th><p-skeleton width="40%" height="16px"></p-skeleton></th>
+                  <th class="width-px-144 min-w-px-144"><p-skeleton width="100%" height="16px"></p-skeleton>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let _ of [1]">
+                  <td><p-skeleton width="100%" height="18px"></p-skeleton></td>
+                  <td><p-skeleton width="100%" height="18px"></p-skeleton></td>
+                  <td><p-skeleton width="80%" height="18px"></p-skeleton></td>
+                  <td><p-skeleton width="60%" height="18px"></p-skeleton></td>
+                  <td><p-skeleton width="50%" height="18px"></p-skeleton></td>
+                  <td><p-skeleton width="70%" height="18px"></p-skeleton></td>
+                  <td><p-skeleton width="60%" height="18px"></p-skeleton></td>
+                  <td><p-skeleton width="100%" height="18px"></p-skeleton></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p-table *ngIf="!loadingSalary" [value]="salaries" [(selection)]="checkedSalaries" stripedRows
+            dataKey="productionDate" rowExpandMode="single" [scrollable]="true"
+            [expandedRowKeys]="expandedRows" tableStyleClass="table jobs-table">
+            <ng-template #header>
+              <tr>
+                <th pFrozenColumn class="width-px-40 max-w-px-40 start-px-0"></th>
+                <!-- <p-tableHeaderCheckbox class="keyboard-support" /> -->
+                @if(canShowCheckboxesForSalaryGroup()){
+                <th class="width-px-40 max-w-px-40 text-center start-px-38" pFrozenColumn>
+                  <p-checkbox binary="true"
+                    (onChange)="currentWorker ? (isWorkerChecked(currentWorker.id) ? onSalariesHeaderChange(false) : onSalariesHeaderChange(true)) : null"                    
+                    [ngClass]="{'indeterminate-checkbox' : currentWorker && isWorkerIndeterminate(currentWorker)}"
+                    [ngModel]="currentWorker ? isWorkerChecked(currentWorker.id) : false"
+                    [indeterminate]="currentWorker ? isWorkerIndeterminate(currentWorker) : false"
+                    id="capture-group-header-checkbox">
+                  </p-checkbox>
+                </th>
+                }
+                <th class="text-nowrap width-px-156 max-w-px-156" pFrozenColumn
+                  [ngClass]="canShowCheckboxesForSalaryGroup() ? 'start-px-76':''">Date
+                  </th>
+                <th class="text-nowrap width-px-156 max-w-px-156">Status</th>
+                <th class="text-nowrap">Conflicts</th>
+
+                @if(canShowCheckboxesForSalaryGroup()){
+                <th class="position-sticky" pFrozenColumn alignFrozen="right"
+                  [ngClass]="canShowCheckboxesForSalaryGroup() ? 'width-px-0':'width-px-0'"></th>
+                }
+
+              </tr>
+            </ng-template>
+
+
+            <ng-template #body let-salary let-expanded="expanded" let-i="rowIndex">
+              <tr>
+                <td class="position-sticky start-px-0 px-8 max-w-px-40" pFrozenColumn>
+                  <button type="button" id="table-row-toggle-btn{{i}}" pButton [pRowToggler]="salary"
+                    class="p-button-text bg-transparent w-100 rounded-circle p-0 height-px-24 btn-focus-visible"
+                    [icon]="expanded ? 'pi pi-chevron-down fs-14 color-gray-700' : 'pi pi-chevron-right fs-14 color-gray-700'"
+                    (click)="getSalaryLinesv2(salary, salary.salaryLines, expanded, item, salary.productionDate)">
+                  </button>
+                </td>
+                @if(canShowCheckboxesForSalaryGroup()){
+                <td class="text-center position-sticky px-8 max-w-px-40 start-px-38" pFrozenColumn>
+                  <p-checkbox [ngClass]="{'indeterminate-checkbox' : isSalaryIndeterminate(item, salary)}"
+                    [binary]="true" [ngModel]="isSalaryChecked(item.id, salary.productionDate)"
+                    [indeterminate]="isSalaryIndeterminate(item, salary)"
+                    (onChange)="onSalaryCheckboxChange(item, salary, $event.checked)"
+                    inputId="salaryCheckbox{{i}}_{{salary.productionDate}}"
+                    id="jobs-table-checkbox{{i}}_{{salary.productionDate}}">
+                  </p-checkbox>
+                </td>
+                }
+                <td class="position-sticky px-8"
+                  [ngClass]="canShowCheckboxesForSalaryGroup() ? 'start-px-76':''" pFrozenColumn>
+                  {{formateProductionDate(salary.productionDate)}}</td>
+                <td class="text-nowrap text-truncate px-8">
+                  <ng-container *ngIf="salary.statusId === SalaryLineGroupedStatuses.Pending">
+                    <span class="text-secondary">Pending</span>
+                  </ng-container>
+                  <ng-container *ngIf="salary.statusId === SalaryLineGroupedStatuses.Reviewed">
+                    <span class="text-success">Reviewed </span>
+                  </ng-container>
+                </td>
+                <td>
+                  <i *ngIf="salary.hasConflict" class="fa-solid fa-triangle-exclamation fs-14 text-danger ps-4"></i>
+                </td>
+                <!-- @if(canShowCheckboxesForSalaryGroup()){ -->
+                <td class="position-sticky px-3" pFrozenColumn alignFrozen="right">
+                  <div class="d-flex gap-2 height-px-26 justify-content-end">
+                    <ng-container
+                      *ngIf="accessService.hasPermission(Permissions.SALARY_CAPTURE_REJECT_BUTTON) && !this.hasAllReadOnlySalaryLines(salary.salaryLines)">
+                      <button type="button" id="salaryline-reject-btn{{i}}" [disabled]="!canRejectSalaryGroup(salary)" #salaryLineRejectBtn  [attr.focus-id]="salary.productionDate"
+                        (click)="salaryLinesStatusChange(accordionIndex, item, salary.salaryLines,salary.productionDate, 2)"
+                        class="btn btn-sm btn-soft-danger width-px-26 border-0 d-flex justify-content-center align-items-center p-0">
+                        <i class="fa-solid fa-xmark m-0 fs-14"></i>
+                      </button>
+                    </ng-container>
+
+                    <ng-container
+                      *ngIf="accessService.hasPermission(Permissions.SALARY_CAPTURE_APPROVE_BUTTON) && !this.hasAllReadOnlySalaryLines(salary.salaryLines)">
+                      <button type="button" id="salaryline-approve-btn{{i}}" [disabled]="!canApproveSalaryGroup(salary)" #salaryLineApproveBtn [attr.focus-id]="salary.productionDate"
+                        (click)="salaryLinesStatusChange(accordionIndex, item, salary.salaryLines, salary.productionDate, 3)"
+                        class="btn btn-sm btn-soft-success width-px-26 border-0 d-flex justify-content-center align-items-center p-0">
+                        <i class="fa-solid fa-check m-0 fs-14"></i>
+                      </button>
+                    </ng-container>
+
+                    <ng-container
+                        *ngIf="(accessService.hasPermission(Permissions.SALARY_CAPTURE_RESET_BUTTON) || accessService.hasPermission(Permissions.SALARY_CAPTURE_REMOVEENTRY_SALARY_BUTTON)) && !this.hasAllReadOnlySalaryLines(salary.salaryLines)">
+                      <div>
+                          <p-menu #salaryMenu [model]="salaryMenuItems" [popup]="true" appendTo="body" class="capture-acc-menu" 
+                                styleClass="menu-content-p-0 menu-link-py-px-11">
+                          </p-menu>
+
+                        <button pButton type="button" id="capture-acc-menu-btn{{i}}" icon="fa fa-ellipsis-v" [attr.focus-id]="salary.productionDate"
+                          class="p-button-text p-button-sm btn btn-sm btn-soft-secondary width-px-26 border-0 d-flex justify-content-center align-items-center p-0 mt-0 h-100"
+                          (click)="onMenuClick($event, accordionIndex, salary, item, salaryMenu, salary.productionDate)" #accordionMenuBtn>
+                          <!-- (click)="salaryMenu.toggle($event)"> -->
+                        </button>
+                      </div>
+                    </ng-container>
+                  </div>
+                </td>
+
+                <!-- } -->
+
+              </tr>
+
+            </ng-template>
+            <ng-template #emptymessage>
+              @if(showWorkerEmptyState){
+                <div class="min-h-20">
+                  <div class="empty-state grid bg-white py-5">
+                    <div class="illustration bg-white">
+                      <svg class="height-12 width-12">
+                        <use xlink:href="#empty-state"></use>
+                      </svg>
+                    </div>
+                    <p class="bg-white fs-18 p-0 fw-medium color-gray-700">No Record
+                      Found.</p>
+                  </div>
+                </div>
+              }
+            </ng-template>
+
+            <ng-template #expandedrow pTemplate="rowexpansion" let-salary>
+              <tr>
+                <td colspan="30" class="p-0 bg-gray-300">
+                  <full-calendar #resourceTimeline class="timeline-calendar salary-capture"
+                    [options]="calendarOptions" tabindex="-1">
+                    <ng-template #eventContent let-arg>
+                      @if(arg.event.extendedProps.timelineType === 'timelineIcons'){
+                        <i [title]="getIconTitle(arg.event.start , arg.event.extendedProps.typeId)" class="fa ms-n8" [ngClass]="getIconClass(arg.event.extendedProps.typeId)" [ngStyle]="{ 'color': getTimelineIconColor(arg.event.extendedProps.typeId)}"></i>
+                      }
+                      <!-- For Jobs Timeline -->
+                      @if(
+                      arg.event.extendedProps.timelineType === 'manualLine'){
+                      <div class="px-10"
+                        [pTooltip]="(arg.isDragging || arg.isResizing) && arg.event.extendedProps.timelineType === 'manualLine' ? '' : tooltipContent"
+                        [ngClass]="[arg.event.extendedProps.timelineType === 'manualLine' ? 'py-px-12':'py-px-2',
+                        arg.isDragging ? 'cursor-move' : (arg.event.extendedProps.isReadOnly ? 'cursor-default' : 'cursor-pointer')]"
+                        tooltipPosition="bottom"
+                        tooltipStyleClass="min-w-14">
+                        <div
+                          [ngClass]="{'d-flex justify-content-between align-items-center':arg.event.extendedProps.timelineType === 'manualLine'}">
+                          <h6 class="fs-12 fw-medium text-nowrap mb-0 color-gray-1000 text-truncate pe-px-6"
+                            *ngIf="!isEventAtMinWidth(arg)">
+                            <i *ngIf="arg.event.extendedProps.hasConflicts && arg.event.extendedProps.timelineType === 'manualLine'"
+                              class="fa-solid fa-triangle-exclamation fs-14 text-danger me-1"></i> {{
+                            arg.event.title }}
+                          </h6>
+
+                          <span
+                            class="d-flex align-items-center position-absolute color-gray-600 end-5 fs-14 z-index-1"
+                            *ngIf="arg.isEndResizable && arg.event.extendedProps.timelineType === 'manualLine' && !arg.event.extendedProps.isReadOnly && canEditSalaryLine(arg.event.extendedProps.statusId)">
+                            ||
+                          </span>
+                        </div>
+                      </div>
+                      <ng-template #tooltipContent>
+                        @if(arg.event.extendedProps.timelineType === 'job'){
+                        <div class="px-1 py-2">
+                          <h1 class="text-white fs-14 fw-semibold max-w-14 mb-0">
+                            Job: {{arg.event.title}}
+                          </h1>
+                          <div
+                            class="text-white fs-14 d-flex justify-content-between align-items-center mt-12">
+                            <div class="w-60">
+                              <span>Start time:</span>
+                            </div>
+                            <div class="w-40">
+                              <span class="fw-semibold">{{arg.event.start ?
+                                arg.event.start.toLocaleTimeString('en-US', { hour: '2-digit', minute:
+                                '2-digit', hour12: false }) : '-'}}</span>
+                            </div>
+                          </div>
+
+                          <div class="text-white fs-14 d-flex justify-content-between align-items-center">
+                            <div class="w-60">
+                              <span>End time:</span>
+                            </div>
+                            <div class="w-40">
+                              <span class="fw-semibold">{{arg.event.end ?
+                                arg.event.end.toLocaleTimeString('en-US', { hour: '2-digit', minute:
+                                '2-digit', hour12: false }) : '-'}}</span>
+                            </div>
+                          </div>
+                        </div>
+                        }
+                        @else if(arg.event.extendedProps.timelineType === 'manualLine'){
+                        <div class="px-1 py-2">
+                          <div class="d-flex align-items-center mb-1 gap-1">
+                            <i *ngIf="arg.event.extendedProps.hasConflicts && arg.event.extendedProps.timelineType === 'manualLine'"
+                              class="fa-solid fa-triangle-exclamation fs-14 text-danger mb-px-1"></i>
+                            <h1 class="text-white fs-14 fw-semibold max-w-14 mb-0">
+                              {{arg.event.extendedProps.salaryCode}} - {{arg.event.extendedProps.salaryName}}
+                            </h1>
+                          </div>
+                          <p class="fs-14 fw-normal mb-0 text-white lh-1-2">
+                            {{arg.event.extendedProps.description}}</p>
+                          <div
+                            class="text-white fs-14 d-flex justify-content-between align-items-center mt-12">
+                            <div class="w-60">
+                              <span>Unit:</span>
+                            </div>
+                            <div class="w-40">
+                              <span class="fw-semibold">{{arg.event.extendedProps.salaryUnit}}</span>
+                            </div>
+                          </div>
+
+                          <div class="text-white fs-14 d-flex justify-content-between align-items-center">
+                            <div class="w-60">
+                              <span>Value:</span>
+                            </div>
+                            <div class="w-40">
+                              <span class="fw-semibold">{{arg.event.extendedProps.salaryCodeValue}}</span>
+                            </div>
+                          </div>
+
+                          <div
+                            class="text-white fs-14 d-flex justify-content-between align-items-center mt-12">
+                            <div class="w-60">
+                              <span>Start time:</span>
+                            </div>
+                            <div class="w-40">
+                              <span class="fw-semibold">{{arg.event.start ?
+                                arg.event.start.toLocaleTimeString('en-US', { hour: '2-digit', minute:
+                                '2-digit', hour12: false }) : '-'}}</span>
+                            </div>
+                          </div>
+
+                          <div class="text-white fs-14 d-flex justify-content-between align-items-center">
+                            <div class="w-60">
+                              <span>End time:</span>
+                            </div>
+                            <div class="w-40">
+                              <span class="fw-semibold">{{arg.event.end ?
+                                arg.event.end.toLocaleTimeString('en-US', { hour: '2-digit', minute:
+                                '2-digit', hour12: false }) : '-'}}</span>
+                            </div>
+                          </div>
+                        </div>
+                        }
+                      </ng-template>
+                      }
+                      @else {
+                      }
+                    </ng-template>
+                  </full-calendar>
+                  <p-table [value]="salaryLine" [(selection)]="checkedSalaryLines" [dataKey]="'id'"
+                    [scrollable]="true" tableStyleClass="table manual-line-table"
+                    styleClass="p-datatable-gridlines p-datatable-md p-datatable-white nested-grid-overflow-unset">
+                    <ng-template #header>
+              <tr>
+                <th class="min-w-px-40 max-w-px-40 text-center" pFrozenColumn>
+                </th>
+                @if(canShowCheckboxesForSalaryLine()){
+                <th class="min-w-px-40 max-w-px-40 text-center start-px-38" pFrozenColumn>
+                  <p-checkbox
+                    [ngClass]="{'indeterminate-checkbox': currentWorker && areSomeSalaryLinesChecked(currentWorker.id, salaryLine)}"
+                    [binary]="true"
+                    [ngModel]="currentWorker ? areAllSalaryLinesChecked(currentWorker.id, salaryLine) : false"
+                    [indeterminate]="currentWorker ? areSomeSalaryLinesChecked(currentWorker.id, salaryLine) : false"
+                    (onChange)="currentWorker ? onSalaryCheckboxChange(currentWorker, { productionDate: salaryLine[0].productionDate, salaryLines: salaryLine }, $event.checked) : null"
+                    inputId="subTableheaderCheckbox"
+                    id="capture-subtable-header-checkbox"
+                  >
+                  </p-checkbox>
+                </th>
+                }
+                <th class="text-nowrap max-w-px-156 min-w-px-156">Job</th>
+                <th class="min-w-px-156 max-w-px-156 text-nowrap border-start-0">Code</th>
+                <th class="text-nowrap min-w-px-200 max-w-px-200">Type</th>
+                <th class="text-nowrap min-w-17 max-w-17">Description</th>
+                <th class="text-nowrap min-w-px-120 max-w-px-120">Unit</th>
+                <th class="min-w-px-120 text-nowrap max-w-px-120">Value</th>
+                <th class="text-nowrap min-w-px-120">Status</th>
+                <th class="text-nowrap min-w-px-200">Reviewed By</th>
+                <th class="text-nowrap min-w-px-200">Reviewed At</th>
+                @if(canShowCheckboxesForSalaryLine() ){
+                <th class="position-sticky" pFrozenColumn alignFrozen="right"
+                  [ngClass]="canShowCheckboxesForSalaryLine()  ? 'width-px-0':'width-px-0'"></th>
+                }
+              </tr>
+            </ng-template>
+            <ng-template #body let-salaryLine let-i="rowIndex">
+              <tr [ngClass]="{
+                'new-salary-line': newlyAddedSalaryLineIds.includes(salaryLine.id) || (navigatedSalaryLineId === salaryLine.id),
+                'height-px-47': !canShowCheckboxesForSalaryLine()
+                }" [id]="salaryLine.id">
+                <td class="text-center position-sticky px-8 width-px-40" pFrozenColumn>
+                  <i *ngIf="showConflictTooltip(salaryLine)" [pTooltip]="'Conflict'" tooltipPosition="top"
+                    tooltipStyleClass="p-tooltip-fs-11 cutomized-tooltip max-w-11"
+                    class="fa-solid fa-triangle-exclamation fs-16 text-danger cursor-pointer"></i>
+                </td>
+                @if(canShowCheckboxesForSalaryLine() ){
+                <td class="text-center position-sticky px-8 width-px-40 start-px-38" pFrozenColumn>
+                  <p-checkbox class="keyboard-support child-table-checkbox" [binary]="true"
+                    [ngModel]="isSalaryLineChecked(item.id, salaryLine.id)"
+                    (onChange)="onSalaryLineCheckboxChange(item, salary, salaryLine, $event.checked)"
+                    [attr.inputId]="'subTablerowCheckbox' + i + '_' + salaryLine.id"
+                    id="capture-subtablerow-checkbox{{i}}_{{salaryLine.id}}">
+                  </p-checkbox>
+                </td>
+                }
+                <td class="border-start-0 text-nowrap px-8 text-truncate">
+                  {{salaryLine.jobNumber}}</td>
+                <td class="text-nowrap text-truncate px-8 max-w-px-156">
+                  {{salaryLine.salaryCode}}
+                </td>
+                <td class="text-nowrap text-truncate px-8 max-w-px-200">{{salaryLine.salaryName}}</td>
+                <td class="text-nowrap text-truncate px-8 max-w-17">
+                  <span [title]="salaryLine.salaryDescription">{{salaryLine.salaryDescription}}</span>
+                </td>
+                <td class="max-w-px-156 text-truncate text-nowrap px-8">{{salaryLine.salaryUnit}}</td>
+                <td class="max-w-px-156 text-truncate text-nowrap px-8"> {{salaryLine.salaryCodeValue}}</td>
+                <td class="px-8">
+                  <ng-container *ngIf="salaryLine.statusId === 1">
+                    <span class="text-secondary">Pending</span>
+                  </ng-container>
+                  <ng-container *ngIf="salaryLine.statusId === 2">
+                    <span class="text-danger">Rejected</span>
+                  </ng-container>
+                  <ng-container *ngIf="salaryLine.statusId === 3">
+                    <span class="text-success">Approved</span>
+                  </ng-container>
+                  <ng-container *ngIf="salaryLine.statusId === 4">
+                    <span class="text-primary">Completed</span>
+                  </ng-container>
+                </td>
+                <td class="px-8">{{ salaryLine.statusId !== 1 ? salaryLine.reviewedBy : ''}}
+                  <div class="color-gray-600">
+                      {{ salaryLine.statusId !== 1 ? salaryLine.reviewedByUserName : ''}}
+                  </div>
+                </td>
+
+                <td class="px-8">{{ formatDateToDDMMYYYY(salaryLine.reviewedAt) || '' }}
+                  <div class="color-gray-600">
+                    {{ getHHMMFromTime(salaryLine.reviewedAt) || '' }}
+                  </div>
+                </td>
+                
+                @if(canShowCheckboxesForSalaryLine() ){
+                <td class="position-sticky pe-3 ps-3" pFrozenColumn alignFrozen="right">
+                  <div class="d-flex gap-2 height-px-26 justify-content-end">
+                    <ng-container
+                      *ngIf="accessService.hasPermission(Permissions.SALARY_CAPTURE_REJECT_BUTTON) && !isSalaryLineReadOnly(salaryLine)">
+                      <button type="button"
+                      [disabled]="!canRejectSalaryLine(salaryLine)" #subLineRejectBtn
+                        (click)="salaryLineInlineActions(accordionIndex, item, salaryLine, 2)"
+                        class="btn btn-sm btn-soft-danger width-px-26 border-0 d-flex justify-content-center align-items-center p-0"
+                        [attr.id]="'subtable-reject-btn' + i" [attr.focus-id]="salaryLine.id">
+                        <i class="fa-solid fa-xmark m-0 fs-14"></i>
+                      </button>
+                    </ng-container>
+                    <ng-container
+                      *ngIf="accessService.hasPermission(Permissions.SALARY_CAPTURE_APPROVE_BUTTON) && !isSalaryLineReadOnly(salaryLine)">
+                      <button type="button"
+                      [disabled]="!canApproveSalaryLine(salaryLine)" #subLineApproveBtn
+                        (click)="salaryLineInlineActions(accordionIndex, item, salaryLine, 3)"
+                        class="btn btn-sm btn-soft-success width-px-26 border-0 d-flex justify-content-center align-items-center p-0"
+                        [attr.id]="'subtable-accept-btn' + i" [attr.focus-id]="salaryLine.id">
+                        <i class="fa-solid fa-check m-0 fs-14"></i>
+                      </button>
+                    </ng-container>
+                    <ng-container *ngIf="(
+                      accessService.hasPermission(Permissions.SALARY_CAPTURE_EDIT_BUTTON) ||
+                      accessService.hasPermission(Permissions.SALARY_CAPTURE_RESET_BUTTON) ||
+                      accessService.hasPermission(Permissions.SALARY_CAPTURE_REMOVEENTRY_SALARY_BUTTON)) && !isSalaryLineReadOnly(salaryLine)">
+                      <div>
+                         <p-menu #menu [model]="salaryListMenuItems" [popup]="true" appendTo="body"
+                                    [attr.id]="'subtable-menu-popup' + i" class="capture-subtable-menu" styleClass="menu-content-p-0 menu-link-py-px-11">
+                         </p-menu>
+
+                        <button pButton type="button" icon="fa fa-ellipsis-v" [attr.focus-id]="salaryLine.id" #subAccordionMenuBtn
+                          class="p-button-text p-button-sm btn btn-sm btn-soft-secondary width-px-26 border-0 d-flex justify-content-center align-items-center p-0 mt-0 h-100"
+                          (click)="openSalaryLineMenu($event, menu, accordionIndex, item, salaryLine)"
+                          [attr.id]="'sub-table-action-menu-btn' + i">
+                        </button>
+                      </div>
+                    </ng-container>
+                  </div>
+                </td>
+                }
+              </tr>
+            </ng-template>
+            <ng-template #emptymessage>
+              <tr>
+                <td colspan="12" class="bg-white fs-18 p-0 fw-medium text-center">There are
+                  no salary lines for this salary yet.</td>
+              </tr>
+            </ng-template>
+          </p-table>
+          </td>
+          </tr>
+          </ng-template>
+          </p-table>
+        </ng-container>
+      </p-accordion-content>
+    </p-accordion-panel>
+    }
+  </p-accordion>
+</div>
+}
+
+@else{
+<div class="card border-0 h-100 shadow-md" [ngClass]="isFilterApplied && serviceWorkers.length === 0 ?'mt-2 vh-220':'vh-226'">
+  <div class="empty-state" *ngIf="!loading">
+    <div class="illustration bg-white">
+      <svg class="height-12 width-12">
+        <use xlink:href="#empty-state"></use>
+      </svg>
+    </div>
+    <p class="bg-white fs-18 p-0 fw-medium color-gray-700 text-uppercase">
+      {{isFilterApplied && serviceWorkers.length === 0 ? 'No data found' : 'Apply filters to proceed'}}
+    </p>
+  </div>
+</div>
+}
+
+</div>
+
+      <p-paginator
+        *ngIf="serviceWorkers.length > pageSize"
+        (onPageChange)="onPageChange($event)"
+        [first]="first"
+        [rows]="pageSize"
+        [totalRecords]="serviceWorkers.length"
+        [showCurrentPageReport]="true"
+        [showJumpToPageDropdown]="false"
+        currentPageReportTemplate="Showing {first} to {last} out of {totalRecords}" styleClass="position-relative paginator-current-start py-3" class="paginator-bg-white"/>

@@ -1,0 +1,33 @@
+<aside class="sidebar-start">
+    <div class="sidebar-start-child">
+        <div class="brand-logo">
+            <div class="nav-toggle-box">
+                <div class="nav-toggle-icon">
+                    <a href="javascript:void(0)" class="icon-sidebar-start icon-btn" tabindex="-1">
+                        <svg aria-label="Sidebar">
+                            <use xlink:href="#menu"></use>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+            <img src="https://cubivue-ui.cubivue.com/assets/img/logo.svg" alt="Company logo" />
+        </div>
+        <div class="tab-content">
+            <div class="tab-pane fade active show" id="pills-dashboards">
+                <ul class="list-group" cdkDropList #menuItemsList="cdkDropList" [cdkDropListData]="routeDetails"
+                    (cdkDropListDropped)="drop($event)">
+                    <li cdkDrag *ngFor="let item of routeDetails" class="list-group-flush">
+                        <a [routerLink]="item?.routerLink" routerLinkActive="active" tabindex="-1" [routerLinkActiveOptions]="{ exact: true }"
+                            class="list-group-item icon d-flex align-items-center" [id]="item?.id">
+                            <svg class="height-px-20 width-px-20 ms-2 me-10">
+                                <use [attr.xlink:href]="'#' + item?.icon"></use>
+                            </svg>
+                            <!-- <i [class]="item?.icon" class="fs-16"></i> -->
+                            <div>{{item.label}}</div>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</aside>
