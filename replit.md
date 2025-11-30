@@ -57,6 +57,18 @@ Configured as a static deployment:
 - Set up deployment configuration for static hosting
 - Verified application runs successfully with login page displaying correctly
 
+## Known Issues
+
+### Production Build Inter-Library Dependencies
+The production build (`npm run build`) fails due to cross-library dependencies between `core-ui-daily-planning-library` and `core-ui-salary-calculation-library`. The daily-planning library imports components from the salary-calculation library using relative paths, which causes ng-packagr compilation errors.
+
+**Workaround**: The development server (`npm start`) works correctly and can be used for development and testing.
+
+**Solution Required**: To fix production builds, the codebase needs to be refactored to use the publishable-library pattern:
+1. Build `core-ui-salary-calculation-library` first
+2. Have `core-ui-daily-planning-library` import from the built dist output
+3. Configure NX build dependencies properly
+
 ## Notes
 - This is a frontend-only application; backend services are external
 - The application uses authentication via Auth0 JWT tokens

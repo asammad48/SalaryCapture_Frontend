@@ -1,12 +1,11 @@
 import { NgModule } from '@angular/core';
 import { Client, API_BASE_URL } from './api-clients/daily-planning-api.client';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-// import { defaultInterceptor, tenantInterceptor } from 'core-ui-salary-calculation-library/src/lib/presentation/base/utils/interceptors';
 import { tokenInterceptor } from '../../../../core-ui-salary-calculation-library/src/lib/presentation/base/utils/interceptors/token.interceptor';
 import { httpErrorInterceptor } from '../core/interceptors';
 import { DailyPlanningAccessService } from './repositories/access/daily-planning-access.service';
-import { AccessService } from 'core-ui-salary-calculation-library/src/lib/data/repositories/access/access.service';
-import { defaultInterceptor,tenantInterceptor } from '../../../../core-ui-salary-calculation-library/src/lib/presentation/base/utils/interceptors';
+import { AccessService } from '../../../../core-ui-salary-calculation-library/src/lib/data/repositories/access/access.service';
+import { defaultInterceptor, tenantInterceptor } from '../../../../core-ui-salary-calculation-library/src/lib/presentation/base/utils/interceptors';
 
 
 /**
