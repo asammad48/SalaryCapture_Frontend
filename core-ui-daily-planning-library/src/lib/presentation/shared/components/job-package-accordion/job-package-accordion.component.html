@@ -79,10 +79,10 @@
                         <div
                           *ngIf="packageDetails.worker != null && packageDetails.worker != undefined && packageDetails.vehicle != null && packageDetails.vehicle != undefined"
                           class="width-px-30 height-px-30 d-flex justify-content-center align-items-center rounded-circle bg-secondary"
-                          [pTooltip]="'Assigned Vehicle - ' + (packageDetails.vehicle?.typeName || 'Walk')"
+                          [pTooltip]="'Assigned Vehicle - ' + (packageDetails.vehicle.typeName || 'Walk')"
                           tooltipStyleClass="p-tooltip-fs-11 customized-tooltip" tooltipPosition="top">
                           <i class="fas m-0 text-center fs-10 text-white"
-                            [ngClass]="getIconForVehicleType(packageDetails.vehicle?.typeName || 'Walk')"></i>
+                            [ngClass]="getIconForVehicleType(packageDetails.vehicle.typeName || 'Walk')"></i>
                         </div>
                       </div>
 
