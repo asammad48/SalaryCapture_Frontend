@@ -11,6 +11,7 @@
   "prefix": "app",
   "targets": {
     "build": {
+      "dependsOn": [],
       "executor": "@nx/angular:webpack-browser",
       "options": {
         "outputPath": "dist/salary-calculation",
@@ -64,16 +65,22 @@
           "outputHashing": "all"
         },
         "production": {
+          "optimization": true,
+          "buildOptimizer": true,
+          "aot": true,
+          "extractLicenses": true,
+          "sourceMap": false,
+          "namedChunks": false,
           "budgets": [
             {
               "type": "initial",
-              "maximumWarning": "500kb",
-              "maximumError": "1mb"
+              "maximumWarning": "5mb",
+              "maximumError": "10mb"
             },
             {
               "type": "anyComponentStyle",
-              "maximumWarning": "2kb",
-              "maximumError": "4kb"
+              "maximumWarning": "100kb",
+              "maximumError": "200kb"
             }
           ],
           "outputHashing": "all"

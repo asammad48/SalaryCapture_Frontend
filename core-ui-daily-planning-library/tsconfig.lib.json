@@ -1,23 +1,16 @@
 {
-  "extends": "./tsconfig.json",
+  "extends": "../tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "../../dist/out-tsc",
+    "outDir": "../dist/out-tsc",
     "declaration": true,
     "declarationMap": true,
     "inlineSources": true,
     "types": [],
-    "skipDefaultLibCheck": true,
-    "skipLibCheck": true,
-    "disableReferencedProjectLoad": true,
-    "disableSolutionSearching": true,
-    "noResolve": false,
-    "preserveSymlinks": true
+    "skipLibCheck": true
   },
   "angularCompilerOptions": {
     "compilationMode": "partial",
-    "enableIvy": true,
     "strictTemplates": false,
-    "fullTemplateTypeCheck": false,
     "strictInjectionParameters": false
   },
   "exclude": [
@@ -26,6 +19,6 @@
     "**/*.test.ts"
   ],
   "include": [
-    "**/*.ts"
+    "src/**/*.ts"
   ]
 }
