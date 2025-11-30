@@ -4,7 +4,7 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 
 @Component({
-  selector: 'salary-calculation-confirmation-dialog',
+  selector: 'daily-planning-confirmation-dialog',
   templateUrl: './confirmation-dialog.component.html',
   imports: [ConfirmDialogModule, CommonModule],
 })
