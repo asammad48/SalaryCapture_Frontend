@@ -13,7 +13,7 @@ import { takeUntil } from 'rxjs';
 import { OrganizationUserDto } from '../../../../core/domain/models/Organization-User-Dto';
 import { DayOfWeek } from '../../../../core/domain/models/add-edit-job-package/day-of-week.model';
 import { EditJobPackageData } from '../../../../core/domain/models/add-edit-job-package/edit-job-package-data.model';
-import { PlanningMode } from '../../../../../../../core-ui-daily-planning-library/src/lib/core/domain/constants/planning-mode.enum';
+import { PlanningMode } from '../../../../core/domain/constants/planning-mode.enum';
 import { ProgressLoadingComponent } from '../progress-loading/progress-loading.component';
 
 @Component({

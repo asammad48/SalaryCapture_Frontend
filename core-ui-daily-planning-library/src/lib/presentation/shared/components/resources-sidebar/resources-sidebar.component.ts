@@ -8,7 +8,7 @@ import {
   BasePlanUnassignedJobsDto,
   ModifyPackageJobsRequestDto
 } from '../../../../data/api-clients/daily-planning-api.client';
-import { PlanningMode } from '../../../../../../../core-ui-daily-planning-library/src/lib/core/domain/constants/planning-mode.enum';
+import { PlanningMode } from '../../../../core/domain/constants/planning-mode.enum';
 
 @Component({
   standalone: true,

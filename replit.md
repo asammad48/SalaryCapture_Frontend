@@ -57,17 +57,32 @@ Configured as a static deployment:
 - Set up deployment configuration for static hosting
 - Verified application runs successfully with login page displaying correctly
 
-## Known Issues
+## Library Build Configuration
 
-### Production Build Inter-Library Dependencies
-The production build (`npm run build`) fails due to cross-library dependencies between `core-ui-daily-planning-library` and `core-ui-salary-calculation-library`. The daily-planning library imports components from the salary-calculation library using relative paths, which causes ng-packagr compilation errors.
+### Cross-Library Dependencies (Fixed)
+The libraries use a buildable-library pattern with proper package-based imports:
 
-**Workaround**: The development server (`npm start`) works correctly and can be used for development and testing.
+1. **Build Order**: NX builds `core-ui-salary-calculation-library` first, then `core-ui-daily-planning-library`
+2. **Import Pattern**: Cross-library imports use the package alias `@embrace-it/salary-calculation-library` instead of relative paths
+3. **Dependency Resolution**: The built salary-calculation-library is symlinked to `node_modules/@embrace-it/salary-calculation-library` to allow ng-packagr to resolve it during compilation
 
-**Solution Required**: To fix production builds, the codebase needs to be refactored to use the publishable-library pattern:
-1. Build `core-ui-salary-calculation-library` first
-2. Have `core-ui-daily-planning-library` import from the built dist output
-3. Configure NX build dependencies properly
+### Building Libraries
+```bash
+# Build both libraries (NX handles dependency order)
+npx nx build core-ui-daily-planning-library
+
+# Or build individually
+npx nx build core-ui-salary-calculation-library
+npx nx build core-ui-daily-planning-library
+```
+
+### Technical Details
+- **Root Cause (Fixed)**: TypeScript 5.8 compiler bug triggered when deep relative imports reach outside the compilation root
+- **Solution**: Use package-based imports (`@embrace-it/salary-calculation-library`) that resolve to compiled `.d.ts` files instead of raw source files
+- **Key Files Modified**:
+  - `core-ui-daily-planning-library/src/lib/data/data.module.ts` - Uses package imports
+  - `core-ui-daily-planning-library/src/lib/presentation/dps.component.ts` - Uses package imports
+  - `core-ui-salary-calculation-library/src/index.ts` - Exports required symbols
 
 ## Notes
 - This is a frontend-only application; backend services are external

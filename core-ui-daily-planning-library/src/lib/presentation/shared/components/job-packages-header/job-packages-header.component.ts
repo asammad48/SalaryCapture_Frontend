@@ -13,7 +13,7 @@ import { AddEditJobPackageComponent } from '../add-edit-job-package/add-edit-job
 import { DialogMode } from '../../../../core/domain/constants/dialog-mode.enum';
 import { AutoComplete } from 'primeng/autocomplete';
 import { FormsModule } from '@angular/forms';
-import { PlanningMode } from '../../../../../../../core-ui-daily-planning-library/src/lib/core/domain/constants/planning-mode.enum';
+import { PlanningMode } from '../../../../core/domain/constants/planning-mode.enum';
 
 @Component({
   standalone: true,

@@ -39,13 +39,13 @@ import { withLoaderService } from '../../../core/utils/with-loader.operator';
 import { AddEditJobPackageComponent } from '../../shared/components/add-edit-job-package/add-edit-job-package.component';
 import { DialogMode } from '../../../core/domain/constants/dialog-mode.enum';
 import { AddEditJobPackageConfig } from '../../../core/domain/models/add-edit-job-package/add-edit-job-package-config.model';
-import { HttpErrorResponse } from '@angular/common/module.d-CnjH8Dlt';
+import { HttpErrorResponse } from '@angular/common/http';
 import { EditJobPackageData } from '../../../core/domain/models/add-edit-job-package/edit-job-package-data.model';
 import { ConfirmationDialogComponent } from '../../shared/confirmation-dialog/confirmation-dialog.component';
 import { DynamicDialogRef } from 'primeng/dynamicdialog';
-import { JobPackageFilters } from '../../../../../../core-ui-daily-planning-library/src/lib/core/domain/models/job-package/job-package-filters.model';
+import { JobPackageFilters } from '../../../core/domain/models/job-package/job-package-filters.model';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
-import { DailyPlanViewMode } from '../../../../../../core-ui-daily-planning-library/src/lib/core/domain/constants/daily-plan/daily-plan-view-mode.enum';
+import { DailyPlanViewMode } from '../../../core/domain/constants/daily-plan/daily-plan-view-mode.enum';
 
 @Component({
   selector: 'lib-base-plan-job-packages',

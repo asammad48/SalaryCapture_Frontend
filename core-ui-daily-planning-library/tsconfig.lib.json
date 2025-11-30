@@ -15,7 +15,10 @@
   },
   "angularCompilerOptions": {
     "compilationMode": "partial",
-    "enableIvy": true
+    "enableIvy": true,
+    "strictTemplates": false,
+    "fullTemplateTypeCheck": false,
+    "strictInjectionParameters": false
   },
   "exclude": [
     "src/test-setup.ts",

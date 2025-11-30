@@ -5,6 +5,7 @@
   "prefix": "lib",
   "projectType": "library",
   "tags": [],
+  "implicitDependencies": ["core-ui-salary-calculation-library"],
   "targets": {
     "nswag": {
       "executor": "nx:run-commands",

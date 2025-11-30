@@ -4,7 +4,7 @@ import {ActivatedRoute, Router} from "@angular/router";
 import {JwtHelperService} from "@auth0/angular-jwt";
 import {catchError} from "rxjs";
 import { LocalStorageService } from "../../../services/local-storage.service";
-import { LocalStorageKeys } from "core-ui-salary-calculation-library/src/lib/data/repositories/access/local-storage-keys";
+import { LocalStorageKeys } from "../../../../data/repositories/access/local-storage-keys";
 
 export const tokenInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);

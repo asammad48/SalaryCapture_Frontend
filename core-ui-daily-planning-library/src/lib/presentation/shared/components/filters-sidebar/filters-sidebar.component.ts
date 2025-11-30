@@ -11,7 +11,7 @@ import { DAYS_OF_WEEK, JOB_PACKAGE_STATUS_LIST, DayOfWeek, JobPackageStatus } fr
 import { PlanningMode } from '../../../../core/domain/constants/planning-mode.enum';
 import { DailyPlanningPortalBase } from '../../../base/daily-planning-base/daily-planning.base';
 import { OrganizationUserDto } from '../../../../core/domain/models/Organization-User-Dto';
-import { JobPackageFilters } from '../../../../../../../core-ui-daily-planning-library/src/lib/core/domain/models/job-package/job-package-filters.model';
+import { JobPackageFilters } from '../../../../core/domain/models/job-package/job-package-filters.model';
 
 @Component({
   standalone: true,

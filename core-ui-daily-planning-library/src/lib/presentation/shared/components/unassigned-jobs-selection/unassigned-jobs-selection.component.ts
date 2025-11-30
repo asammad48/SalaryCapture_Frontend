@@ -24,7 +24,7 @@ import {
   ModifyPackageJobsRequestDto,
   JobSourceType
 } from '../../../../data/api-clients/daily-planning-api.client';
-import { PlanningMode } from '../../../../../../../core-ui-daily-planning-library/src/lib/core/domain/constants/planning-mode.enum';
+import { PlanningMode } from '../../../../core/domain/constants/planning-mode.enum';
 import { FormsModule } from '@angular/forms';
 
 @Component({

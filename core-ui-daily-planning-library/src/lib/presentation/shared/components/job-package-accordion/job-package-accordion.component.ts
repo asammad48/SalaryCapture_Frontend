@@ -37,7 +37,7 @@ import { Menu } from 'primeng/menu';
 import { MenuItem } from 'primeng/api';
 import { Paginator, PaginatorState } from 'primeng/paginator';
 import { JobPackageMapComponent } from '../job-package-map/job-package-map.component';
-import { PlanningMode } from '../../../../../../../core-ui-daily-planning-library/src/lib/core/domain/constants/planning-mode.enum';
+import { PlanningMode } from '../../../../core/domain/constants/planning-mode.enum';
 
 @Component({
   standalone: true,

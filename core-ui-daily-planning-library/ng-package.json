@@ -3,5 +3,8 @@
   "dest": "../dist/core-ui-daily-planning-library",
   "lib": {
     "entryFile": "src/index.ts"
-  }
+  },
+  "allowedNonPeerDependencies": [
+    "@embrace-it/salary-calculation-library"
+  ]
 }

@@ -5,3 +5,7 @@ export * from './lib/presentation/layout/sidebar-start/sidebar-start.component';
 
 export * from './lib/core/core.module';
 export * from './lib/data/data.module';
+
+export * from './lib/presentation/base/utils/interceptors';
+export * from './lib/data/repositories/usersManagement/users.service';
+export * from './lib/data/repositories/access/access.service';
