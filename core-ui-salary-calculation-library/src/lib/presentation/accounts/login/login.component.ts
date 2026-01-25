@@ -193,23 +193,7 @@ export class LoginComponent
     }
 
     if (!returnUrl || returnUrl === '/') {
-      if (this.hasSalary) {
-        // default to salary if allowed
-        returnUrl = '/salary-capture';
-      } else if (this.hasPlanning) {
-        // salary not allowed, but planning is → go to planning
-        returnUrl = '/daily-planning/base-plan';
-      } else if (roles.includes('DailyJobs_Page_Access')) { 
-        returnUrl = '/daily-jobs';
-      }
-      else if (roles.includes('UserManagement_Page_Access')) {
-        returnUrl = '/user-management';
-      }
-
-      else {
-        // neither allowed – up to you, but at least not salary
-        returnUrl = '/page-not-found';
-      }
+      returnUrl = '/daily-planning/base-plan';
     }
 
     this.router.navigateByUrl(returnUrl);

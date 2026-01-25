@@ -30,10 +30,10 @@ export const PRESENTATION_ROUTES: Routes = [
         ],
       },
 
-      // Default route redirects to salary-capture
+      // Default route redirects to daily-planning/base-plan
       {
         path: '',
-        redirectTo: 'salary-capture',
+        redirectTo: 'daily-planning/base-plan',
         pathMatch: 'full'
       },
       {
