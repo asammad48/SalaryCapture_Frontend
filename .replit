@@ -33,14 +33,6 @@ waitForPort = 5000
 localPort = 5000
 externalPort = 80
 
-[[ports]]
-localPort = 41535
-externalPort = 3001
-
-[[ports]]
-localPort = 43757
-externalPort = 3000
-
 [deployment]
 deploymentTarget = "static"
 build = ["npm", "run", "build"]
