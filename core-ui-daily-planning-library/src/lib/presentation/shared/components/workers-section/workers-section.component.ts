@@ -6,6 +6,7 @@ import {
   moveItemInArray,
   transferArrayItem,
 } from '@angular/cdk/drag-drop';
+import { StringHelper } from '../../../../core/utils/string.helper';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { CommonModule } from '@angular/common';
 import { AfterViewInit, Component, Input, QueryList, ViewChildren } from '@angular/core';
@@ -67,7 +68,7 @@ export class WorkersSectionComponent implements AfterViewInit {
   }
 
   onSearchInput(event: any): void {
-    const query = event.target?.value?.toLowerCase() || '';
+    const query = event.target?.value?.trim() || '';
     this.searchQuery = query;
 
     if (!query) {
@@ -76,9 +77,9 @@ export class WorkersSectionComponent implements AfterViewInit {
     }
 
     this.filteredWorkers = this.unassignedWorkers.filter((worker) => {
-      const firstName = worker.firstName?.toLowerCase() || '';
+      const firstName = worker.firstName || '';
       const workerId = worker.workerId?.toString() || '';
-      return firstName.includes(query) || workerId.includes(query);
+      return StringHelper.includesIgnoreCase(firstName, query) || StringHelper.includesIgnoreCase(workerId, query);
     });
   }
 

@@ -30,16 +30,16 @@
                         id="plan-from-date"
                         formControlName="startDate"
                         appendTo="body"
-                        styleClass="w-100 mb-2"
+                        styleClass="w-100"
                         [class.is-invalid]="startDateControl?.invalid && startDateControl?.touched"
                         [maxDate]="maxStartDate"
                         showIcon
                         iconDisplay="input"
-                        placeholder="dd-mm-yy"
+                        placeholder="dd-mm-yyyy"
                         dateFormat="dd-mm-yy"
                         panelStyleClass="z-index-1"
                     />
-                    <div class="text-danger" *ngIf="startDateControl?.invalid && startDateControl?.touched">
+                    <div class="invalid-feedback" *ngIf="startDateControl?.invalid && startDateControl?.touched">
                         <small *ngIf="startDateControl?.errors?.['required']">Start date is required</small>
                     </div>
                 </div>
@@ -52,16 +52,16 @@
                         id="plan-to-date"
                         formControlName="endDate"
                         appendTo="body"
-                        styleClass="w-100 mb-2"
+                        styleClass="w-100"
                         [class.is-invalid]="endDateControl?.invalid && endDateControl?.touched"
                         [minDate]="minEndDate"
                         showIcon
                         iconDisplay="input"
-                        placeholder="dd-mm-yy"
+                        placeholder="dd-mm-yyyy"
                         dateFormat="dd-mm-yy"
                         panelStyleClass="z-index-1"
                     />
-                    <div class="text-danger" *ngIf="endDateControl?.invalid && endDateControl?.touched">
+                    <div class="invalid-feedback" *ngIf="endDateControl?.invalid && endDateControl?.touched">
                         <small *ngIf="endDateControl?.errors?.['required']">End date is required</small>
                     </div>
                 </div>
@@ -97,11 +97,23 @@
                             </button>
                             <h5 class="fs-13 fw-regular mt-2">CSV or XLSX - Maximum file size: 5 MB</h5>
 
-                            <a class="d-block fs-16 fw-regular text-decoration-underline color-gray-900 mt-2"
-                                id="download-sample-file-link">
-                                <i class="z-index-1 fa fa-sign-in fa-rotate-90 fs-22 color-gray-600 me-2"></i>
-                                Download sample file
-                            </a>
+                            <div
+                                id="download-sample-file-link"
+                                class="download-sample-area mt-2"
+                                role="button"
+                                tabindex="0"
+                                (click)="downloadSampleFile()"
+                                [class.disabled]="isDownloadingSample"
+                                [attr.aria-disabled]="isDownloadingSample">
+                                          <i class="download-icon color-gray-600"
+                                        [ngClass]="isDownloadingSample ? 'fa fa-spinner fa-spin' : 'fa fa-sign-in fa-rotate-90'"
+                                        aria-hidden="true">
+                                </i>
+                                <span class="fs-16 fw-regular">
+                                    <span *ngIf="!isDownloadingSample">Download sample file</span>
+                                    <span *ngIf="isDownloadingSample">Downloading...</span>
+                                </span>
+                            </div>
                         </div>
                     </ng-template>
 

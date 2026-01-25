@@ -1,4 +1,4 @@
-import { Component, Injector, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, Injector, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FiltersSidebarComponent } from '../../../shared/components/filters-sidebar/filters-sidebar.component';
 import { ResourcesSidebarComponent } from '../../../shared/components/resources-sidebar/resources-sidebar.component';
@@ -10,7 +10,6 @@ import { PlanningMode } from '../../../../core/domain/constants/planning-mode.en
 import {
   Client,
   GetJobPackagesV1RequestDto,
-  GetJobPackagesV1ResponseDto,
   GetJobPackagesStatusEnum,
   GetBasePlanUnassignedJobsRequestDto,
   GetWorkersForBasePlanDto,
@@ -23,7 +22,9 @@ import {
   ModifyPackageJobsRequestDto,
   JobSourceType,
   AssignVehicleToJobPackageRequestDto,
-  AssignUnAssignWorkerFromPackageRequestDto
+  AssignUnAssignWorkerFromPackageRequestDto,
+  JobPackageResponse,
+  DeleteBasePlanJobPackageRequestDto
 } from '../../../../data/api-clients/daily-planning-api.client';
 import { takeUntil } from 'rxjs/operators';
 import { ActivatedRoute } from '@angular/router';
@@ -35,11 +36,14 @@ import { AddEditJobPackageConfig } from '../../../../core/domain/models/add-edit
 import { HttpErrorResponse } from '@angular/common/module.d-CnjH8Dlt';
 import { EditJobPackageData } from '../../../../core/domain/models/add-edit-job-package/edit-job-package-data.model';
 import { ConfirmationDialogComponent } from '../../../shared/confirmation-dialog/confirmation-dialog.component';
+import { FuturePlansDialogComponent, FuturePlansDialogAction, FuturePlansDialogResult } from '../../../shared/future-plans-dialog/future-plans-dialog.component';
 import { DynamicDialogRef } from 'primeng/dynamicdialog';
+import { formatDateToDDMMYYYY, toIsoDateOnly } from 'core-ui-salary-calculation-library/src/lib/data/shared/helper.function';
+import { DateHelper } from 'core-ui-daily-planning-library/src/lib/core/utils/date.helper';
 
 interface JobPackageFilters {
   area: string | null;
-  day?: DayOfWeek | null;
+  day?: string | null | undefined;
   date?: Date | null;
   status: JobPackageStatus;
 }
@@ -62,7 +66,7 @@ export class BasePlanJobPackagesComponent extends DailyPlanningPortalBase implem
   @ViewChild(JobPackagesHeaderComponent) jobPackagesHeaderComponent!: JobPackagesHeaderComponent;
 
   isLoadingJobPackages: boolean = false;
-  jobPackages: GetJobPackagesV1ResponseDto[] = [];
+  jobPackages: JobPackageResponse[] = [];
   unassignedJobs: BasePlanUnassignedJobsDto[] = [];
   serviceWorkers: BasePlanServiceWorkerDto[] = [];
   planId?: string | undefined;
@@ -81,7 +85,7 @@ export class BasePlanJobPackagesComponent extends DailyPlanningPortalBase implem
     this.filteredRecords = count;
   }
 
-  constructor(injector: Injector, private route: ActivatedRoute) {
+  constructor(injector: Injector, private route: ActivatedRoute, private ngZone: NgZone) {
     super(injector);
         this.isLoadingJobPackages = true;
 
@@ -92,11 +96,14 @@ export class BasePlanJobPackagesComponent extends DailyPlanningPortalBase implem
   }
 
 
-  newJobPackage(mode: DialogMode, jobPackage?: GetJobPackagesV1ResponseDto): void {
+  newJobPackage(mode: DialogMode, jobPackage?: JobPackageResponse): void {
+
+    const dayName = this.dayOfWeekToString(this.lastFilters?.day || undefined);
 
     const data: AddEditJobPackageConfig = {
       mode: mode,
-      path: PlanningMode.BasePlan
+      path: PlanningMode.BasePlan,
+      dayOfWeek: dayName,
     };
 
     if(mode === DialogMode.Edit && jobPackage) {
@@ -142,7 +149,12 @@ export class BasePlanJobPackagesComponent extends DailyPlanningPortalBase implem
 
   }
 
-  deleteJobPackage(jobPackage: GetJobPackagesV1ResponseDto){
+  deleteJobPackage(jobPackage: JobPackageResponse){
+
+      const request = new DeleteBasePlanJobPackageRequestDto({
+        jobPackageId: jobPackage.id!,
+        organizationUnitId: this.lastFilters?.area || undefined,
+      });
       
       const ref = this.dialogService.open(ConfirmationDialogComponent, {
           header: 'Delete Job Package',
@@ -162,10 +174,10 @@ export class BasePlanJobPackagesComponent extends DailyPlanningPortalBase implem
           },
         });
 
-        ref.onClose.subscribe((result: any) => {
+        ref.onClose.subscribe(async (result: any) => {
 
           if (result?.confirmed) {
-            this.onDeleteJobPackage(jobPackage.id!);
+            this.confirmAndApplyToFutureDailyPlans(request, (req) => this.onDeleteJobPackage(req));
           }
 
         });
@@ -208,7 +220,7 @@ export class BasePlanJobPackagesComponent extends DailyPlanningPortalBase implem
     }
 
     // Map numeric DayOfWeek enum (e.g. 1) to full name (e.g. 'Monday') expected by API
-    const dayName = filters.day != null ? DayOfWeek[filters.day] : undefined;
+    const dayName = this.dayOfWeekToString(filters.day || undefined);
 
     const request = new GetJobPackagesV1RequestDto({
       organizationUnitId: filters.area || undefined,
@@ -247,6 +259,8 @@ export class BasePlanJobPackagesComponent extends DailyPlanningPortalBase implem
     request.daysOfWeek = formData.daysOfWeek;
     request.tags = commaSeparatedTags
     request.basePlanId = this.planId;
+    request.dayOfWeek = formData.dayOfWeek;
+    request.resetFuturePlans = formData.resetFuturePlans;
 
     this.apiClient.createNewJobPackage(request)
     .pipe(withLoaderService(this.loaderService, 'Add_Edit_JobPackage'), takeUntil(this.destroyer$))
@@ -321,7 +335,9 @@ export class BasePlanJobPackagesComponent extends DailyPlanningPortalBase implem
     request.organizationUnitId = formData.organizationUnitId;
     request.daysOfWeek = formData.daysOfWeek;
     request.tags = commaSeparatedTags;
-
+    request.dayOfWeek = formData.dayOfWeek;
+    request.resetFuturePlans = formData.resetFuturePlans;
+    
     this.apiClient.editJobPackage(request)
     .pipe(withLoaderService(this.loaderService, 'Add_Edit_JobPackage'), takeUntil(this.destroyer$))
     .subscribe({
@@ -377,7 +393,8 @@ export class BasePlanJobPackagesComponent extends DailyPlanningPortalBase implem
   }
 
   private loadUnassignedJobs(filters: JobPackageFilters): void {
-    const dayName = filters.day != null ? DayOfWeek[filters.day] : undefined;
+
+    const dayName = this.dayOfWeekToString(filters.day || undefined);
 
     const request = new GetBasePlanUnassignedJobsRequestDto({
       basePlanId: this.planId,
@@ -473,7 +490,18 @@ export class BasePlanJobPackagesComponent extends DailyPlanningPortalBase implem
       });
   }
 
+  private shouldReloadAllPackages(request: ModifyPackageJobsRequestDto): boolean {
+    // Only reload if job counts changed (moved between packages or to/from unassigned)
+    const unassignedJobsAffected = request.sourceType === JobSourceType._2 || request.targetType === JobSourceType._2;
+    const movedBetweenPackages = request.sourcePackageId !== request.targetPackageId;
+    return unassignedJobsAffected || movedBetweenPackages;
+  }
+
   onJobModified(request: ModifyPackageJobsRequestDto): void {
+    this.confirmAndApplyToFutureDailyPlans(request, (req) => this.modifyPackageJobs(req));
+  }
+
+  modifyPackageJobs(request: ModifyPackageJobsRequestDto): void {
     this.apiClient.modifyPackageJobs(request)
       .pipe(withLoaderService(this.loaderService, 'ModifyingJobsInPackage'), takeUntil(this.destroyer$))
       .subscribe({
@@ -526,8 +554,8 @@ export class BasePlanJobPackagesComponent extends DailyPlanningPortalBase implem
               }
             }
 
-            // Reload job packages list to update counts
-            if (this.lastFilters) {
+            // Only reload job packages list if needed
+            if (this.shouldReloadAllPackages(request) && this.lastFilters) {
               this.loadJobPackages(this.lastFilters);
             }
           } else {
@@ -549,11 +577,17 @@ export class BasePlanJobPackagesComponent extends DailyPlanningPortalBase implem
       });
   }
 
-  dayOfWeekToString(day: DayOfWeek): string {
-    return DayOfWeek[day];
+  dayOfWeekToString(day: string | undefined | DayOfWeek): string {
+    if(!day) return '';
+    return String(DayOfWeek[day as keyof typeof DayOfWeek]);
   }
 
   onAssignVehicle(request: AssignVehicleToJobPackageRequestDto): void {
+    request.organizationUnitId = this.lastFilters?.area || undefined;
+    this.confirmAndApplyToFutureDailyPlans(request, (req) => this.assignVehicleToJobPackage(req));
+  }
+
+  assignVehicleToJobPackage(request: AssignVehicleToJobPackageRequestDto): void {
 
     this.apiClient.assignVehicleToJobPackage(request)
       .pipe(withLoaderService(this.loaderService, 'AssigningVehicle'), takeUntil(this.destroyer$))
@@ -588,6 +622,9 @@ export class BasePlanJobPackagesComponent extends DailyPlanningPortalBase implem
 
   onAssignWorker(request: AssignUnAssignWorkerFromPackageRequestDto): void {
 
+    request.organizationUnitId = this.lastFilters?.area || undefined;
+    request.dayOfWeek = this.lastFilters?.day || undefined;
+
     const jobPackage = this.jobPackages.find(pkg => pkg.id === request.packageId);
     const worker = this.serviceWorkers.find(wkr => wkr.id === request.workerId);
 
@@ -616,22 +653,25 @@ export class BasePlanJobPackagesComponent extends DailyPlanningPortalBase implem
             workerName,
             worker.workerId ?? '',
           ],
-          confirmation: 'Are you sure you want to reassign the service worker for this job package?'
+          confirmation: 'Are you sure you want to reassign the service worker for this job package?',
         }
       });
 
       ref.onClose.subscribe((result: any) => {
         if (result?.confirmed) {
-          this.assignUnAssignWorker(request);
+          this.confirmAndApplyToFutureDailyPlans(request, (req) => this.assignUnAssignWorker(req));
         }
       });
 
     } else {
-      this.assignUnAssignWorker(request);
+      this.confirmAndApplyToFutureDailyPlans(request, (req) => this.assignUnAssignWorker(req));
     }
   }
 
   assignUnAssignWorker(request: AssignUnAssignWorkerFromPackageRequestDto): void {
+
+    const successMessage = request.workerId ? this.translate.instant('WORKER_ASSIGNED_SUCCESS') : this.translate.instant('WORKER_UNASSIGNED_SUCCESS');
+    const errorMessage = request.workerId ? this.translate.instant('WORKER_ASSIGNED_ERROR') : this.translate.instant('WORKER_UNASSIGNED_ERROR');
 
     this.apiClient.assignUnAssignWorkerFromJobPackage(request)
       .pipe(withLoaderService(this.loaderService, 'ModifyingJobsInPackage'), takeUntil(this.destroyer$))
@@ -641,7 +681,7 @@ export class BasePlanJobPackagesComponent extends DailyPlanningPortalBase implem
             this.messageService.add({
               severity: 'success',
               summary: this.translate.instant('SUCCESS'),
-              detail: this.translate.instant('WORKER_ASSIGNED_SUCCESS')
+              detail: successMessage
             });
 
             if (this.lastFilters) {
@@ -654,7 +694,7 @@ export class BasePlanJobPackagesComponent extends DailyPlanningPortalBase implem
             this.messageService.add({
               severity: 'error',
               summary: this.translate.instant('ERROR_TITLE'),
-              detail: response.message || this.translate.instant('SOMETHING_WENT_WRONG_TRY_AGAIN')
+              detail: errorMessage
             });
           }
         },
@@ -663,14 +703,14 @@ export class BasePlanJobPackagesComponent extends DailyPlanningPortalBase implem
           this.messageService.add({
             severity: 'error',
             summary: this.translate.instant('ERROR_TITLE'),
-            detail: this.translate.instant('SOMETHING_WENT_WRONG_TRY_AGAIN')
+            detail: errorMessage
           });
         }
       });
 
   }
 
-  onUnassignWorker(jobPackage: GetJobPackagesV1ResponseDto): void {
+  onUnassignWorker(jobPackage: JobPackageResponse): void {
 
     const workerName = jobPackage.worker
       ? `${jobPackage.worker.firstName} ${jobPackage.worker.lastName}`
@@ -699,18 +739,19 @@ export class BasePlanJobPackagesComponent extends DailyPlanningPortalBase implem
       if (result?.confirmed) {
         const request = new AssignUnAssignWorkerFromPackageRequestDto({
           packageId: jobPackage.id!,
-          workerId: undefined
+          workerId: undefined,
+          organizationUnitId: this.lastFilters?.area || undefined
         });
-        this.assignUnAssignWorker(request);
+
+        this.confirmAndApplyToFutureDailyPlans(request, (req) => this.assignUnAssignWorker(req));
       }
 
     });
 
   }
 
-  onDeleteJobPackage(jobPackageId: string): void {
-
-    this.apiClient.deleteJobPackage(jobPackageId)
+  onDeleteJobPackage(request: DeleteBasePlanJobPackageRequestDto): void {
+    this.apiClient.deleteJobPackage(request)
       .pipe(withLoaderService(this.loaderService, 'DeletingJobPackage'), takeUntil(this.destroyer$))
       .subscribe({
         next: (response) => {
@@ -750,5 +791,50 @@ export class BasePlanJobPackagesComponent extends DailyPlanningPortalBase implem
     }
 
   }
+
+  confirmAndApplyToFutureDailyPlans<T extends { resetFuturePlans?: boolean; dayOfWeek?: string }>(request: T, callback: (request: T) => void): void {
+
+    const dayName = this.dayOfWeekToString(this.lastFilters?.day || undefined);
+    request.dayOfWeek = dayName;
+
+    const tryOpenDialog = () => {
+
+      const ref: DynamicDialogRef | null = this.dialogService.open(FuturePlansDialogComponent, {
+        header: 'Existing Daily Plans',
+        styleClass: 'p-dialog-warning p-dialog-draggable dialog-accent',
+        dismissableMask: true,
+        closable: true,
+        modal: true,
+        draggable: true,
+        focusOnShow: false,
+        data: {
+          messages: [
+            `This action will reset the following existing future daily plans for ${dayName} to match the updated base plan.`,
+          ],
+          confirmation: 'Do you want to apply these changes to future daily plans?'
+        }
+      });
+
+      if (!ref) {
+        // Retry after 50ms until the dialog opens
+        setTimeout(tryOpenDialog, 50);
+        return;
+      }
+
+      ref.onClose.subscribe((result: FuturePlansDialogResult | undefined) => {
+
+        if (!result || result.action === FuturePlansDialogAction.Cancel) {
+          return;
+        }
+
+        request.resetFuturePlans = result.action === FuturePlansDialogAction.Update;
+        callback(request);
+      });
+      
+    };
+
+    tryOpenDialog();
+  }
+
 
 }

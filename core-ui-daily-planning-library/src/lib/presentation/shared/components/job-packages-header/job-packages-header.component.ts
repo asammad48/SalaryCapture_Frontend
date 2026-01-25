@@ -24,8 +24,10 @@ import { PlanningMode } from '../../../../core/domain/constants/planning-mode.en
 })
 export class JobPackagesHeaderComponent extends DailyPlanningPortalBase {
 
-  @Input() isDailyPlanReadMode: boolean = false;
-  @Input() isDailyPlanEditMode: boolean = false;
+  @Input() isLoadingJobPackages: boolean = false;
+  @Input() isBasePlanFallbackMode: boolean = false;
+  @Input() isFutureDatesMode: boolean = false;
+  @Input() isPreviousDatesMode: boolean = false;
   @Input() planningMode: PlanningMode = PlanningMode.BasePlan;
 
   @Input() totalRecords = 0;
@@ -33,6 +35,7 @@ export class JobPackagesHeaderComponent extends DailyPlanningPortalBase {
   @Output() sortToggled = new EventEmitter<number>();
   sortAsc = true;
   isSearchOpen = false;
+  isSeachCollapsed = true;
   searchValue = '';
   @Output() confirmedCreate = new EventEmitter<DialogMode>();
   @Output() searchChanged = new EventEmitter<string>();
@@ -53,6 +56,7 @@ export class JobPackagesHeaderComponent extends DailyPlanningPortalBase {
   openSearch(event: Event, searchJob: AutoComplete) {
     this.stopProp(event);
     this.isSearchOpen = true;
+    this.isSeachCollapsed = false;
     setTimeout(() => {
       searchJob?.inputEL?.nativeElement.focus();
     }, 50);
@@ -66,6 +70,7 @@ export class JobPackagesHeaderComponent extends DailyPlanningPortalBase {
         this.isSearchOpen = false;
       }
     }, 150);
+    this.applyCollapsedClass();
   }
   stopProp(event: Event) {
     event.stopPropagation();
@@ -75,6 +80,15 @@ export class JobPackagesHeaderComponent extends DailyPlanningPortalBase {
     if (!this.searchValue) {
       this.isSearchOpen = false;
     }
+    this.applyCollapsedClass();
+  }
+
+  applyCollapsedClass(){
+     if (!this.isSearchOpen) {
+        setTimeout(() => {
+          this.isSeachCollapsed = true;
+        }, 150);
+      }
   }
 
   onSearchInputChange(value: string) {
@@ -86,7 +100,7 @@ export class JobPackagesHeaderComponent extends DailyPlanningPortalBase {
   }
 
   showReadModeBadge(): boolean {
-    return this.planningMode === PlanningMode.DailyPlan && this.isDailyPlanReadMode;
+    return this.planningMode === PlanningMode.DailyPlan && (this.isBasePlanFallbackMode || this.isPreviousDatesMode);
   }
   
 }

@@ -61,4 +61,26 @@ export class DateHelper {
       return WEEKDAY_NAMES[dayIndex];
     }
 
+    static getTomorrowDayOfWeek(): number {
+      const today = new Date();
+      const tomorrow = new Date(today);
+      tomorrow.setDate(today.getDate() + 1);
+      const dayIndex = tomorrow.getDay();
+      return dayIndex === 0 ? 7 : dayIndex; 
+    }
+    
+    static getTomorrowDate(): Date {
+      const today = new Date();
+      const tomorrow = new Date(today);
+      tomorrow.setDate(today.getDate() + 1);
+      return tomorrow;
+    }
+
+    static isBeforeTomorrow(date: Date): boolean {
+        const input = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        const tomorrowBase = DateHelper.getTomorrowDate();
+        const tomorrow = new Date(tomorrowBase.getFullYear(), tomorrowBase.getMonth(), tomorrowBase.getDate());
+        return input < tomorrow;
+    }
+
 }

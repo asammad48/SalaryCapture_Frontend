@@ -44,17 +44,17 @@
                     (onNodeCollapse)="onNodeCollapse($event)"
                     [class.is-invalid]="organizationUnitIdControl?.invalid && organizationUnitIdControl?.touched">
                 </p-treeselect>
-                <div class="text-danger mt-1" *ngIf="organizationUnitIdControl?.invalid && organizationUnitIdControl?.touched">
+                <div class="invalid-feedback mt-1" *ngIf="organizationUnitIdControl?.invalid && organizationUnitIdControl?.touched">
                     <small *ngIf="organizationUnitIdControl?.errors?.['required']">Organization unit is required</small>
                 </div>
             </div>
 
             <!-- Days of the Week - Only show in BasePlan mode -->
-            <div *ngIf="isBasePlan">
+            <div *ngIf="isBasePlan" class="mb-3">
                 <label class="form-label mb-0">
                     Days of the Week <span class="text-danger">*</span>
                 </label>
-                <div class="d-flex flex-wrap row-gap-2 mt-2 mb-3" formArrayName="daysOfWeek">
+                <div class="d-flex flex-wrap row-gap-2 mt-2" formArrayName="daysOfWeek">
                     <div class="pe-2 w-20" *ngFor="let day of daysOfWeek">
                         <label
                             class="d-flex align-items-center gap-2 border border-gray-400 fw-normal p-2 rounded-px-5 text-secondary fs-14 cursor-pointer"
@@ -73,7 +73,7 @@
                         </label>
                     </div>
                 </div>
-                <div class="text-danger" *ngIf="daysOfWeekControl?.invalid && daysOfWeekControl?.touched">
+                <div class="invalid-feedback" *ngIf="daysOfWeekControl?.invalid && daysOfWeekControl?.touched">
                     <small *ngIf="daysOfWeekControl?.errors?.['required']">At least one day must be selected</small>
                     <small *ngIf="!daysOfWeekControl?.errors?.['required'] && daysOfWeekControl?.errors?.['minArrayLength']">At least one day must be selected</small>
                 </div>

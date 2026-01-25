@@ -1,6 +1,6 @@
 <dp-progress-loading loaderKey="LoadingJobPackages"></dp-progress-loading>
 @if(!isLoadingJobPackages && jobPackagesData.length > 0){
-  <div class="overflow-auto" [ngClass]="filteredJobPackages.length > pageSize ? 'vh-243':'vh-170'" cdkScrollable>
+  <div class="overflow-auto" [ngClass]="'vh-228'" cdkScrollable>
       <p-accordion [value]="ActivePlanAccordion"
         collapseIcon="fa fa-chevron-down fs-14 color-gray-700 min-w-px-16"
         expandIcon="fa fa-chevron-right fs-14 color-gray-700 min-w-px-16" (onOpen)="onAccordionOpenEvent($event)">
@@ -172,7 +172,7 @@
                       @if(packageDetails.otherJobs && packageDetails.otherJobs.length > 0){
                         @for(otherJobPackage of packageDetails.otherJobs; track otherJobPackage.id; let pkgIndex = $index; let last = $last){
                         <div
-                          class="d-flex justify-content-between pe-10 ps-18 py-10 rounded-px-6 border-gray-400 border cursor-move"
+                          class="d-flex justify-content-between pe-20 ps-18 py-10 rounded-px-6 border-gray-400 border cursor-move"
                           [ngClass]="{'mb-2': !last}" cdkDrag [cdkDragData]="otherJobPackage">
                           <div
                             class="custom-placeholder min-h-px-58 bg-warning-100 border-warning-400 my-2 rounded-px-6 z-index-99 position-relative"
@@ -194,8 +194,9 @@
                             <p-select
                             
                             [options]="vehicles" optionLabel="typeName" [filter]="true"
-                              [ngModel]="otherJobPackage.vehicle || getSelectedVehicle(pkgIndex)"
-                              (onChange)="onVehicleChange($event, pkgIndex)" panelStyleClass="width-13 translate-x-n170"
+                              [ngModel]="getSelectedVehicle(otherJobPackage)"
+                              (onChange)="onVehicleChange($event, otherJobPackage)" 
+                              panelStyleClass="width-13 translate-x-n170"
                               id="select-vehicle-base-plan" appendTo="body"
                               class="circle-select circle-select-primary circle-select-size-30" [disabled]="!isActionAllowed()">
                               <ng-template #selectedItem let-selectedOption>
@@ -219,7 +220,7 @@
                       } @else {
                       <!-- Empty drop zone placeholder -->
                       <div
-                        class="d-flex justify-content-between pe-10 ps-18 py-10 rounded-px-6 border-gray-400 border border-dashed">
+                        class="d-flex justify-content-between pe-18 ps-18 py-10 rounded-px-6 border-gray-400 border border-dashed">
                         <div class="d-flex gap-4 align-items-center w-100">
                           <div class="d-flex align-items-center justify-content-center min-w-px-26 height-px-26 rounded-circle bg-gray-300
                                             border border-gray-400 color-gray-700 z-index-99">
@@ -251,7 +252,6 @@
   </div>
 
   <p-paginator
-          *ngIf="filteredJobPackages.length > pageSize"
           (onPageChange)="onPageChange($event)"
           [first]="first"
           [rows]="pageSize"
@@ -259,7 +259,7 @@
           [showCurrentPageReport]="true"
           [showJumpToPageDropdown]="false"
           [rowsPerPageOptions]="[20, 50, 100]"
-          currentPageReportTemplate="Showing {first} to {last} out of {totalRecords}" styleClass="position-relative paginator-current-start py-3" class="paginator-bg-white"/>
+          currentPageReportTemplate="Showing {first} to {last} out of {totalRecords}" styleClass="position-relative paginator-current-start" class="paginator-bg-white"/>
 }
 
 

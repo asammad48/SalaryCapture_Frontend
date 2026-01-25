@@ -39,7 +39,7 @@
               <div class="w-80 pe-2">
                 <h6 class="fw-medium m-0 fs-14 line-clamp-1 color-gray-900"
                   [title]="unassignedWorker.firstName">
-                  {{ unassignedWorker.firstName + " " + (unassignedWorker?.lastName || "") }}
+                  {{ unassignedWorker.firstName }}
                 </h6>
                 <span class="fs-14 color-gray-600"
                   *ngIf="unassignedWorker.workerId !==null">{{unassignedWorker.workerId}}<br /></span>

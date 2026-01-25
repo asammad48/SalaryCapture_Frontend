@@ -11,7 +11,6 @@ import { PlanningMode } from '../../../core/domain/constants/planning-mode.enum'
 import {
   Client,
   GetJobPackagesV1RequestDto,
-  GetJobPackagesV1ResponseDto,
   GetJobPackagesStatusEnum,
   GetBasePlanUnassignedJobsRequestDto,
   GetWorkersForBasePlanDto,
@@ -30,7 +29,8 @@ import {
   ModifyDailyPlanPackageJobsRequestDto,
   ResetDailyPlanRequestDto,
   GetDailyPlanUnassignedJobsRequestDto,
-  CreateDailyPlanDto
+  CreateDailyPlanDto,
+  JobPackageResponse
 } from '../../../data/api-clients/daily-planning-api.client';
 import { takeUntil } from 'rxjs/operators';
 import { ActivatedRoute } from '@angular/router';
@@ -61,13 +61,13 @@ import { DailyPlanViewMode } from '../../../core/domain/constants/daily-plan/dai
 })
 export class DailyPlanComponent extends DailyPlanningPortalBase implements OnInit, OnDestroy {
 
-  dailyPlanViewMode: DailyPlanViewMode = DailyPlanViewMode.EDIT;
+  dailyPlanViewMode: DailyPlanViewMode = DailyPlanViewMode.FUTURE_DATES;
 
   @ViewChild(JobPackageAccordionComponent) jobPackageAccordionComponent!: JobPackageAccordionComponent;
   @ViewChild(JobPackagesHeaderComponent) jobPackagesHeaderComponent!: JobPackagesHeaderComponent;
 
   isLoadingJobPackages: boolean = false;
-  jobPackages: GetJobPackagesV1ResponseDto[] = [];
+  jobPackages: JobPackageResponse[] = [];
   unassignedJobs: BasePlanUnassignedJobsDto[] = [];
   serviceWorkers: BasePlanServiceWorkerDto[] = [];
   planId?: string | undefined;
@@ -96,9 +96,9 @@ export class DailyPlanComponent extends DailyPlanningPortalBase implements OnIni
   }
 
 
-  newJobPackage(mode: DialogMode, jobPackage?: GetJobPackagesV1ResponseDto): void {
+  newJobPackage(mode: DialogMode, jobPackage?: JobPackageResponse): void {
 
-    if(this.isDailyPlanReadMode) return;
+    if(this.isBasePlanStateEnabled()) return;
 
     const data: AddEditJobPackageConfig = {
       mode: mode,
@@ -144,9 +144,9 @@ export class DailyPlanComponent extends DailyPlanningPortalBase implements OnIni
     });
   }
 
-  deleteJobPackage(jobPackage: GetJobPackagesV1ResponseDto){
+  deleteJobPackage(jobPackage: JobPackageResponse){
 
-    if(this.isDailyPlanReadMode) return;
+    if(this.isBasePlanStateEnabled()) return;
 
       const ref = this.dialogService.open(ConfirmationDialogComponent, {
           header: 'Delete Job Package',
@@ -204,6 +204,8 @@ export class DailyPlanComponent extends DailyPlanningPortalBase implements OnIni
 
   loadJobPackages(filters: JobPackageFilters | undefined): void {
 
+    this.isLoadingJobPackages = true;
+
     if(!filters) {
       this.isLoadingJobPackages = false;
       return;
@@ -224,22 +226,44 @@ export class DailyPlanComponent extends DailyPlanningPortalBase implements OnIni
 
           this.jobPackages = response.data || [];
 
-          if(this.jobPackagesHeaderComponent) {
+          if (this.jobPackagesHeaderComponent) {
             this.jobPackagesHeaderComponent.searchValue = '';
           }
 
-          if(this.jobPackages.length === 0) {
-            this.dailyPlanViewMode = DailyPlanViewMode.READ;
-            this.isLoadingJobPackages = true;
-            this.loadJobPackagesForBasePlan(filters);
+          const isPrev = this.isBeforeTomorrow(filters.date!);
+          const hasPackages = this.jobPackages.length > 0;
+
+          if (isPrev) {
+
+            if (!hasPackages) {
+              // Previous date with no daily packages - show base plan (read-only)
+              this.dailyPlanViewMode = DailyPlanViewMode.BASE_PLAN_FALLBACK;
+              this.isLoadingJobPackages = true;
+              this.loadJobPackagesForBasePlan(filters);
+            } else {
+              // Previous date with daily packages - show daily packages (read-only)
+              this.dailyPlanViewMode = DailyPlanViewMode.PREVIOUS_DATES;
+              this.isLoadingJobPackages = false;
+              this.loadUnassignedJobs(filters);
+            }
 
           } else {
-            this.dailyPlanViewMode = DailyPlanViewMode.EDIT;
-            this.isLoadingJobPackages = false;
-            this.loadUnassignedJobs(filters);
-          }
 
+            if (!hasPackages) {
+              // Future date with no daily packages - show base plan (read-only)
+              this.dailyPlanViewMode = DailyPlanViewMode.BASE_PLAN_FALLBACK;
+              this.isLoadingJobPackages = true;
+              this.loadJobPackagesForBasePlan(filters);
+            } else {
+              // Future date with daily packages - show daily packages (editable)
+              this.dailyPlanViewMode = DailyPlanViewMode.FUTURE_DATES;
+              this.isLoadingJobPackages = false;
+              this.loadUnassignedJobs(filters);
+            }
+
+          }
         },
+
 
         error: () => {
           this.messageService.add({
@@ -254,11 +278,13 @@ export class DailyPlanComponent extends DailyPlanningPortalBase implements OnIni
       });
   }
 
-
+  isBeforeTomorrow(date: Date): boolean {
+    return DateHelper.isBeforeTomorrow(date);
+  }
 
   private createJobPackage(formData: any, ref: DynamicDialogRef): void {
 
-    if(this.isDailyPlanReadMode) return;
+    if(this.isBasePlanStateEnabled()) return;
 
     const commaSeparatedTags = formData.tags && formData.tags.length > 0 ? formData.tags.join(',') : '';
 
@@ -316,7 +342,7 @@ export class DailyPlanComponent extends DailyPlanningPortalBase implements OnIni
 
   private updateJobPackage(formData: any, ref: DynamicDialogRef): void {
 
-    if(this.isDailyPlanReadMode) return;
+    if(this.isBasePlanStateEnabled()) return;
 
     const commaSeparatedTags = formData.tags && formData.tags.length > 0 ? formData.tags.join(',') : '';
 
@@ -382,7 +408,7 @@ export class DailyPlanComponent extends DailyPlanningPortalBase implements OnIni
 
   private loadUnassignedJobs(filters: JobPackageFilters): void {
 
-    if(this.isDailyPlanReadMode) return;
+    if(this.isBasePlanStateEnabled()) return;
 
     const request = new GetDailyPlanUnassignedJobsRequestDto({
       organizationUnitId: filters.area || undefined,
@@ -407,7 +433,7 @@ export class DailyPlanComponent extends DailyPlanningPortalBase implements OnIni
 
   private loadUnassignedJobsForBasePlan(filters: JobPackageFilters): void {
 
-    if(this.isDailyPlanEditMode) return;
+    if(!this.isBasePlanStateEnabled()) return;
 
     const request = new GetBasePlanUnassignedJobsRequestDto({
       basePlanId: undefined,
@@ -485,16 +511,16 @@ export class DailyPlanComponent extends DailyPlanningPortalBase implements OnIni
 
   loadPackageDetails(packageId: string): void {
 
-    if(this.isDailyPlanReadMode) {
+    // Use daily plan API if we have daily packages (FUTURE_DATES or PREVIOUS_DATES with packages)
+    // Use base plan API only when no daily packages exist (BASE_PLAN_FALLBACK mode)
+    if(this.isBasePlanFallbackMode) {
       this.loadPackageDetailsForBasePlan(packageId);
-
-    } else if(this.isDailyPlanEditMode) {
+      
+    } else {
       this.loadPackageDetailsForDailyPlan(packageId);
     }
 
-  }
-
-  loadPackageDetailsForDailyPlan(packageId: string): void {
+  }  loadPackageDetailsForDailyPlan(packageId: string): void {
     this.apiClient.getDailyPlanPackageDetailsById(packageId)
     .pipe(takeUntil(this.destroyer$))
     .subscribe({
@@ -513,9 +539,16 @@ export class DailyPlanComponent extends DailyPlanningPortalBase implements OnIni
     });
   }
 
+  private shouldReloadAllPackages(request: ModifyPackageJobsRequestDto): boolean {
+    // Only reload if job counts changed (moved between packages or to/from unassigned)
+    const unassignedJobsAffected = request.sourceType === JobSourceType._2 || request.targetType === JobSourceType._2;
+    const movedBetweenPackages = request.sourcePackageId !== request.targetPackageId;
+    return unassignedJobsAffected || movedBetweenPackages;
+  }
+
   onJobModified(request: ModifyPackageJobsRequestDto): void {
 
-    if(this.isDailyPlanReadMode) return;
+    if(this.isBasePlanStateEnabled()) return;
 
     this.apiClient.modifyDailyPlanPackageJobs(request)
       .pipe(withLoaderService(this.loaderService, 'ModifyingJobsInPackage'), takeUntil(this.destroyer$))
@@ -569,8 +602,8 @@ export class DailyPlanComponent extends DailyPlanningPortalBase implements OnIni
               }
             }
 
-            // Reload job packages list to update counts
-            if (this.lastFilters) {
+            // Only reload job packages list if needed
+            if (this.shouldReloadAllPackages(request) && this.lastFilters) {
               this.loadJobPackages(this.lastFilters);
             }
           } else {
@@ -598,7 +631,7 @@ export class DailyPlanComponent extends DailyPlanningPortalBase implements OnIni
 
   onAssignVehicle(request: AssignVehicleToJobPackageRequestDto): void {
 
-    if(this.isDailyPlanReadMode) return;
+    if(this.isBasePlanStateEnabled()) return;
 
     this.apiClient.assignVehicleToDailyJobPackage(request)
       .pipe(withLoaderService(this.loaderService, 'AssigningVehicle'), takeUntil(this.destroyer$))
@@ -633,7 +666,7 @@ export class DailyPlanComponent extends DailyPlanningPortalBase implements OnIni
 
   onAssignWorker(request: AssignUnAssignWorkerFromPackageRequestDto): void {
 
-    if(this.isDailyPlanReadMode) return;
+    if(this.isBasePlanStateEnabled()) return;
 
     const jobPackage = this.jobPackages.find(pkg => pkg.id === request.packageId);
     const worker = this.serviceWorkers.find(wkr => wkr.id === request.workerId);
@@ -679,7 +712,10 @@ export class DailyPlanComponent extends DailyPlanningPortalBase implements OnIni
 
   assignUnAssignWorker(request: AssignUnAssignWorkerFromPackageRequestDto): void {
 
-    if(this.isDailyPlanReadMode) return;
+    if(this.isBasePlanStateEnabled()) return;
+
+    const successMessage = request.workerId ? this.translate.instant('WORKER_ASSIGNED_SUCCESS') : this.translate.instant('WORKER_UNASSIGNED_SUCCESS');
+    const errorMessage = request.workerId ? this.translate.instant('WORKER_ASSIGNED_ERROR') : this.translate.instant('WORKER_UNASSIGNED_ERROR');
 
     this.apiClient.assignUnAssignWorkerFromDailyJobPackage(request)
       .pipe(withLoaderService(this.loaderService, 'ModifyingJobsInPackage'), takeUntil(this.destroyer$))
@@ -689,7 +725,7 @@ export class DailyPlanComponent extends DailyPlanningPortalBase implements OnIni
             this.messageService.add({
               severity: 'success',
               summary: this.translate.instant('SUCCESS_TITLE'),
-              detail: this.translate.instant('WORKER_ASSIGNED_SUCCESS')
+              detail: successMessage
             });
 
             if (this.lastFilters) {
@@ -702,7 +738,7 @@ export class DailyPlanComponent extends DailyPlanningPortalBase implements OnIni
             this.messageService.add({
               severity: 'error',
               summary: this.translate.instant('ERROR_TITLE'),
-              detail: response.message || this.translate.instant('SOMETHING_WENT_WRONG_TRY_AGAIN')
+              detail: errorMessage
             });
           }
         },
@@ -711,16 +747,16 @@ export class DailyPlanComponent extends DailyPlanningPortalBase implements OnIni
           this.messageService.add({
             severity: 'error',
             summary: this.translate.instant('ERROR_TITLE'),
-            detail: this.translate.instant('SOMETHING_WENT_WRONG_TRY_AGAIN')
+            detail: errorMessage
           });
         }
       });
 
   }
 
-  onUnassignWorker(jobPackage: GetJobPackagesV1ResponseDto): void {
+  onUnassignWorker(jobPackage: JobPackageResponse): void {
 
-    if(this.isDailyPlanReadMode) return;
+    if(this.isBasePlanStateEnabled()) return;
 
     const workerName = jobPackage.worker
       ? `${jobPackage.worker.firstName} ${jobPackage.worker.lastName} (${jobPackage.worker.workerId ?? ''})`
@@ -759,7 +795,7 @@ export class DailyPlanComponent extends DailyPlanningPortalBase implements OnIni
 
   onDeleteJobPackage(jobPackageId: string): void {
 
-    if(this.isDailyPlanReadMode) return;
+    if(this.isBasePlanStateEnabled()) return;
 
     this.apiClient.deleteDailyJobPackage(jobPackageId)
       .pipe(withLoaderService(this.loaderService, 'DeletingJobPackage'), takeUntil(this.destroyer$))
@@ -806,7 +842,7 @@ export class DailyPlanComponent extends DailyPlanningPortalBase implements OnIni
 
   onDailyPlanReset(filters: JobPackageFilters): void {
 
-    if(this.isDailyPlanReadMode) return;
+    if(this.isBasePlanFallbackMode) return;
 
     const request = new ResetDailyPlanRequestDto({
       organizationUnitId: filters.area || undefined,
@@ -840,7 +876,7 @@ export class DailyPlanComponent extends DailyPlanningPortalBase implements OnIni
 
   resetDailyPlan(request: ResetDailyPlanRequestDto, dialogRef: any) {
 
-    if(this.isDailyPlanReadMode) return;
+    if(this.isBasePlanFallbackMode) return;
 
     this.apiClient.resetDailyPlan(request)
       .pipe(withLoaderService(this.loaderService, 'ResettingDailyPlan'), takeUntil(this.destroyer$))
@@ -994,7 +1030,7 @@ export class DailyPlanComponent extends DailyPlanningPortalBase implements OnIni
 
   loadPackageDetailsForBasePlan(packageId: string, refreshMap: boolean = false): void {
 
-    if(this.isDailyPlanEditMode) return;
+    if(!this.isBasePlanStateEnabled()) return;
 
     this.apiClient.getPackageDetailsById(packageId)
       .pipe(takeUntil(this.destroyer$))
@@ -1017,13 +1053,23 @@ export class DailyPlanComponent extends DailyPlanningPortalBase implements OnIni
       });
   }
 
-  get isDailyPlanReadMode(): boolean {
-    return this.dailyPlanViewMode === DailyPlanViewMode.READ;
+  get isBasePlanFallbackMode(): boolean {
+    return this.dailyPlanViewMode === DailyPlanViewMode.BASE_PLAN_FALLBACK;
   }
 
-  get isDailyPlanEditMode(): boolean {
-    return this.dailyPlanViewMode === DailyPlanViewMode.EDIT;
+  get isFutureDatesMode(): boolean {
+    return this.dailyPlanViewMode === DailyPlanViewMode.FUTURE_DATES;
   }
-  
+
+  get isPreviousDatesMode(): boolean {
+    return this.dailyPlanViewMode === DailyPlanViewMode.PREVIOUS_DATES;
+  }
+
+  isBasePlanStateEnabled(): boolean {
+    // Block editing when:
+    // - BASE_PLAN_FALLBACK mode: No daily packages exist (showing base plan)
+    // - PREVIOUS_DATES mode: Daily packages exist but date is in the past (read-only)
+    return this.isBasePlanFallbackMode || this.isPreviousDatesMode;
+  }
 
 }

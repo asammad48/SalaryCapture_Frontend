@@ -104,11 +104,13 @@
 
   <div class="card-footer bg-white border-gray-300 p-3" [ngClass]=" filterPanelCollapsed ? 'd-none' : 'd-block'">
     <button type="button" class="btn btn-sm btn-primary w-100" pButton pRipple
+      [disabled]="isLoadingJobPackages"
       [ngClass]="filterPanelCollapsed ? 'd-none' : 'd-block'" id="capture-applyfilter-btn"
       (click)="applyFilters()">
       Apply Filters
     </button>
     <button
+      [disabled]="isLoadingJobPackages"
       *ngIf="showResetButton()"
       type="button" 
       class="btn btn-sm btn-outline-secondary w-100 mt-2" 
@@ -120,6 +122,7 @@
       Reset Daily Plan
     </button>
     <button
+      [disabled]="isLoadingJobPackages"
       *ngIf="showEditDailyPlanButton()"
       type="button" 
       class="btn btn-sm btn-outline-secondary w-100 mt-2" 
@@ -128,7 +131,7 @@
       [ngClass]=" (planningMode === PlanningMode.DailyPlan && !filterPanelCollapsed) ? 'd-block' : 'd-none'" 
       id="capture-edit-dailyplan-btn"
       (click)="createDailyPlan()">
-      Edit Daily Plan
+      Create Daily Plan
     </button>
   </div>
 

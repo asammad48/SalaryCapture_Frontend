@@ -1,7 +1,9 @@
 <div class="d-flex gap-3 mt-3">
    <app-filters-sidebar 
-      [isDailyPlanReadMode]="isDailyPlanReadMode"
-      [isDailyPlanEditMode]="isDailyPlanEditMode"
+      [isLoadingJobPackages]="isLoadingJobPackages"
+      [isBasePlanFallbackMode]="isBasePlanFallbackMode"
+      [isFutureDatesMode]="isFutureDatesMode"
+      [isPreviousDatesMode]="isPreviousDatesMode"
       [totalRecords]="jobPackages.length"
       [planningMode]="PlanningMode.DailyPlan" 
       (filtersApplied)="onFiltersApplied($event)"
@@ -11,8 +13,10 @@
    <div class="flex-auto position-relative">
       <div class="vh-92 overflow-auto" cdkScrollable>
          <app-job-packages-header 
-            [isDailyPlanReadMode]="isDailyPlanReadMode"
-            [isDailyPlanEditMode]="isDailyPlanEditMode"
+            [isLoadingJobPackages]="isLoadingJobPackages"
+            [isBasePlanFallbackMode]="isBasePlanFallbackMode"
+            [isFutureDatesMode]="isFutureDatesMode"
+            [isPreviousDatesMode]="isPreviousDatesMode"
             [planningMode]="PlanningMode.DailyPlan"
             (searchChanged)="onSearchInputChange($event)"
             [filteredRecords]="filteredRecords" 
@@ -21,8 +25,9 @@
             (confirmedCreate)="newJobPackage($event)">
          </app-job-packages-header>
          <app-job-package-accordion
-            [isDailyPlanReadMode]="isDailyPlanReadMode"
-            [isDailyPlanEditMode]="isDailyPlanEditMode"
+            [isBasePlanFallbackMode]="isBasePlanFallbackMode"
+            [isPreviousDatesMode]="isPreviousDatesMode"
+            [isFutureDatesMode]="isFutureDatesMode"
             [planningMode]="PlanningMode.DailyPlan"
             [isLoadingJobPackages]="isLoadingJobPackages"
             (setFilteredRecords)="setFilteredRecords($event)"
@@ -43,8 +48,9 @@
       </div>
    </div>
    <app-resources-sidebar
-      [isDailyPlanReadMode]="isDailyPlanReadMode"
-      [isDailyPlanEditMode]="isDailyPlanEditMode"
+      [isBasePlanFallbackMode]="isBasePlanFallbackMode"
+      [isFutureDatesMode]="isFutureDatesMode"
+      [isPreviousDatesMode]="isPreviousDatesMode"
       [planningMode]="PlanningMode.DailyPlan"
       [unassignedJobs]="unassignedJobs"
       [serviceWorkers]="serviceWorkers"

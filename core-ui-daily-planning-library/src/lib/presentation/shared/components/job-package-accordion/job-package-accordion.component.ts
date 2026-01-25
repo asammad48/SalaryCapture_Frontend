@@ -21,14 +21,14 @@ import {
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { DropListConnectorService } from '../../services/job-drop-list-connector.service';
 import {
-  GetJobPackagesV1ResponseDto,
   VehicleDto,
   PackageResponseDto,
   ModifyPackageJobsRequestDto,
   JobSourceType,
   AssignVehicleToJobPackageRequestDto,
   AssignUnAssignWorkerFromPackageRequestDto,
-  EditJobPackageRequest
+  EditJobPackageRequest,
+  JobPackageResponse
 } from '../../../../data/api-clients/daily-planning-api.client';
 import { ProgressLoadingComponent } from "../progress-loading/progress-loading.component";
 import { FormsModule } from '@angular/forms';
@@ -38,6 +38,7 @@ import { MenuItem } from 'primeng/api';
 import { Paginator, PaginatorState } from 'primeng/paginator';
 import { JobPackageMapComponent } from '../job-package-map/job-package-map.component';
 import { PlanningMode } from '../../../../core/domain/constants/planning-mode.enum';
+import { StringHelper } from '../../../../core/utils/string.helper';
 
 @Component({
   standalone: true,
@@ -60,8 +61,9 @@ import { PlanningMode } from '../../../../core/domain/constants/planning-mode.en
 })
 export class JobPackageAccordionComponent implements AfterViewInit {
 
-  @Input() isDailyPlanReadMode: boolean = false;
-  @Input() isDailyPlanEditMode: boolean = false
+  @Input() isBasePlanFallbackMode: boolean = false;
+  @Input() isFutureDatesMode: boolean = false;
+  @Input() isPreviousDatesMode: boolean = false;
   @Input() planningMode: PlanningMode = PlanningMode.BasePlan;
 
   @ViewChildren(JobPackageMapComponent) packageMaps!: QueryList<JobPackageMapComponent>;
@@ -69,7 +71,7 @@ export class JobPackageAccordionComponent implements AfterViewInit {
 
   @Input() isLoadingJobPackages: boolean = false;
 
-  @Input() set jobPackagesData(value: GetJobPackagesV1ResponseDto[]) {
+  @Input() set jobPackagesData(value: JobPackageResponse[]) {
     this._allJobPackages = value || [];
     this.searchQuery = '';
     this.applySorting(true);
@@ -78,7 +80,7 @@ export class JobPackageAccordionComponent implements AfterViewInit {
   }
   
   @Input() packageDetailsMap: Map<string, PackageResponseDto> = new Map();
-  get jobPackagesData(): GetJobPackagesV1ResponseDto[] {
+  get jobPackagesData(): JobPackageResponse[] {
     return this._allJobPackages;
   }
 
@@ -91,9 +93,9 @@ export class JobPackageAccordionComponent implements AfterViewInit {
   @Output() jobModified = new EventEmitter<ModifyPackageJobsRequestDto>();
   @Output() assignVehicle = new EventEmitter<AssignVehicleToJobPackageRequestDto>();
   @Output() assignWorker = new EventEmitter<AssignUnAssignWorkerFromPackageRequestDto>();
-  @Output() unAssignWorker = new EventEmitter<GetJobPackagesV1ResponseDto>();
+  @Output() unAssignWorker = new EventEmitter<JobPackageResponse>();
   @Output() editJobPackage = new EventEmitter<EditJobPackageRequest>();
-  @Output() deleteJobPackageEvent = new EventEmitter<GetJobPackagesV1ResponseDto>();
+  @Output() deleteJobPackageEvent = new EventEmitter<JobPackageResponse>();
 
   @ViewChildren('assignedJobsList') assignedJobsList!: QueryList<CdkDropList>;
   @ViewChildren('manualJobsList') manualJobsList!: QueryList<CdkDropList>;
@@ -114,9 +116,9 @@ export class JobPackageAccordionComponent implements AfterViewInit {
   jobPackageMenuItems: MenuItem[] = [];
 
   // Pagination & Search properties
-  private _allJobPackages: GetJobPackagesV1ResponseDto[] = [];
-  filteredJobPackages: GetJobPackagesV1ResponseDto[] = [];
-  paginatedJobPackages: GetJobPackagesV1ResponseDto[] = [];
+  private _allJobPackages: JobPackageResponse[] = [];
+  filteredJobPackages: JobPackageResponse[] = [];
+  paginatedJobPackages: JobPackageResponse[] = [];
   pageSize: number = 20;
   first: number = 0;
   currentPage: number = 0;
@@ -182,46 +184,46 @@ export class JobPackageAccordionComponent implements AfterViewInit {
     this.scrollToAndOpenPackage(packageId);
   }
 
-  private searchJobPackages(packages: GetJobPackagesV1ResponseDto[], query: string): GetJobPackagesV1ResponseDto[] {
+  private searchJobPackages(packages: JobPackageResponse[], query: string): JobPackageResponse[] {
 
     if (!query) return packages;
 
-    const lowerQuery = query.toLowerCase()?.trim();
+    const trimmedQuery = query.trim();
 
     return packages.filter(pkg => {
 
       // Search in package heading
-      if (pkg.heading?.toLowerCase().includes(lowerQuery)) {
+      if (StringHelper.includesIgnoreCase(pkg.heading, trimmedQuery)) {
         return true;
       }
 
       // Search in package description
-      if (pkg.description?.toLowerCase().includes(lowerQuery)) {
+      if (StringHelper.includesIgnoreCase(pkg.description, trimmedQuery)) {
         return true;
       }
 
       // Search in worker details
       if (pkg.worker) {
-        const firstName = pkg.worker.firstName?.toLowerCase()?.trim() || '';
-        const lastName = pkg.worker.lastName?.toLowerCase()?.trim() || '';
-        const workerId = pkg.worker.workerId?.toString().toLowerCase()?.trim() || '';
+        const firstName = pkg.worker.firstName || '';
+        const lastName = pkg.worker.lastName || '';
+        const workerId = pkg.worker.workerId?.toString() || '';
 
         if (
-          firstName.includes(lowerQuery) ||
-          lastName.includes(lowerQuery) ||
-          workerId.includes(lowerQuery) 
+          StringHelper.includesIgnoreCase(firstName, trimmedQuery) ||
+          StringHelper.includesIgnoreCase(lastName, trimmedQuery) ||
+          StringHelper.includesIgnoreCase(workerId, trimmedQuery)
         ) {
           return true;
         }
       }
 
       // Search in tags
-      if (pkg.tags?.toLowerCase().includes(lowerQuery)) {
+      if (StringHelper.includesIgnoreCase(pkg.tags, trimmedQuery)) {
         return true;
       }
 
       // Search in package ID
-      if (pkg.id?.toLowerCase().includes(lowerQuery)) {
+      if (StringHelper.includesIgnoreCase(pkg.id, trimmedQuery)) {
         return true;
       }
 
@@ -232,6 +234,7 @@ export class JobPackageAccordionComponent implements AfterViewInit {
   }
 
   onPageChange(event: PaginatorState): void {
+    console.log(this.jobPackagesData.length, this.pageSize)
     this.first = event.first || 0;
     this.currentPage = event.page || 0;
     this.pageSize = event.rows || 10;
@@ -288,24 +291,20 @@ export class JobPackageAccordionComponent implements AfterViewInit {
     // this.jobDropListConnector.connectAll();
   }
 
-  onVehicleChange(event: SelectChangeEvent, index: number) {
+  onVehicleChange(event: SelectChangeEvent, otherJobPackage: PackageResponseDto) {
 
     if (!this.isActionAllowed()) return;
-
-    this.selectedVehicles[index] = event.value;
-
-    const packageId = this._allJobPackages[index].id;
     
-    if(!packageId) return;
-
-    const defaultPackageId = this.packageDetailsMap.get(packageId)?.otherJobs?.[0]?.id;
+    const packageId = otherJobPackage.id;
+    if (!packageId) return;
 
     this.assignVehicle.emit(
       new AssignVehicleToJobPackageRequestDto({
-        packageId: defaultPackageId,
+        packageId: packageId,
         vehicleId: event.value.id,
       })
     );
+    
   }
 
   dropAssignedJobs(event: CdkDragDrop<any[]>) {
@@ -451,11 +450,15 @@ export class JobPackageAccordionComponent implements AfterViewInit {
     return { type: JobSourceType._0 };
   }
 
-  getSelectedVehicle(i: number) {
-    return (
-      this.selectedVehicles[i] || this.vehicles.find(v => v.typeName === 'Walk')
-    );
+getSelectedVehicle(otherJobPackage: PackageResponseDto): VehicleDto | undefined {
+
+  if (otherJobPackage.vehicle) {
+    const matchingVehicle = this.vehicles.find(v => v.id === otherJobPackage.vehicle?.id);
+    if (matchingVehicle) return matchingVehicle;
   }
+
+  return this.vehicles.find(v => v.typeName === 'Walk');
+}
 
   stopEvent(e: Event) {
     e.stopPropagation();
@@ -480,7 +483,7 @@ export class JobPackageAccordionComponent implements AfterViewInit {
     return vehicleIconMapping[typeName.trim()] || 'fa-question-circle';
   }
 
-  onAccordionMenuClick(event: MouseEvent, menu: Menu, jobPackage: GetJobPackagesV1ResponseDto) {
+  onAccordionMenuClick(event: MouseEvent, menu: Menu, jobPackage: JobPackageResponse) {
     this.stopEvent(event);
     this.jobPackageMenuItems = this.packageAccordionMenus(jobPackage);
     if (this.lastOpenedMenu && this.lastOpenedMenu !== menu) {
@@ -497,13 +500,13 @@ export class JobPackageAccordionComponent implements AfterViewInit {
     }
 
     if (this.planningMode === PlanningMode.DailyPlan) {
-      return this.isDailyPlanEditMode;
+      return this.isFutureDatesMode;
     }
 
     return false;
   }
 
-  packageAccordionMenus(jobPackage: GetJobPackagesV1ResponseDto) {
+  packageAccordionMenus(jobPackage: JobPackageResponse) {
     return [
       {
         label: 'Edit Job Package',
@@ -527,7 +530,7 @@ export class JobPackageAccordionComponent implements AfterViewInit {
     ];
   }
 
-  deleteJobPackage(jobPackage: GetJobPackagesV1ResponseDto) {
+  deleteJobPackage(jobPackage: JobPackageResponse) {
     this.deleteJobPackageEvent.emit(jobPackage);
   }
 
@@ -538,7 +541,7 @@ export class JobPackageAccordionComponent implements AfterViewInit {
       .join(' ');
   }
 
-  private getTagsArray(jobPackage: GetJobPackagesV1ResponseDto): string[] {
+  private getTagsArray(jobPackage: JobPackageResponse): string[] {
     const raw = jobPackage?.tags || '';
     return raw
       .split(',')
@@ -547,15 +550,15 @@ export class JobPackageAccordionComponent implements AfterViewInit {
       .map((t) => this.capitalizeEachWord(t));
   }
 
-  getVisibleTags(jobPackage: GetJobPackagesV1ResponseDto) {
+  getVisibleTags(jobPackage: JobPackageResponse) {
     return this.getTagsArray(jobPackage).slice(0, this.maxTagsToShow);
   }
 
-  getRemainingTags(jobPackage: GetJobPackagesV1ResponseDto) {
+  getRemainingTags(jobPackage: JobPackageResponse) {
     return this.getTagsArray(jobPackage).slice(this.maxTagsToShow);
   }
 
-  getRemainingTooltipText(jobPackage: GetJobPackagesV1ResponseDto) {
+  getRemainingTooltipText(jobPackage: JobPackageResponse) {
     return this.getRemainingTags(jobPackage).join(', ');
   }
 
@@ -633,12 +636,8 @@ export class JobPackageAccordionComponent implements AfterViewInit {
 
   }
 
-  getPackageStatusClass(jobPackage: GetJobPackagesV1ResponseDto): string {
-
-    if(this.affectedJobPackageIds.includes(jobPackage.id || '')) {
-      return 'border-info';
-    }
-
+  getPackageStatusClass(jobPackage: JobPackageResponse): string {
+    
     const hasJobs = jobPackage.jobCount !== null && jobPackage.jobCount !== undefined && jobPackage.jobCount > 0;
 
     const hasVehicle = jobPackage.vehicle !== null && jobPackage.vehicle !== undefined;

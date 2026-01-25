@@ -1,3 +1,4 @@
+import { Client } from './../../../../data/api-clients/daily-planning-api.client';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
@@ -8,6 +9,7 @@ import { FileUploadModule } from 'primeng/fileupload';
 import { ProgressBar } from 'primeng/progressbar';
 import { DialogMode } from '../../../../core/domain/constants/dialog-mode.enum';
 import { ProgressLoadingComponent } from "../../../shared/components/progress-loading/progress-loading.component";
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   standalone: true,
@@ -19,6 +21,7 @@ import { ProgressLoadingComponent } from "../../../shared/components/progress-lo
 export class NewBasePlanDialogComponent implements OnInit {
   basePlanForm: FormGroup;
   isFileUploaded = false;
+  isDownloadingSample = false;
   progressBarValue = 0;
   maxFileSize = 150000000; // 150 MB
   uploadedFile: File | null = null;
@@ -30,8 +33,11 @@ export class NewBasePlanDialogComponent implements OnInit {
   basePlanId?: string;
   readonly DialogMode = DialogMode;
 
+  private destroy$ = new Subject<void>();
+
   constructor(
     public ref: DynamicDialogRef,
+    private apiClient: Client,
     private readonly config: DynamicDialogConfig,
     private fb: FormBuilder
   ) {
@@ -251,4 +257,38 @@ export class NewBasePlanDialogComponent implements OnInit {
     this.fileErrorMessage = null;
     this.ref.close({ success: false });
   }
+
+  downloadSampleFile() {
+    // show immediate UI feedback
+    this.isDownloadingSample = true;
+
+    this.apiClient.downloadSampleFile()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (resp: any) => {
+          try {
+            if (resp && resp.data) {
+              const blob = new Blob([resp.data], { type: 'text/csv;charset=utf-8;' });
+              const fileName = resp.fileName || 'Sample_Base_Plan_File.csv';
+
+              const url = window.URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = fileName;
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+              window.URL.revokeObjectURL(url);
+            }
+          } finally {
+            this.isDownloadingSample = false;
+          }
+        },
+        error: err => {
+          console.error('File download failed', err);
+          this.isDownloadingSample = false;
+        }
+      });
+  }
+
 }

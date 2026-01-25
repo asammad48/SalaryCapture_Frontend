@@ -1,9 +1,10 @@
 <div class="d-flex gap-3 mt-3">
-   <app-filters-sidebar [planningMode]="PlanningMode.BasePlan" (filtersApplied)="onFiltersApplied($event)"></app-filters-sidebar>
+   <app-filters-sidebar [planningMode]="PlanningMode.BasePlan" (filtersApplied)="onFiltersApplied($event)" [isLoadingJobPackages]="isLoadingJobPackages"></app-filters-sidebar>
    <div class="flex-auto position-relative">
       <div class="vh-92 overflow-auto" cdkScrollable>
          <app-job-packages-header 
             [planningMode]="PlanningMode.BasePlan"
+            [isLoadingJobPackages]="isLoadingJobPackages"
             [totalRecords]="jobPackages.length"
             [filteredRecords]="filteredRecords" 
             (sortToggled)="onSortToggled($event)" 

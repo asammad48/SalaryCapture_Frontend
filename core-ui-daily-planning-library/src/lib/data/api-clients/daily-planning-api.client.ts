@@ -403,6 +403,61 @@ export class Client {
     }
 
     /**
+     * @return OK
+     */
+    downloadSampleFile(): Observable<FileResponse> {
+        let url_ = this.baseUrl + "/api/BasePlan/DownloadSampleFile";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processDownloadSampleFile(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processDownloadSampleFile(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<FileResponse>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<FileResponse>;
+        }));
+    }
+
+    protected processDownloadSampleFile(response: HttpResponseBase): Observable<FileResponse> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200 || status === 206) {
+            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
+            let fileNameMatch = contentDisposition ? /filename\*=(?:(\\?['"])(.*?)\1|(?:[^\s]+'.*?')?([^;\n]*))/g.exec(contentDisposition) : undefined;
+            let fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[3] || fileNameMatch[2] : undefined;
+            if (fileName) {
+                fileName = decodeURIComponent(fileName);
+            } else {
+                fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
+                fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+            }
+            return _observableOf({ fileName: fileName, data: responseBlob as any, status: status, headers: _headers });
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
      * @param body (optional) 
      * @return OK
      */
@@ -1022,7 +1077,7 @@ export class Client {
      * @param body (optional) 
      * @return OK
      */
-    getJobPackagesV1(body?: GetJobPackagesV1RequestDto | undefined): Observable<GetJobPackagesV1ResponseDtoListResponse> {
+    getJobPackagesV1(body?: GetJobPackagesV1RequestDto | undefined): Observable<JobPackageResponseListResponse> {
         let url_ = this.baseUrl + "/api/JobPackage/GetJobPackagesV1";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -1045,14 +1100,14 @@ export class Client {
                 try {
                     return this.processGetJobPackagesV1(response_ as any);
                 } catch (e) {
-                    return _observableThrow(e) as any as Observable<GetJobPackagesV1ResponseDtoListResponse>;
+                    return _observableThrow(e) as any as Observable<JobPackageResponseListResponse>;
                 }
             } else
-                return _observableThrow(response_) as any as Observable<GetJobPackagesV1ResponseDtoListResponse>;
+                return _observableThrow(response_) as any as Observable<JobPackageResponseListResponse>;
         }));
     }
 
-    protected processGetJobPackagesV1(response: HttpResponseBase): Observable<GetJobPackagesV1ResponseDtoListResponse> {
+    protected processGetJobPackagesV1(response: HttpResponseBase): Observable<JobPackageResponseListResponse> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -1063,7 +1118,7 @@ export class Client {
             return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = GetJobPackagesV1ResponseDtoListResponse.fromJS(resultData200);
+            result200 = JobPackageResponseListResponse.fromJS(resultData200);
             return _observableOf(result200);
             }));
         } else if (status !== 200 && status !== 204) {
@@ -1414,7 +1469,7 @@ export class Client {
      * @param body (optional) 
      * @return OK
      */
-    deleteJobPackage(body?: string | undefined): Observable<BooleanResponse> {
+    deleteJobPackage(body?: DeleteBasePlanJobPackageRequestDto | undefined): Observable<BooleanResponse> {
         let url_ = this.baseUrl + "/api/JobPackage/DeleteJobPackage";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -1523,6 +1578,62 @@ export class Client {
     }
 
     /**
+     * @param planDate (optional) 
+     * @return OK
+     */
+    dailyPlanEliga(planDate?: Date | undefined): Observable<DailyPlanExternalResponseDtoListResponse> {
+        let url_ = this.baseUrl + "/api/SyncData/daily-plan-eliga?";
+        if (planDate === null)
+            throw new globalThis.Error("The parameter 'planDate' cannot be null.");
+        else if (planDate !== undefined)
+            url_ += "planDate=" + encodeURIComponent(planDate ? "" + planDate.toISOString() : "") + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processDailyPlanEliga(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processDailyPlanEliga(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<DailyPlanExternalResponseDtoListResponse>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<DailyPlanExternalResponseDtoListResponse>;
+        }));
+    }
+
+    protected processDailyPlanEliga(response: HttpResponseBase): Observable<DailyPlanExternalResponseDtoListResponse> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = DailyPlanExternalResponseDtoListResponse.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
      * @return OK
      */
     getVehicles(): Observable<VehiclesDtoListResponse> {
@@ -1617,6 +1728,9 @@ export interface IAssignUnAssignWorkerFromDailyPackageRequestDto {
 export class AssignUnAssignWorkerFromPackageRequestDto implements IAssignUnAssignWorkerFromPackageRequestDto {
     packageId?: string;
     workerId?: string | undefined;
+    organizationUnitId?: string;
+    resetFuturePlans?: boolean;
+    dayOfWeek?: string | undefined;
 
     constructor(data?: IAssignUnAssignWorkerFromPackageRequestDto) {
         if (data) {
@@ -1631,6 +1745,9 @@ export class AssignUnAssignWorkerFromPackageRequestDto implements IAssignUnAssig
         if (_data) {
             this.packageId = _data["packageId"];
             this.workerId = _data["workerId"];
+            this.organizationUnitId = _data["organizationUnitId"];
+            this.resetFuturePlans = _data["resetFuturePlans"];
+            this.dayOfWeek = _data["dayOfWeek"];
         }
     }
 
@@ -1645,6 +1762,9 @@ export class AssignUnAssignWorkerFromPackageRequestDto implements IAssignUnAssig
         data = typeof data === 'object' ? data : {};
         data["packageId"] = this.packageId;
         data["workerId"] = this.workerId;
+        data["organizationUnitId"] = this.organizationUnitId;
+        data["resetFuturePlans"] = this.resetFuturePlans;
+        data["dayOfWeek"] = this.dayOfWeek;
         return data;
     }
 }
@@ -1652,6 +1772,9 @@ export class AssignUnAssignWorkerFromPackageRequestDto implements IAssignUnAssig
 export interface IAssignUnAssignWorkerFromPackageRequestDto {
     packageId?: string;
     workerId?: string | undefined;
+    organizationUnitId?: string;
+    resetFuturePlans?: boolean;
+    dayOfWeek?: string | undefined;
 }
 
 export class AssignVehicleToDailyJobPackageRequestDto implements IAssignVehicleToDailyJobPackageRequestDto {
@@ -1697,6 +1820,9 @@ export interface IAssignVehicleToDailyJobPackageRequestDto {
 export class AssignVehicleToJobPackageRequestDto implements IAssignVehicleToJobPackageRequestDto {
     packageId?: string;
     vehicleId?: string;
+    organizationUnitId?: string;
+    resetFuturePlans?: boolean;
+    dayOfWeek?: string | undefined;
 
     constructor(data?: IAssignVehicleToJobPackageRequestDto) {
         if (data) {
@@ -1711,6 +1837,9 @@ export class AssignVehicleToJobPackageRequestDto implements IAssignVehicleToJobP
         if (_data) {
             this.packageId = _data["packageId"];
             this.vehicleId = _data["vehicleId"];
+            this.organizationUnitId = _data["organizationUnitId"];
+            this.resetFuturePlans = _data["resetFuturePlans"];
+            this.dayOfWeek = _data["dayOfWeek"];
         }
     }
 
@@ -1725,6 +1854,9 @@ export class AssignVehicleToJobPackageRequestDto implements IAssignVehicleToJobP
         data = typeof data === 'object' ? data : {};
         data["packageId"] = this.packageId;
         data["vehicleId"] = this.vehicleId;
+        data["organizationUnitId"] = this.organizationUnitId;
+        data["resetFuturePlans"] = this.resetFuturePlans;
+        data["dayOfWeek"] = this.dayOfWeek;
         return data;
     }
 }
@@ -1732,6 +1864,9 @@ export class AssignVehicleToJobPackageRequestDto implements IAssignVehicleToJobP
 export interface IAssignVehicleToJobPackageRequestDto {
     packageId?: string;
     vehicleId?: string;
+    organizationUnitId?: string;
+    resetFuturePlans?: boolean;
+    dayOfWeek?: string | undefined;
 }
 
 export class BasePlanDto implements IBasePlanDto {
@@ -2429,6 +2564,7 @@ export interface IBooleanResponse {
 export class CreateDailyPlanDto implements ICreateDailyPlanDto {
     planDate?: Date;
     organizationUnitId?: string | undefined;
+    tenantId?: string | undefined;
 
     constructor(data?: ICreateDailyPlanDto) {
         if (data) {
@@ -2443,6 +2579,7 @@ export class CreateDailyPlanDto implements ICreateDailyPlanDto {
         if (_data) {
             this.planDate = _data["planDate"] ? new Date(_data["planDate"].toString()) : undefined as any;
             this.organizationUnitId = _data["organizationUnitId"];
+            this.tenantId = _data["tenantId"];
         }
     }
 
@@ -2457,6 +2594,7 @@ export class CreateDailyPlanDto implements ICreateDailyPlanDto {
         data = typeof data === 'object' ? data : {};
         data["planDate"] = this.planDate ? formatDate(this.planDate) : undefined as any;
         data["organizationUnitId"] = this.organizationUnitId;
+        data["tenantId"] = this.tenantId;
         return data;
     }
 }
@@ -2464,6 +2602,7 @@ export class CreateDailyPlanDto implements ICreateDailyPlanDto {
 export interface ICreateDailyPlanDto {
     planDate?: Date;
     organizationUnitId?: string | undefined;
+    tenantId?: string | undefined;
 }
 
 export class CreateJobPackageRequest implements ICreateJobPackageRequest {
@@ -2472,6 +2611,8 @@ export class CreateJobPackageRequest implements ICreateJobPackageRequest {
     daysOfWeek?: string[] | undefined;
     tags?: string | undefined;
     basePlanId?: string;
+    resetFuturePlans?: boolean;
+    dayOfWeek?: string | undefined;
 
     constructor(data?: ICreateJobPackageRequest) {
         if (data) {
@@ -2493,6 +2634,8 @@ export class CreateJobPackageRequest implements ICreateJobPackageRequest {
             }
             this.tags = _data["tags"];
             this.basePlanId = _data["basePlanId"];
+            this.resetFuturePlans = _data["resetFuturePlans"];
+            this.dayOfWeek = _data["dayOfWeek"];
         }
     }
 
@@ -2514,6 +2657,8 @@ export class CreateJobPackageRequest implements ICreateJobPackageRequest {
         }
         data["tags"] = this.tags;
         data["basePlanId"] = this.basePlanId;
+        data["resetFuturePlans"] = this.resetFuturePlans;
+        data["dayOfWeek"] = this.dayOfWeek;
         return data;
     }
 }
@@ -2524,6 +2669,8 @@ export interface ICreateJobPackageRequest {
     daysOfWeek?: string[] | undefined;
     tags?: string | undefined;
     basePlanId?: string;
+    resetFuturePlans?: boolean;
+    dayOfWeek?: string | undefined;
 }
 
 export class CreateJobPackageResponse implements ICreateJobPackageResponse {
@@ -2628,6 +2775,142 @@ export interface ICreateJobPackageResponseListResponse {
     message?: string | undefined;
     errors?: string[] | undefined;
     data?: CreateJobPackageResponse[] | undefined;
+}
+
+export class DailyPlanExternalResponseDto implements IDailyPlanExternalResponseDto {
+    diom?: string | undefined;
+    area?: string | undefined;
+    employeeNo?: string | undefined;
+    tableOrder?: number;
+    terminal?: string | undefined;
+    packageName?: string | undefined;
+    vehicle?: string | undefined;
+    jobNumber?: string | undefined;
+    jobSequence?: number;
+    isDefaultPackage?: boolean;
+
+    constructor(data?: IDailyPlanExternalResponseDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (this as any)[property] = (data as any)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.diom = _data["diom"];
+            this.area = _data["area"];
+            this.employeeNo = _data["employeeNo"];
+            this.tableOrder = _data["tableOrder"];
+            this.terminal = _data["terminal"];
+            this.packageName = _data["packageName"];
+            this.vehicle = _data["vehicle"];
+            this.jobNumber = _data["jobNumber"];
+            this.jobSequence = _data["jobSequence"];
+            this.isDefaultPackage = _data["isDefaultPackage"];
+        }
+    }
+
+    static fromJS(data: any): DailyPlanExternalResponseDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new DailyPlanExternalResponseDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["diom"] = this.diom;
+        data["area"] = this.area;
+        data["employeeNo"] = this.employeeNo;
+        data["tableOrder"] = this.tableOrder;
+        data["terminal"] = this.terminal;
+        data["packageName"] = this.packageName;
+        data["vehicle"] = this.vehicle;
+        data["jobNumber"] = this.jobNumber;
+        data["jobSequence"] = this.jobSequence;
+        data["isDefaultPackage"] = this.isDefaultPackage;
+        return data;
+    }
+}
+
+export interface IDailyPlanExternalResponseDto {
+    diom?: string | undefined;
+    area?: string | undefined;
+    employeeNo?: string | undefined;
+    tableOrder?: number;
+    terminal?: string | undefined;
+    packageName?: string | undefined;
+    vehicle?: string | undefined;
+    jobNumber?: string | undefined;
+    jobSequence?: number;
+    isDefaultPackage?: boolean;
+}
+
+export class DailyPlanExternalResponseDtoListResponse implements IDailyPlanExternalResponseDtoListResponse {
+    success?: boolean;
+    message?: string | undefined;
+    errors?: string[] | undefined;
+    data?: DailyPlanExternalResponseDto[] | undefined;
+
+    constructor(data?: IDailyPlanExternalResponseDtoListResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (this as any)[property] = (data as any)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.success = _data["success"];
+            this.message = _data["message"];
+            if (Array.isArray(_data["errors"])) {
+                this.errors = [] as any;
+                for (let item of _data["errors"])
+                    this.errors!.push(item);
+            }
+            if (Array.isArray(_data["data"])) {
+                this.data = [] as any;
+                for (let item of _data["data"])
+                    this.data!.push(DailyPlanExternalResponseDto.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): DailyPlanExternalResponseDtoListResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new DailyPlanExternalResponseDtoListResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["success"] = this.success;
+        data["message"] = this.message;
+        if (Array.isArray(this.errors)) {
+            data["errors"] = [];
+            for (let item of this.errors)
+                data["errors"].push(item);
+        }
+        if (Array.isArray(this.data)) {
+            data["data"] = [];
+            for (let item of this.data)
+                data["data"].push(item ? item.toJSON() : undefined as any);
+        }
+        return data;
+    }
+}
+
+export interface IDailyPlanExternalResponseDtoListResponse {
+    success?: boolean;
+    message?: string | undefined;
+    errors?: string[] | undefined;
+    data?: DailyPlanExternalResponseDto[] | undefined;
 }
 
 export class DailyPlanPackageAssignedJob implements IDailyPlanPackageAssignedJob {
@@ -3074,6 +3357,54 @@ export interface IDailyVehicleDto {
     vehicleType?: string | undefined;
 }
 
+export class DeleteBasePlanJobPackageRequestDto implements IDeleteBasePlanJobPackageRequestDto {
+    jobPackageId?: string;
+    resetFuturePlans?: boolean;
+    organizationUnitId?: string;
+    dayOfWeek?: string | undefined;
+
+    constructor(data?: IDeleteBasePlanJobPackageRequestDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (this as any)[property] = (data as any)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.jobPackageId = _data["jobPackageId"];
+            this.resetFuturePlans = _data["resetFuturePlans"];
+            this.organizationUnitId = _data["organizationUnitId"];
+            this.dayOfWeek = _data["dayOfWeek"];
+        }
+    }
+
+    static fromJS(data: any): DeleteBasePlanJobPackageRequestDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new DeleteBasePlanJobPackageRequestDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["jobPackageId"] = this.jobPackageId;
+        data["resetFuturePlans"] = this.resetFuturePlans;
+        data["organizationUnitId"] = this.organizationUnitId;
+        data["dayOfWeek"] = this.dayOfWeek;
+        return data;
+    }
+}
+
+export interface IDeleteBasePlanJobPackageRequestDto {
+    jobPackageId?: string;
+    resetFuturePlans?: boolean;
+    organizationUnitId?: string;
+    dayOfWeek?: string | undefined;
+}
+
 export class EditDailyJobPackageRequest implements IEditDailyJobPackageRequest {
     jobPackageId?: string;
     name?: string | undefined;
@@ -3128,6 +3459,8 @@ export class EditJobPackageRequest implements IEditJobPackageRequest {
     organizationUnitId?: string;
     daysOfWeek?: string[] | undefined;
     tags?: string | undefined;
+    resetFuturePlans?: boolean;
+    dayOfWeek?: string | undefined;
 
     constructor(data?: IEditJobPackageRequest) {
         if (data) {
@@ -3149,6 +3482,8 @@ export class EditJobPackageRequest implements IEditJobPackageRequest {
                     this.daysOfWeek!.push(item);
             }
             this.tags = _data["tags"];
+            this.resetFuturePlans = _data["resetFuturePlans"];
+            this.dayOfWeek = _data["dayOfWeek"];
         }
     }
 
@@ -3170,6 +3505,8 @@ export class EditJobPackageRequest implements IEditJobPackageRequest {
                 data["daysOfWeek"].push(item);
         }
         data["tags"] = this.tags;
+        data["resetFuturePlans"] = this.resetFuturePlans;
+        data["dayOfWeek"] = this.dayOfWeek;
         return data;
     }
 }
@@ -3180,10 +3517,12 @@ export interface IEditJobPackageRequest {
     organizationUnitId?: string;
     daysOfWeek?: string[] | undefined;
     tags?: string | undefined;
+    resetFuturePlans?: boolean;
+    dayOfWeek?: string | undefined;
 }
 
 export class GetBasePlanUnassignedJobsRequestDto implements IGetBasePlanUnassignedJobsRequestDto {
-    basePlanId?: string;
+    basePlanId?: string | undefined;
     organizationUnitId?: string;
     dayOfWeek?: string | undefined;
     planDate?: Date | undefined;
@@ -3224,7 +3563,7 @@ export class GetBasePlanUnassignedJobsRequestDto implements IGetBasePlanUnassign
 }
 
 export interface IGetBasePlanUnassignedJobsRequestDto {
-    basePlanId?: string;
+    basePlanId?: string | undefined;
     organizationUnitId?: string;
     dayOfWeek?: string | undefined;
     planDate?: Date | undefined;
@@ -3336,7 +3675,6 @@ export class GetDailyPlanJobPackagesV1ResponseDto implements IGetDailyPlanJobPac
     worker?: DailyPlanServiceWorkerDto;
     tags?: string | undefined;
     planDate?: Date;
-    dailyPlanId?: string;
 
     constructor(data?: IGetDailyPlanJobPackagesV1ResponseDto) {
         if (data) {
@@ -3362,7 +3700,6 @@ export class GetDailyPlanJobPackagesV1ResponseDto implements IGetDailyPlanJobPac
             this.worker = _data["worker"] ? DailyPlanServiceWorkerDto.fromJS(_data["worker"]) : undefined as any;
             this.tags = _data["tags"];
             this.planDate = _data["planDate"] ? new Date(_data["planDate"].toString()) : undefined as any;
-            this.dailyPlanId = _data["dailyPlanId"];
         }
     }
 
@@ -3388,7 +3725,6 @@ export class GetDailyPlanJobPackagesV1ResponseDto implements IGetDailyPlanJobPac
         data["worker"] = this.worker ? this.worker.toJSON() : undefined as any;
         data["tags"] = this.tags;
         data["planDate"] = this.planDate ? formatDate(this.planDate) : undefined as any;
-        data["dailyPlanId"] = this.dailyPlanId;
         return data;
     }
 }
@@ -3407,7 +3743,6 @@ export interface IGetDailyPlanJobPackagesV1ResponseDto {
     worker?: DailyPlanServiceWorkerDto;
     tags?: string | undefined;
     planDate?: Date;
-    dailyPlanId?: string;
 }
 
 export class GetDailyPlanJobPackagesV1ResponseDtoListResponse implements IGetDailyPlanJobPackagesV1ResponseDtoListResponse {
@@ -3576,162 +3911,6 @@ export interface IGetJobPackagesV1RequestDto {
     planDate?: Date | undefined;
 }
 
-export class GetJobPackagesV1ResponseDto implements IGetJobPackagesV1ResponseDto {
-    id?: string;
-    name?: string | undefined;
-    heading?: string | undefined;
-    description?: string | undefined;
-    areaName?: string | undefined;
-    areaId?: string | undefined;
-    subAreaName?: string | undefined;
-    subAreaId?: string | undefined;
-    jobCount?: number;
-    vehicle?: VehicleDto;
-    worker?: BasePlanServiceWorkerDto;
-    tags?: string | undefined;
-    daysOfWeek?: string[] | undefined;
-
-    constructor(data?: IGetJobPackagesV1ResponseDto) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.id = _data["id"];
-            this.name = _data["name"];
-            this.heading = _data["heading"];
-            this.description = _data["description"];
-            this.areaName = _data["areaName"];
-            this.areaId = _data["areaId"];
-            this.subAreaName = _data["subAreaName"];
-            this.subAreaId = _data["subAreaId"];
-            this.jobCount = _data["jobCount"];
-            this.vehicle = _data["vehicle"] ? VehicleDto.fromJS(_data["vehicle"]) : undefined as any;
-            this.worker = _data["worker"] ? BasePlanServiceWorkerDto.fromJS(_data["worker"]) : undefined as any;
-            this.tags = _data["tags"];
-            if (Array.isArray(_data["daysOfWeek"])) {
-                this.daysOfWeek = [] as any;
-                for (let item of _data["daysOfWeek"])
-                    this.daysOfWeek!.push(item);
-            }
-        }
-    }
-
-    static fromJS(data: any): GetJobPackagesV1ResponseDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new GetJobPackagesV1ResponseDto();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["id"] = this.id;
-        data["name"] = this.name;
-        data["heading"] = this.heading;
-        data["description"] = this.description;
-        data["areaName"] = this.areaName;
-        data["areaId"] = this.areaId;
-        data["subAreaName"] = this.subAreaName;
-        data["subAreaId"] = this.subAreaId;
-        data["jobCount"] = this.jobCount;
-        data["vehicle"] = this.vehicle ? this.vehicle.toJSON() : undefined as any;
-        data["worker"] = this.worker ? this.worker.toJSON() : undefined as any;
-        data["tags"] = this.tags;
-        if (Array.isArray(this.daysOfWeek)) {
-            data["daysOfWeek"] = [];
-            for (let item of this.daysOfWeek)
-                data["daysOfWeek"].push(item);
-        }
-        return data;
-    }
-}
-
-export interface IGetJobPackagesV1ResponseDto {
-    id?: string;
-    name?: string | undefined;
-    heading?: string | undefined;
-    description?: string | undefined;
-    areaName?: string | undefined;
-    areaId?: string | undefined;
-    subAreaName?: string | undefined;
-    subAreaId?: string | undefined;
-    jobCount?: number;
-    vehicle?: VehicleDto;
-    worker?: BasePlanServiceWorkerDto;
-    tags?: string | undefined;
-    daysOfWeek?: string[] | undefined;
-}
-
-export class GetJobPackagesV1ResponseDtoListResponse implements IGetJobPackagesV1ResponseDtoListResponse {
-    success?: boolean;
-    message?: string | undefined;
-    errors?: string[] | undefined;
-    data?: GetJobPackagesV1ResponseDto[] | undefined;
-
-    constructor(data?: IGetJobPackagesV1ResponseDtoListResponse) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.success = _data["success"];
-            this.message = _data["message"];
-            if (Array.isArray(_data["errors"])) {
-                this.errors = [] as any;
-                for (let item of _data["errors"])
-                    this.errors!.push(item);
-            }
-            if (Array.isArray(_data["data"])) {
-                this.data = [] as any;
-                for (let item of _data["data"])
-                    this.data!.push(GetJobPackagesV1ResponseDto.fromJS(item));
-            }
-        }
-    }
-
-    static fromJS(data: any): GetJobPackagesV1ResponseDtoListResponse {
-        data = typeof data === 'object' ? data : {};
-        let result = new GetJobPackagesV1ResponseDtoListResponse();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["success"] = this.success;
-        data["message"] = this.message;
-        if (Array.isArray(this.errors)) {
-            data["errors"] = [];
-            for (let item of this.errors)
-                data["errors"].push(item);
-        }
-        if (Array.isArray(this.data)) {
-            data["data"] = [];
-            for (let item of this.data)
-                data["data"].push(item ? item.toJSON() : undefined as any);
-        }
-        return data;
-    }
-}
-
-export interface IGetJobPackagesV1ResponseDtoListResponse {
-    success?: boolean;
-    message?: string | undefined;
-    errors?: string[] | undefined;
-    data?: GetJobPackagesV1ResponseDto[] | undefined;
-}
-
 export class GetWorkersForBasePlanDto implements IGetWorkersForBasePlanDto {
     basePlanId?: string;
     organizationUnitId?: string;
@@ -3852,6 +4031,162 @@ export interface IJobLocationDto {
     longitude?: number;
 }
 
+export class JobPackageResponse implements IJobPackageResponse {
+    id?: string;
+    name?: string | undefined;
+    heading?: string | undefined;
+    description?: string | undefined;
+    areaName?: string | undefined;
+    areaId?: string | undefined;
+    subAreaName?: string | undefined;
+    subAreaId?: string | undefined;
+    jobCount?: number;
+    vehicle?: VehicleDto;
+    worker?: BasePlanServiceWorkerDto;
+    tags?: string | undefined;
+    daysOfWeek?: string[] | undefined;
+
+    constructor(data?: IJobPackageResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (this as any)[property] = (data as any)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.name = _data["name"];
+            this.heading = _data["heading"];
+            this.description = _data["description"];
+            this.areaName = _data["areaName"];
+            this.areaId = _data["areaId"];
+            this.subAreaName = _data["subAreaName"];
+            this.subAreaId = _data["subAreaId"];
+            this.jobCount = _data["jobCount"];
+            this.vehicle = _data["vehicle"] ? VehicleDto.fromJS(_data["vehicle"]) : undefined as any;
+            this.worker = _data["worker"] ? BasePlanServiceWorkerDto.fromJS(_data["worker"]) : undefined as any;
+            this.tags = _data["tags"];
+            if (Array.isArray(_data["daysOfWeek"])) {
+                this.daysOfWeek = [] as any;
+                for (let item of _data["daysOfWeek"])
+                    this.daysOfWeek!.push(item);
+            }
+        }
+    }
+
+    static fromJS(data: any): JobPackageResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new JobPackageResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["name"] = this.name;
+        data["heading"] = this.heading;
+        data["description"] = this.description;
+        data["areaName"] = this.areaName;
+        data["areaId"] = this.areaId;
+        data["subAreaName"] = this.subAreaName;
+        data["subAreaId"] = this.subAreaId;
+        data["jobCount"] = this.jobCount;
+        data["vehicle"] = this.vehicle ? this.vehicle.toJSON() : undefined as any;
+        data["worker"] = this.worker ? this.worker.toJSON() : undefined as any;
+        data["tags"] = this.tags;
+        if (Array.isArray(this.daysOfWeek)) {
+            data["daysOfWeek"] = [];
+            for (let item of this.daysOfWeek)
+                data["daysOfWeek"].push(item);
+        }
+        return data;
+    }
+}
+
+export interface IJobPackageResponse {
+    id?: string;
+    name?: string | undefined;
+    heading?: string | undefined;
+    description?: string | undefined;
+    areaName?: string | undefined;
+    areaId?: string | undefined;
+    subAreaName?: string | undefined;
+    subAreaId?: string | undefined;
+    jobCount?: number;
+    vehicle?: VehicleDto;
+    worker?: BasePlanServiceWorkerDto;
+    tags?: string | undefined;
+    daysOfWeek?: string[] | undefined;
+}
+
+export class JobPackageResponseListResponse implements IJobPackageResponseListResponse {
+    success?: boolean;
+    message?: string | undefined;
+    errors?: string[] | undefined;
+    data?: JobPackageResponse[] | undefined;
+
+    constructor(data?: IJobPackageResponseListResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (this as any)[property] = (data as any)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.success = _data["success"];
+            this.message = _data["message"];
+            if (Array.isArray(_data["errors"])) {
+                this.errors = [] as any;
+                for (let item of _data["errors"])
+                    this.errors!.push(item);
+            }
+            if (Array.isArray(_data["data"])) {
+                this.data = [] as any;
+                for (let item of _data["data"])
+                    this.data!.push(JobPackageResponse.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): JobPackageResponseListResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new JobPackageResponseListResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["success"] = this.success;
+        data["message"] = this.message;
+        if (Array.isArray(this.errors)) {
+            data["errors"] = [];
+            for (let item of this.errors)
+                data["errors"].push(item);
+        }
+        if (Array.isArray(this.data)) {
+            data["data"] = [];
+            for (let item of this.data)
+                data["data"].push(item ? item.toJSON() : undefined as any);
+        }
+        return data;
+    }
+}
+
+export interface IJobPackageResponseListResponse {
+    success?: boolean;
+    message?: string | undefined;
+    errors?: string[] | undefined;
+    data?: JobPackageResponse[] | undefined;
+}
+
 export enum JobSourceType {
     _0 = 0,
     _1 = 1,
@@ -3949,8 +4284,9 @@ export class ModifyPackageJobsRequestDto implements IModifyPackageJobsRequestDto
     targetIndex?: number;
     vehicleId?: string | undefined;
     dayOfWeek?: string | undefined;
-    organizationUnitId?: string | undefined;
+    organizationUnitId?: string;
     isReorder?: boolean;
+    resetFuturePlans?: boolean;
 
     constructor(data?: IModifyPackageJobsRequestDto) {
         if (data) {
@@ -3975,6 +4311,7 @@ export class ModifyPackageJobsRequestDto implements IModifyPackageJobsRequestDto
             this.dayOfWeek = _data["dayOfWeek"];
             this.organizationUnitId = _data["organizationUnitId"];
             this.isReorder = _data["isReorder"];
+            this.resetFuturePlans = _data["resetFuturePlans"];
         }
     }
 
@@ -3999,6 +4336,7 @@ export class ModifyPackageJobsRequestDto implements IModifyPackageJobsRequestDto
         data["dayOfWeek"] = this.dayOfWeek;
         data["organizationUnitId"] = this.organizationUnitId;
         data["isReorder"] = this.isReorder;
+        data["resetFuturePlans"] = this.resetFuturePlans;
         return data;
     }
 }
@@ -4014,8 +4352,9 @@ export interface IModifyPackageJobsRequestDto {
     targetIndex?: number;
     vehicleId?: string | undefined;
     dayOfWeek?: string | undefined;
-    organizationUnitId?: string | undefined;
+    organizationUnitId?: string;
     isReorder?: boolean;
+    resetFuturePlans?: boolean;
 }
 
 export class ModifyPackageJobsResponseDto implements IModifyPackageJobsResponseDto {
@@ -4585,6 +4924,7 @@ export interface IPagination {
 export class ResetDailyPlanRequestDto implements IResetDailyPlanRequestDto {
     organizationUnitId?: string | undefined;
     date?: Date;
+    tenantId?: string | undefined;
 
     constructor(data?: IResetDailyPlanRequestDto) {
         if (data) {
@@ -4599,6 +4939,7 @@ export class ResetDailyPlanRequestDto implements IResetDailyPlanRequestDto {
         if (_data) {
             this.organizationUnitId = _data["organizationUnitId"];
             this.date = _data["date"] ? new Date(_data["date"].toString()) : undefined as any;
+            this.tenantId = _data["tenantId"];
         }
     }
 
@@ -4613,6 +4954,7 @@ export class ResetDailyPlanRequestDto implements IResetDailyPlanRequestDto {
         data = typeof data === 'object' ? data : {};
         data["organizationUnitId"] = this.organizationUnitId;
         data["date"] = this.date ? formatDate(this.date) : undefined as any;
+        data["tenantId"] = this.tenantId;
         return data;
     }
 }
@@ -4620,6 +4962,7 @@ export class ResetDailyPlanRequestDto implements IResetDailyPlanRequestDto {
 export interface IResetDailyPlanRequestDto {
     organizationUnitId?: string | undefined;
     date?: Date;
+    tenantId?: string | undefined;
 }
 
 export enum SortByEnum {
@@ -4864,6 +5207,13 @@ function formatDate(d: Date) {
 export interface FileParameter {
     data: any;
     fileName: string;
+}
+
+export interface FileResponse {
+    data: Blob;
+    status: number;
+    fileName?: string;
+    headers?: { [name: string]: any };
 }
 
 export class ApiException extends Error {

@@ -1,0 +1,26 @@
+<div
+  *ngIf="show"
+  class="d-flex gap-3 align-items-baseline justify-content-between px-20 py-2 border-start-3"
+  [id]="id"
+  [ngClass]="severity === 'warning' ? 'bg-warning-100 border-warning-300' : severity === 'error' ? 'bg-danger-100 border-danger-400' : 'bg-danger-100 border-danger-400'"
+  @fadeInOut>
+  <div class="d-flex gap-3 align-items-baseline">
+    <div>
+      <i class="fa"
+      [ngClass]="severity === 'warning' ? 'color-warning-300' : severity === 'error' ? 'color-danger-500' : 'color-danger-500'"
+      [class]="icon"></i>
+    </div>
+    <div>
+      <div class="mb-px-4">
+        <h6 class="fs-14 color-gray-1000 mb-0 align-items-center">  
+          {{ title }}
+        </h6>
+      </div>
+      <p class="fs-14 color-gray-700 mb-1">
+        {{ message }}
+      </p>
+    </div>
+  </div>
+</div>
+
+

@@ -1,3 +1,4 @@
+import { DateHelper } from './../../../../core/utils/date.helper';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, OnDestroy, EventEmitter, Output, Injector, Input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -23,11 +24,13 @@ import { JobPackageFilters } from '../../../../core/domain/models/job-package/jo
 
 export class FiltersSidebarComponent extends DailyPlanningPortalBase implements OnInit, OnDestroy {
 
+  @Input() isLoadingJobPackages: boolean = false;
   @Input() planningMode: PlanningMode = PlanningMode.BasePlan;
   @Input() totalRecords: number = 0;
 
-  @Input() isDailyPlanReadMode: boolean = false;
-  @Input() isDailyPlanEditMode: boolean = false;
+  @Input() isBasePlanFallbackMode: boolean = false;
+  @Input() isFutureDatesMode: boolean = false;
+  @Input() isPreviousDatesMode: boolean = false;
 
   @Output() filtersApplied = new EventEmitter<any>();
   @Output() dailyPlanReset = new EventEmitter<JobPackageFilters>();
@@ -56,12 +59,7 @@ export class FiltersSidebarComponent extends DailyPlanningPortalBase implements 
 
   ngOnInit(): void {
     this.loadOrganizationTree();
-
-    // Set default date to today for DailyPlan mode
-    if (this.planningMode === PlanningMode.DailyPlan) {
-      this.selectedDate = new Date();
-      this.selectedDay = null; // Clear day selection for DailyPlan mode
-    }
+    this.setTomorrowAsDefault();
   }
 
   ngOnDestroy(): void {
@@ -372,11 +370,37 @@ export class FiltersSidebarComponent extends DailyPlanningPortalBase implements 
   }
 
   showResetButton(): boolean {
-    return this.planningMode === PlanningMode.DailyPlan && this.isDailyPlanEditMode && this.totalRecords > 0;
+    return this.planningMode === PlanningMode.DailyPlan && this.isFutureDatesMode && this.totalRecords > 0;
   }
 
   showEditDailyPlanButton(): boolean {
-    return this.planningMode === PlanningMode.DailyPlan && this.isDailyPlanReadMode && this.totalRecords > 0;
+    // Show create button only when:
+    // - In daily plan mode
+    // - In BASE_PLAN_FALLBACK mode (no daily packages exist)
+    // - Date is NOT before tomorrow (prevent creating plans for past dates)
+    const isDateValid = this.selectedDate ? !DateHelper.isBeforeTomorrow(this.selectedDate) : false;
+    return this.planningMode === PlanningMode.DailyPlan && this.isBasePlanFallbackMode && this.totalRecords > 0 && isDateValid;
+  }
+
+  setTomorrowAsDefault(): void {
+
+    if(this.planningMode === PlanningMode.BasePlan) {
+      this.setTomorrowDayOfWeek();
+
+    } else if(this.planningMode === PlanningMode.DailyPlan) {
+      this.setTomorrowDate();
+    }
+
+  }
+
+  setTomorrowDayOfWeek(): void {
+    const tomorrowDay = DateHelper.getTomorrowDayOfWeek() as DayOfWeek;
+    this.selectedDay = tomorrowDay;
+  }
+
+  setTomorrowDate(): void {
+    const tomorrowDate = DateHelper.getTomorrowDate();
+    this.selectedDate = tomorrowDate;
   }
 
 }

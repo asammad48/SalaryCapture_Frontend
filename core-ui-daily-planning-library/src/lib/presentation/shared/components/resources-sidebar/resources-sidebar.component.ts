@@ -18,8 +18,9 @@ import { PlanningMode } from '../../../../core/domain/constants/planning-mode.en
   imports: [CommonModule,UnassignedJobsSelectionComponent,WorkersSectionComponent,AccordionModule]
 })
 export class ResourcesSidebarComponent {
-  @Input() isDailyPlanReadMode: boolean = false;
-  @Input() isDailyPlanEditMode: boolean = false;
+  @Input() isBasePlanFallbackMode: boolean = false;
+  @Input() isFutureDatesMode: boolean = false;
+  @Input() isPreviousDatesMode: boolean = false;
   @Input() planningMode: PlanningMode = PlanningMode.BasePlan;
   @Input() unassignedJobs: BasePlanUnassignedJobsDto[] = [];
   @Input() serviceWorkers: BasePlanServiceWorkerDto[] = [];
@@ -43,7 +44,7 @@ export class ResourcesSidebarComponent {
     }
 
     if (this.planningMode === PlanningMode.DailyPlan) {
-      return this.isDailyPlanEditMode;
+      return this.isFutureDatesMode;
     }
 
     return false;

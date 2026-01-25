@@ -15,6 +15,10 @@ import { DayOfWeek } from '../../../../core/domain/models/add-edit-job-package/d
 import { EditJobPackageData } from '../../../../core/domain/models/add-edit-job-package/edit-job-package-data.model';
 import { PlanningMode } from '../../../../core/domain/constants/planning-mode.enum';
 import { ProgressLoadingComponent } from '../progress-loading/progress-loading.component';
+import { ConfirmationDialogComponent } from '../../confirmation-dialog/confirmation-dialog.component';
+import { FuturePlansDialogComponent, FuturePlansDialogAction, FuturePlansDialogResult } from '../../future-plans-dialog/future-plans-dialog.component';
+import { JobPackageFilters } from 'core-ui-daily-planning-library/src/lib/core/domain/models/job-package/job-package-filters.model';
+import { DateHelper } from '../../../../core/utils/date.helper';
 
 @Component({
   selector: 'lib-add-edit-job-package',
@@ -39,6 +43,7 @@ export class AddEditJobPackageComponent extends DailyPlanningPortalBase implemen
   private readonly dialogConfig : AddEditJobPackageConfig | undefined;
   dialogMode: DialogMode = DialogMode.Add;
   planningMode: PlanningMode = PlanningMode.BasePlan; 
+  selectedDayOfWeek: string | undefined;
 
   // Organization Unit Tree
   selectedOrganizationUnit: TreeNode | null = null;
@@ -59,6 +64,7 @@ export class AddEditJobPackageComponent extends DailyPlanningPortalBase implemen
     this.dialogConfig = this.config.data;
     this.dialogMode = this.dialogConfig?.mode || DialogMode.Add;
     this.planningMode = this.dialogConfig?.path || PlanningMode.BasePlan; 
+    this.selectedDayOfWeek = this.dialogConfig?.dayOfWeek;
     this.jobPackageForm = this.initializeForm();
   }
 
@@ -316,14 +322,25 @@ export class AddEditJobPackageComponent extends DailyPlanningPortalBase implemen
       });
   }
 
+  private getTomorrowDay(): string[] {
+
+    if (this.dialogMode === DialogMode.Add && this.planningMode === PlanningMode.BasePlan) {
+      const tomorrowDay = DateHelper.getDayOfWeekFromDate(DateHelper.getTomorrowDate());
+      return tomorrowDay ? [tomorrowDay] : [];
+    }
+
+    return [];
+  }
+
   private initializeForm(): FormGroup {
 
     const daysOfWeekValidators = this.planningMode === PlanningMode.BasePlan ? [Validators.required, this.minArrayLengthValidator(1)] : [];
+    const defaultDayOfWeek = this.getTomorrowDay();
 
     return this.fb.group({
       name: ['', [Validators.required, Validators.minLength(1), this.noWhitespaceValidator]],
       organizationUnitId: [null, [Validators.required]],
-      daysOfWeek: [[], daysOfWeekValidators],
+      daysOfWeek: [defaultDayOfWeek, daysOfWeekValidators],
       tags: [[]]
     });
   }
@@ -415,11 +432,15 @@ export class AddEditJobPackageComponent extends DailyPlanningPortalBase implemen
         organizationUnitId: organizationUnitNode?.key || null,
         daysOfWeek: this.jobPackageForm.value.daysOfWeek,
         tags: this.jobPackageForm.value.tags,
-        mode: this.dialogMode
+        mode: this.dialogMode,
+        resetFuturePlans: false,
+        dayOfWeek: undefined
       };
 
     if (this.dialogConfig?.onSubmit) {
-      this.dialogConfig.onSubmit(formData);
+      this.confirmAndApplyToFutureDailyPlans(formData, (finalFormData) => {
+        this.dialogConfig?.onSubmit!(finalFormData);
+      });
     }
 
     } else {
@@ -431,5 +452,50 @@ export class AddEditJobPackageComponent extends DailyPlanningPortalBase implemen
     this.jobPackageForm.reset();
     this.ref.close({ success: false });
   }
+
+  confirmAndApplyToFutureDailyPlans<T extends { resetFuturePlans?: boolean; dayOfWeek?: string }>(request: T, callback: (request: T) => void): void {
+  
+    request.dayOfWeek = this.selectedDayOfWeek;
+  
+    const tryOpenDialog = () => {
+  
+      const ref: DynamicDialogRef | null = this.dialogService.open(FuturePlansDialogComponent, {
+        header: 'Existing Daily Plans',
+        styleClass: 'p-dialog-warning p-dialog-draggable dialog-accent',
+        dismissableMask: true,
+        closable: true,
+        modal: true,
+        draggable: true,
+        focusOnShow: false,
+        data: {
+          messages: [
+            `This action will reset the following existing future daily plans for ${this.selectedDayOfWeek} to match the updated base plan.`,
+          ],
+          confirmation: 'Do you want to apply these changes to future daily plans?'
+        }
+      });
+  
+      if (!ref) {
+        // Retry after 50ms until the dialog opens
+        setTimeout(tryOpenDialog, 50);
+        return;
+      }
+  
+      ref.onClose.subscribe((result: FuturePlansDialogResult | undefined) => {
+
+        if (!result || result.action === FuturePlansDialogAction.Cancel) {
+          // Cancel - close the add/edit dialog without saving
+          this.ref.close({ success: false });
+          return;
+        }
+        
+        request.resetFuturePlans = result.action === FuturePlansDialogAction.Update;
+        callback(request);
+      });
+    };
+  
+    tryOpenDialog();
+  }
+  
 
 }

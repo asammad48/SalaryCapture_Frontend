@@ -26,6 +26,7 @@ import {
 } from '../../../../data/api-clients/daily-planning-api.client';
 import { PlanningMode } from '../../../../core/domain/constants/planning-mode.enum';
 import { FormsModule } from '@angular/forms';
+import { StringHelper } from '../../../../core/utils/string.helper';
 
 @Component({
   standalone: true,
@@ -79,7 +80,7 @@ export class UnassignedJobsSelectionComponent implements AfterViewInit {
   }
 
   filterJobs(event: any): void {
-    const query = event.query?.toLowerCase() || '';
+    const query = event.query?.trim() || '';
     this.searchQuery = query;
 
     if (!query) {
@@ -88,13 +89,13 @@ export class UnassignedJobsSelectionComponent implements AfterViewInit {
     }
 
     this.filteredJobs = this._unassignedJobs.filter((job) => {
-      const jobNumber = job.jobNumber?.toString().toLowerCase() || '';
-      return jobNumber.includes(query);
+      const jobNumber = job.jobNumber?.toString() || '';
+      return StringHelper.includesIgnoreCase(jobNumber, query);
     });
   }
 
   onSearchInput(event: any): void {
-    const query = event.target?.value?.toLowerCase() || '';
+    const query = event.target?.value?.trim() || '';
     this.searchQuery = query;
 
     if (!query) {
@@ -103,8 +104,8 @@ export class UnassignedJobsSelectionComponent implements AfterViewInit {
     }
 
     this.filteredJobs = this._unassignedJobs.filter((job) => {
-      const jobNumber = job.jobNumber?.toString().toLowerCase() || '';
-      return jobNumber.includes(query);
+      const jobNumber = job.jobNumber?.toString() || '';
+      return StringHelper.includesIgnoreCase(jobNumber, query);
     });
   }
 

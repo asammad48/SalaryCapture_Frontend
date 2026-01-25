@@ -47,7 +47,7 @@ export class JobPackageMapComponent implements AfterViewInit, OnDestroy, OnChang
   }
 
   private initializeMap(): void {
-    
+
     const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap contributors',
       maxZoom: 19
