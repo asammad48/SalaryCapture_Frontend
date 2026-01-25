@@ -57,34 +57,28 @@ export class MenuItemService {
       icon: 'payments',
       label: 'Salary Capture',
       routerLink: ['/salary-capture'],
-      visible:
-        this.accessService.hasPermission(Permissions.SALARY_CAPTURE_ACCESS) &&
-        this.hasSalaryAccess,
+      visible: false,
     },
     {
       id: 'salary-report-menu-item',
       icon: 'report',
       label: 'Salary Report',
       routerLink: ['/salary-calculations-report'],
-      visible:
-        this.accessService.hasPermission(Permissions.SALARY_CAPTURE_EXPORT_BUTTON) &&
-        this.hasSalaryAccess,
+      visible: false,
     },
     {
       id: 'salary-history-menu-item',
       icon: 'history',
       label: 'Salary History',
       routerLink: ['/salary-calculations-report/salary-calculations-history'],
-      visible:
-        this.accessService.hasPermission(Permissions.SALARY_CAPTURE_EXPORT_BUTTON) &&
-        this.hasSalaryAccess,
+      visible: false,
     },
     {
       id: 'daily-jobs-menu-item',
       icon: 'report',
       label: 'Daily Jobs',
       routerLink: ['/daily-jobs'],
-      visible: this.accessService.hasPermission(Permissions.DAILY_JOBS_PAGE_ACCESS),
+      visible: false,
     },
     {
       id: 'base-plan-menu-item',
@@ -104,14 +98,14 @@ export class MenuItemService {
       icon: 'manage-accounts',
       label: 'User Management',
       routerLink: ['/user-management'],
-      visible: this.accessService.hasPermission(Permissions.USER_MANAGEMENT_PAGE_ACCESS),
+      visible: true,
     },
     {
       id: 'settings-menu-item',
       icon: 'settings',
       label: 'Settings',
       routerLink: ['/settings'],
-      visible: this.accessService.hasPermission(Permissions.SETTINGS_PAGE_ACCESS),
+      visible: true,
     }
   ];
 
