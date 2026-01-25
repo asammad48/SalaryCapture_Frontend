@@ -19,17 +19,6 @@ export const PRESENTATION_ROUTES: Routes = [
     loadComponent: () =>
       import('./layout/layout.component').then((l) => l.LayoutComponent),
     children: [
-      {
-        path: 'salary-capture',
-          canActivate: [salaryModuleAccessGuard], 
-        loadChildren: () =>
-          import('./salary/salary.routes').then((d) => d.SALARY_ROUTES),
-        data: { title: 'Salary Capture', breadcrumb: 'Salary Capture' },
-        providers: [
-          // importProvidersFrom([NgxsModule.forFeature([SalaryState])]),
-        ],
-      },
-
       // Default route redirects to daily-planning/base-plan
       {
         path: '',
@@ -46,22 +35,6 @@ export const PRESENTATION_ROUTES: Routes = [
         providers: [
           // importProvidersFrom([NgxsModule.forFeature([UserManagementState])]),
         ],
-      },
-      {
-        path: 'salary-calculations-report',
-        canActivate: [salaryModuleAccessGuard], 
-        loadChildren: () => import('./salary-calculation-report/salary-calculation-reports.routes').then((d) => d.SALARY_CALCULATION_REPORT),
-        data: { title: 'Salary Report', breadcrumb: 'Salary Report' },
-        // providers: [ importProvidersFrom([NgxsModule.forFeature([SalaryState])])],
-      },
-      {
-        path: 'daily-jobs',
-        loadChildren: () =>
-          import('./daily-jobs/daily-jobs.routes').then(
-            (d) => d.DAILY_JOBS_ROUTES
-          ),
-        data: { title: 'Daily Jobs', breadcrumb: 'Daily Jobs' },
-        providers: [],
       },
       {
         path: 'settings',
