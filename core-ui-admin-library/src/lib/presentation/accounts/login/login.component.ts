@@ -1,30 +1,27 @@
 import { Component, Injector, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ToastModule } from 'primeng/toast';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { ProgressLoadingComponent } from '../../shared/progress-loading/progress-loading.component';
 import { AppPortalBase } from '../../base/app-base/app.base';
-import { BehaviorSubject, EMPTY, catchError, takeUntil } from 'rxjs';
+import { takeUntil, filter } from 'rxjs';
 import { LocalStorageService } from '../../services/local-storage.service';
 import { LocalStorageKeys } from 'core-ui-admin-library/src/lib/data/repositories/access/local-storage-keys';
 import { TenantConfigurationService } from '../../services/tenant-configuration.service';
 import { AuthRepository } from 'core-ui-admin-library/src/lib/data/repositories/auth/auth.repository';
 import { LoaderService } from 'core-ui-admin-library/src/lib/data/shared/loader.service';
-
-const defaultLoginDetails = {
-  email: 'demoUser',
-  password: 'J#8mZ&n*2$L@',
-};
+import { MsalService, MsalBroadcastService } from '@azure/msal-angular';
+import { InteractionStatus, EventType, AuthenticationResult } from '@azure/msal-browser';
+import { ButtonModule } from 'primeng/button';
 
 @Component({
   selector: 'app-portal-login',
   imports: [
     CommonModule,
-    ReactiveFormsModule,
     TranslateModule,
     ToastModule,
     ProgressLoadingComponent,
+    ButtonModule,
   ],
   templateUrl: './login.component.html'
 })
@@ -32,184 +29,116 @@ export class LoginComponent
   extends AppPortalBase
   implements OnInit, OnDestroy {
 
-  isSubmitted = false;
-  isShowPassword = false;
-  loginFormGroup!: FormGroup;
-  private _timeSlotInterval$ = new BehaviorSubject<number | null>(null);
+  isLoading = false;
 
   constructor(
     inject: Injector,
-    private fb: FormBuilder,
     private localStorageService: LocalStorageService,
     private authRepo: AuthRepository,
     private tenantConfig: TenantConfigurationService,
     private loaderService: LoaderService,
+    private msalService: MsalService,
+    private msalBroadcastService: MsalBroadcastService,
   ) {
     super(inject);
   }
 
   ngOnInit(): void {
-    this.initFormGroup();
+    this.checkAuthentication();
+    this.setupMsalEventHandlers();
   }
 
-  initFormGroup() {
-    this.loginFormGroup = this.fb.group({
-      email: [null, [Validators.required]],
-      password: [null, [Validators.required]],
-    });
-
-    if (process.env["NODE_ENV"] === "development") {
-      this.loginFormGroup.patchValue(defaultLoginDetails);
-      this.loginFormGroup.markAsTouched();
+  private checkAuthentication(): void {
+    const accounts = this.msalService.instance.getAllAccounts();
+    if (accounts.length > 0) {
+      this.navigateAfterLogin();
     }
   }
 
-  login(): void {
+  private setupMsalEventHandlers(): void {
+    this.msalBroadcastService.inProgress$
+      .pipe(
+        filter((status: InteractionStatus) => status === InteractionStatus.None),
+        takeUntil(this.destroyer$)
+      )
+      .subscribe(() => {
+        this.isLoading = false;
+        this.checkAndSetActiveAccount();
+      });
 
-    this.isSubmitted = true;
+    this.msalBroadcastService.msalSubject$
+      .pipe(
+        filter((msg) => msg.eventType === EventType.LOGIN_SUCCESS),
+        takeUntil(this.destroyer$)
+      )
+      .subscribe((result) => {
+        const payload = result.payload as AuthenticationResult;
+        this.msalService.instance.setActiveAccount(payload.account);
+        this.handleLoginSuccess(payload);
+      });
+  }
 
-    if (!this.loginFormGroup.touched || !this.loginFormGroup.valid) {
-      return;
+  private checkAndSetActiveAccount(): void {
+    const activeAccount = this.msalService.instance.getActiveAccount();
+    
+    if (!activeAccount && this.msalService.instance.getAllAccounts().length > 0) {
+      const accounts = this.msalService.instance.getAllAccounts();
+      this.msalService.instance.setActiveAccount(accounts[0]);
+      this.navigateAfterLogin();
+    }
+  }
+
+  private handleLoginSuccess(authResult: AuthenticationResult): void {
+    if (authResult.accessToken) {
+      this.localStorageService.add(LocalStorageKeys.ACCESS_TOKEN, authResult.accessToken);
+    }
+    
+    if (authResult.account) {
+      this.localStorageService.add(LocalStorageKeys.FIRST_NAME, authResult.account.name || '');
+      this.localStorageService.add(LocalStorageKeys.EMAIL, authResult.account.username || '');
     }
 
-    this.loaderService.show('Account_Login');
+    this.authRepo.getRoles()
+      .pipe(takeUntil(this.destroyer$))
+      .subscribe({
+        next: (res: any) => {
+          const claims = Array.isArray(res?.data) ? res.data : [];
+          this.localStorageService.add(LocalStorageKeys.ROLE_CLAIMS, claims);
+          this.accessService.refreshClaims();
 
-    try {
-
-      const loginFormRequest = this.loginFormGroup.getRawValue();
-
-      this.authRepo.login(loginFormRequest)
-        .pipe(
-          takeUntil(this.destroyer$),
-          catchError((err) => {
-            this.loaderService.hide('Account_Login');
-
-            this.messageService.clear();
-            this.messageService.add({
-              severity: 'error',
-              summary: this.translate.instant('ERROR'),
-              detail: err?.message || this.translate.instant('SOMETHING_WENT_WRONG_TRY_AGAIN'),
-            });
-
-            return EMPTY;
-          })
-        )
-        .subscribe((response: any) => {
-
-          this.loaderService.hide('Account_Login');
-
-          if (!response?.success || !response?.data) {
-            this.messageService.add({
-              severity: 'error',
-              summary: this.translate.instant('LOGIN_TITLE'),
-              detail: this.translate.instant(response?.message || 'LOGIN_FAILED'),
-              life: 3000
-            });
-            return;
-          }
-
-          // ✅ Save token + login data (UNCHANGED)
-          this.saveLoginDataToLocalStorage(response.data);
-
-          // ✅ Fetch role claims
-          this.authRepo.getRoles()
+          this.accessService.fetchAndSaveUserRegions()
             .pipe(takeUntil(this.destroyer$))
             .subscribe({
-              next: (res: any) => {
-
-                const claims = Array.isArray(res?.data) ? res.data : [];
-
-                // Store role claims
-                this.localStorageService.add(
-                  LocalStorageKeys.ROLE_CLAIMS,
-                  claims
-                );
-
-                // Refresh AccessService cache
-                this.accessService.refreshClaims();
-
-                // ✅ MISSING STEP (NOW FIXED)
-                // Fetch user regions & sub-areas
-                this.accessService.fetchAndSaveUserRegions()
-                  .pipe(takeUntil(this.destroyer$))
-                  .subscribe({
-                    next: () => {
-
-                      // Success message (same place as before)
-                      this.messageService.add({
-                        severity: 'success',
-                        summary: this.translate.instant('LOGIN_TITLE'),
-                        detail: this.translate.instant('LOGIN_SUCCESSFULLY'),
-                        life: 3000
-                      });
-
-                      // Navigate ONLY after claims + regions are ready
-                      this.navigateAfterLogin();
-                    },
-                    error: () => {
-                      // Fail-safe: navigate even if regions fail
-                      this.navigateAfterLogin();
-                    }
-                  });
+              next: () => {
+                this.messageService.add({
+                  severity: 'success',
+                  summary: this.translate.instant('LOGIN_TITLE'),
+                  detail: this.translate.instant('LOGIN_SUCCESSFULLY'),
+                  life: 3000
+                });
+                this.navigateAfterLogin();
               },
-              error: () => {
-                // Fail-safe: no claims, still try regions
-                this.localStorageService.add(LocalStorageKeys.ROLE_CLAIMS, []);
-
-                this.accessService.fetchAndSaveUserRegions()
-                  .pipe(takeUntil(this.destroyer$))
-                  .subscribe({
-                    next: () => this.navigateAfterLogin(),
-                    error: () => this.navigateAfterLogin()
-                  });
-              }
+              error: () => this.navigateAfterLogin()
             });
-
-        });
-
-    } catch (e: any) {
-
-      this.loaderService.hide('Account_Login');
-
-      const message =
-        e?.error?.message ||
-        e?.error?.errors?.[0] ||
-        this.translate.instant('SOMETHING_WENT_WRONG_TRY_AGAIN');
-
-      this.messageService.add({
-        severity: 'error',
-        summary: this.translate.instant('LOGIN_TITLE'),
-        detail: this.translate.instant(message),
-        life: 3000
+        },
+        error: () => {
+          this.localStorageService.add(LocalStorageKeys.ROLE_CLAIMS, []);
+          this.navigateAfterLogin();
+        }
       });
-    }
   }
 
-  private saveLoginDataToLocalStorage(data: any): void {
-
-    this.localStorageService.remove(...Object.values(LocalStorageKeys));
-
-    this.localStorageService.add(
-      LocalStorageKeys.ACCESS_TOKEN,
-      data.accessToken
-    );
-
-    Object.entries(LocalStorageKeys)
-      .filter(([_, value]) =>
-        value !== LocalStorageKeys.TENANT_FRONTEND_CONFIGS &&
-        value !== LocalStorageKeys.USER_REGIONS
-      )
-      .forEach(([_, value]) => {
-        this.localStorageService.add(value, data[value] ?? null);
-      });
-
-    if (data?.tenantFrontEndConfigs) {
-      this.tenantConfig.saveTenantConfigs(data.tenantFrontEndConfigs);
-    }
+  loginWithMicrosoft(): void {
+    this.isLoading = true;
+    this.loaderService.show('Account_Login');
+    
+    this.msalService.loginRedirect({
+      scopes: ['user.read', 'openid', 'profile', 'email']
+    });
   }
 
-  // NEW SIMPLE NAVIGATION
-  private navigateAfterLogin() {
+  private navigateAfterLogin(): void {
+    this.loaderService.hide('Account_Login');
     this.router.navigateByUrl('/daily-planning/base-plan');
   }
 

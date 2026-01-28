@@ -26,7 +26,7 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "NX_TUI=false npm start"
+args = "cd /home/runner/workspace && NX_TUI=false NX_DAEMON=false env-cmd -e development npx nx serve daily-planning --poll 2000 --verbose"
 waitForPort = 5000
 
 [[ports]]

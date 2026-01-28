@@ -68,7 +68,7 @@ export class MsalAuthService {
     }
     
     if (authResult.account) {
-      this.localStorageService.add(LocalStorageKeys.USER_NAME, authResult.account.name || '');
+      this.localStorageService.add(LocalStorageKeys.FIRST_NAME, authResult.account.name || '');
       this.localStorageService.add(LocalStorageKeys.EMAIL, authResult.account.username || '');
     }
   }

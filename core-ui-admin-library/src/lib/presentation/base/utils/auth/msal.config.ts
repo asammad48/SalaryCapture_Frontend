@@ -6,16 +6,17 @@ const isIE = typeof window !== 'undefined' &&
   window.navigator.userAgent.indexOf('Trident/') > -1;
 
 export function MSALInstanceFactory(): IPublicClientApplication {
+  const clientId = process.env['NX_MSAL_CLIENT_ID'] || '00000000-0000-0000-0000-000000000000';
+  
   return new PublicClientApplication({
     auth: {
-      clientId: process.env['NX_MSAL_CLIENT_ID'] || '',
+      clientId: clientId,
       authority: process.env['NX_MSAL_AUTHORITY'] || 'https://login.microsoftonline.com/common',
-      redirectUri: process.env['NX_MSAL_REDIRECT_URI'] || window.location.origin,
-      postLogoutRedirectUri: window.location.origin,
+      redirectUri: process.env['NX_MSAL_REDIRECT_URI'] || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5000'),
+      postLogoutRedirectUri: typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5000',
     },
     cache: {
       cacheLocation: BrowserCacheLocation.LocalStorage,
-      storeAuthStateInCookie: isIE,
     },
     system: {
       loggerOptions: {

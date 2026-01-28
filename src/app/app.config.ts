@@ -5,7 +5,6 @@ import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
-// eslint-disable-next-line @nx/enforce-module-boundaries
 import Aura from '@primeng/themes/aura';
 import { providePrimeNG } from 'primeng/config';
 import { defaultInterceptor, tenantInterceptor } from 'core-ui-admin-library/src/lib/presentation/base/utils/interceptors';
@@ -14,8 +13,10 @@ import { loaderInterceptor } from 'core-ui-admin-library/src/lib/presentation/ba
 import { errorInterceptor } from 'core-ui-admin-library/src/lib/presentation/base/utils/interceptors/error.interceptor';
 import { MessageService } from 'primeng/api';
 import { API_BASE_URL, Client } from 'core-ui-admin-library/src/lib/data/api-clients/admin-api.client';
+import { MSAL_GUARD_CONFIG, MSAL_INSTANCE, MSAL_INTERCEPTOR_CONFIG, MsalBroadcastService, MsalGuard, MsalInterceptor, MsalService } from '@azure/msal-angular';
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { MSALGuardConfigFactory, MSALInstanceFactory, MSALInterceptorConfigFactory } from 'core-ui-admin-library/src/lib/presentation/base/utils/auth/msal.config';
 
-// AoT requires an exported function for factories
 export function HttpLoaderFactory(http: HttpClient) {
   return new TranslateHttpLoader(http);
 }
@@ -28,6 +29,26 @@ export const appConfig: ApplicationConfig = {
       provide: API_BASE_URL,
       useValue: process.env["NX_BASE_DPS_URL"]
     },
+    {
+      provide: MSAL_INSTANCE,
+      useFactory: MSALInstanceFactory
+    },
+    {
+      provide: MSAL_GUARD_CONFIG,
+      useFactory: MSALGuardConfigFactory
+    },
+    {
+      provide: MSAL_INTERCEPTOR_CONFIG,
+      useFactory: MSALInterceptorConfigFactory
+    },
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: MsalInterceptor,
+      multi: true
+    },
+    MsalService,
+    MsalGuard,
+    MsalBroadcastService,
     provideHttpClient(withInterceptors([loaderInterceptor])),
     importProvidersFrom([
       TranslateModule.forRoot({
@@ -65,4 +86,3 @@ export const appConfig: ApplicationConfig = {
     }),
   ]
 };
-

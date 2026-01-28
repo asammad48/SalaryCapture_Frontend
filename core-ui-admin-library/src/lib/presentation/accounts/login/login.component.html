@@ -51,52 +51,30 @@
           <div class="heading-section">
             <h1 class="">Sign In</h1>
             <p class="">
-              Enter your username and password below
+              Sign in with your Microsoft account
             </p>
           </div>
 
-          <form [formGroup]="loginFormGroup" (ngSubmit)="login()" id="login-form">
-            <div class="form-group">
-              <label class="form-label">Username</label>
-              <input type="text" class="form-control" id="login-name" placeholder="Enter username" autocomplete="off"
-                formControlName="email" [ngClass]="
-                (isSubmitted || loginFormGroup.controls['email'].touched) &&
-                loginFormGroup.controls['email'].invalid
-                  ? 'ng-invalid ng-dirty'
-                  : ''
-              " />
-            </div>
-            <div class="form-group">
-              <label class="form-label">Password</label>
-              <div class="input-group-wrapper end">
-                <input class="form-control" placeholder="Enter password" formControlName="password" [ngClass]="
-                  (isSubmitted || loginFormGroup.controls['password'].touched) &&
-                  loginFormGroup.controls['password'].invalid
-                    ? 'ng-invalid ng-dirty'
-                    : ''
-                " [attr.type]="isShowPassword ? 'text': 'password'" id="login-password" />
-                <div class="input-group-media icon">
-                  <i class="fa" (click)="isShowPassword = !isShowPassword" aria-hidden="true"
-                    [ngClass]="isShowPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
-                </div>
-              </div>
-            </div>
-            <button type="submit" class="btn btn-primary mt-4 mb-1 w-100" id="login-sign-in-btn">
-              Sign In
+          <div class="microsoft-login-container">
+            <button 
+              type="button" 
+              class="btn btn-primary w-100 microsoft-login-btn"
+              (click)="loginWithMicrosoft()"
+              [disabled]="isLoading"
+              id="microsoft-sign-in-btn">
+              <svg xmlns="http://www.w3.org/2000/svg" width="21" height="21" viewBox="0 0 21 21" class="me-2">
+                <rect x="1" y="1" width="9" height="9" fill="#f25022"/>
+                <rect x="11" y="1" width="9" height="9" fill="#7fba00"/>
+                <rect x="1" y="11" width="9" height="9" fill="#00a4ef"/>
+                <rect x="11" y="11" width="9" height="9" fill="#ffb900"/>
+              </svg>
+              <span *ngIf="!isLoading">Sign in with Microsoft</span>
+              <span *ngIf="isLoading">Signing in...</span>
             </button>
-          </form>
+          </div>
         </div>
       </div>
       <div class="footer-section">
-        <!--<ul>
-          <li>
-            <a href="javascript:void(0)">Privacy Policy</a>
-          </li>
-          -
-          <li>
-            <a href="javascript:void(0)">Terms of Service</a>
-          </li>
-        </ul>-->
       </div>
     </div>
   </div>
