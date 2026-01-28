@@ -86,7 +86,7 @@ export class NewUserDialogComponent extends AppPortalBase {
 
   ngOnInit(): void {
     // editable only when tenant is in dual-module mode
-    this.canEditSalaryAccess = this.tenantConfig.isSalaryAccessEditable();
+    this.canEditSalaryAccess = false;
     this.canEditDailyPlanningAccess = this.tenantConfig.isDailyPlanningAccessEditable();
     this.canEditModuleAccess = this.canEditSalaryAccess || this.canEditDailyPlanningAccess;
 

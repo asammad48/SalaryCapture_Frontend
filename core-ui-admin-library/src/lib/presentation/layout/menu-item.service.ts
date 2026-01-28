@@ -17,7 +17,7 @@ export class MenuItemService {
 
   // tenant-wide license flags
   private get isSalaryLicensed(): boolean {
-    return this.tenantConfig.isSalaryCaptureEnabled();
+    return false;
   }
 
   private get isDailyPlanningLicensed(): boolean {
@@ -30,14 +30,7 @@ export class MenuItemService {
 
   // combined user+tenant checks
   private get hasSalaryAccess(): boolean {
-    // FALLBACK TENANT: salary for everyone
-    if (!this.isNewMode) {
-      return this.isSalaryLicensed;
-    }
-
-    const raw = this.localStorageService.get(LocalStorageKeys.HAS_SALARY_CAPTURE);
-    const flag = raw === true || raw === 'true';
-    return flag && this.isSalaryLicensed;
+    return false;
   }
 
   private get hasDailyPlanningAccess(): boolean {

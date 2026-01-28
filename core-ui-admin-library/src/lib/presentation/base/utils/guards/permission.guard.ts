@@ -30,32 +30,7 @@ const getBooleanFromStorage = (key: string, localStorageService: LocalStorageSer
 
 //   Module-level guard for the whole Salary library (NO AccessService here)
 export const salaryModuleAccessGuard: CanActivateFn = () => {
-  const localStorageService = inject(LocalStorageService);
-  const tenantConfig = inject(TenantConfigurationService);
   const router = inject(Router);
-
-  const isEditable = tenantConfig.isModuleAccessEditable();      // both keys exist?
-  const salaryLicensed = tenantConfig.isSalaryCaptureEnabled();  // tenant license
-
-  // If salary not licensed at all → hard block
-  if (!salaryLicensed) {
-    return router.parseUrl('/page-not-found');
-  }
-
-  // OLD TENANT MODE: no SalaryCapture/DailyPlanning keys
-  // -> salary is always allowed if licensed
-  if (!isEditable) {
-    return true;
-  }
-
-  // NEW TENANT MODE: use per-user flag + license
-  const hasSalaryAccess =
-    getBooleanFromStorage(LocalStorageKeys.HAS_SALARY_CAPTURE, localStorageService);
-
-  if (hasSalaryAccess) {
-    return true;
-  }
-
   return router.parseUrl('/page-not-found');
 };
 

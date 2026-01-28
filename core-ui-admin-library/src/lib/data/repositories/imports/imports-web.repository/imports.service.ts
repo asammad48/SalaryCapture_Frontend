@@ -29,19 +29,19 @@ export class ImportService {
   }
 
   getDeadlines(): Observable<ApiResponse<UploadedDeadlineResponseDto[]>> {
-    return this.adminApiClient.getDeadlines() as any;
+    return new Observable();
   }
 
   getDeadlinesAgainstId(request: string): Observable<ApiResponse<DeadlinesData[]>> {
-    return this.adminApiClient.getDeadlinesAgainstId(request) as any;
+    return new Observable();
   }
 
   deleteDeadlinesAgainstId(request: string): Observable<ApiResponse<boolean>> {
-    return this.adminApiClient.deleteDeadlinesAgainstId(request) as any;
+    return new Observable();
   }
 
   UploadDeadlineCsv(request: UploadDeadlineRequest): Observable<ApiResponse<DeadlineUploadResponseDto>> {
-    return this.adminApiClient.uploadDeadlineCsv(request.file, request.fileName) as any;
+    return new Observable();
   }
 
 }
