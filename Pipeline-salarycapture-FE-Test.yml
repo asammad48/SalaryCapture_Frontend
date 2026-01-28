@@ -77,3 +77,14 @@ stages:
             --resource-group $(resourceGroup) \
             --image $(acrLoginServer)/$(imageName):latest
           echo "Deployment complete."
+    - task: AzureCLI@2
+      displayName: "Restart Azure Container App"
+      inputs:
+        azureSubscription: $(azureSubscription)
+        scriptType: bash
+        scriptLocation: inlineScript
+        inlineScript: |
+          az containerapp restart \
+            --name $(containerAppName) \
+            --resource-group $(resourceGroup)
+          echo "Container App restarted."

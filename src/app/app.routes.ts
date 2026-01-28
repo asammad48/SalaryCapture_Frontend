@@ -1,5 +1,5 @@
 import { Route } from '@angular/router';
-import { dailyPlanningModuleAccessGuard, salaryModuleAccessGuard } from 'core-ui-salary-calculation-library/src/lib/presentation/base/utils/guards';
+import { dailyPlanningModuleAccessGuard, salaryModuleAccessGuard } from 'core-ui-admin-library/src/lib/presentation/base/utils/guards';
  
 export const appRoutes: Route[] = [
   {
@@ -11,13 +11,13 @@ export const appRoutes: Route[] = [
         path: '',
       //  canActivate: [salaryModuleAccessGuard],   //  THIS HAS ISSUE AS WE ALWAYS GO TO SALARY INITIALLY AND WE CANT GUARD THIS.  protect salary library
         loadChildren: () =>
-          import('@embrace-it/salary-calculation-library').then(
+          import('@embrace-it/admin-library').then(
             (m) => m.coreUiSalaryCalculationLibraryRoutes
           ),
       },
       {
         path: 'daily-planning',
-       canActivate: [dailyPlanningModuleAccessGuard],  //   protect daily planning library
+        //canActivate: [dailyPlanningModuleAccessGuard],  //   protect daily planning library
         loadChildren: () =>
           import('@embrace-it/core-ui-daily-planning-library').then(
             (m) => m.coreUiDailyPlanningLibraryRoutes

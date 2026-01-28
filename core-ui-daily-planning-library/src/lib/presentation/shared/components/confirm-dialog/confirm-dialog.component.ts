@@ -5,7 +5,7 @@ import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { ProgressLoadingComponent } from '../progress-loading/progress-loading.component';
 
 @Component({
-  selector: 'salary-calculation-confirm-dialog',
+  selector: 'app-confirm-dialog',
   templateUrl: './confirm-dialog.component.html',
   imports: [ConfirmDialogModule, CommonModule, ProgressLoadingComponent],
 })

@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
-import { SidebarStartComponent, HeaderComponent, UsersService } from '@embrace-it/salary-calculation-library';
+import { SidebarStartComponent, HeaderComponent, UsersService } from '@embrace-it/admin-library';
 import { Toast } from 'primeng/toast';
 
 @Component({

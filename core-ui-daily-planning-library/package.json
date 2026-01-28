@@ -8,7 +8,7 @@
     "@ngx-translate/core": "^15.0.0",
     "primeng": "^19.1.0",
     "rxjs": "~7.8.0",
-    "@embrace-it/salary-calculation-library": "0.0.1"
+    "@embrace-it/daily-planning-library": "0.0.1"
   },
   "dependencies": {
     "tslib": "^2.3.0"

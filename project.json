@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/nx/schemas/project-schema.json",
-  "name": "salary-calculation",
+  "name": "daily-planning",
   "projectType": "application",
   "generators": {
     "@schematics/angular:component": {
@@ -14,7 +14,7 @@
       "dependsOn": [],
       "executor": "@nx/angular:webpack-browser",
       "options": {
-        "outputPath": "dist/salary-calculation",
+        "outputPath": "dist/daily-planning",
         "index": "./src/index.html",
         "main": "./src/main.ts",
         "polyfills": [
@@ -114,19 +114,18 @@
     "serve": {
       "executor": "@nx/angular:dev-server",
       "options": {
-        "port": 5000,
         "host": "0.0.0.0",
         "disableHostCheck": true
       },
       "configurations": {
         "production": {
-          "buildTarget": "salary-calculation:build:production"
+          "buildTarget": "daily-planning:build:production"
         },
          "qa": {
-          "buildTarget": "salary-calculation:build:qa"
+          "buildTarget": "daily-planning:build:qa"
         },
         "development": {
-          "buildTarget": "salary-calculation:build:development"
+          "buildTarget": "daily-planning:build:development"
         }
       },
       "defaultConfiguration": "development"
@@ -134,7 +133,7 @@
     "extract-i18n": {
       "executor": "@angular-devkit/build-angular:extract-i18n",
       "options": {
-        "buildTarget": "salary-calculation:build"
+        "buildTarget": "daily-planning:build"
       }
     },
 

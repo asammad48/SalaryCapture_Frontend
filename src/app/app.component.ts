@@ -29,12 +29,12 @@ export class AppComponent implements OnInit, OnDestroy{
 
   ngOnDestroy() {
       this.destroy$.next(true);
-      this.destroy$.complete(); // ensure subject is completed to avoid memory leaks
+      this.destroy$.complete();  // ensure subject is completed to avoid memory leaks
   }
 
 
   private setPageTitle(): void {
-      const defaultPageTitle = 'Salary Calculation Portal';
+      const defaultPageTitle = 'Daily Planning Portal';
 
       this.router.events
           .pipe(

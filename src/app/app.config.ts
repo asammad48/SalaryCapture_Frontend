@@ -8,11 +8,12 @@ import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import Aura from '@primeng/themes/aura';
 import { providePrimeNG } from 'primeng/config';
-import { defaultInterceptor, tenantInterceptor } from 'core-ui-salary-calculation-library/src/lib/presentation/base/utils/interceptors';
-import { tokenInterceptor } from 'core-ui-salary-calculation-library/src/lib/presentation/base/utils/interceptors/token.interceptor';
-import { loaderInterceptor } from 'core-ui-salary-calculation-library/src/lib/presentation/base/utils/interceptors/loader.interceptor';
-import { errorInterceptor } from 'core-ui-salary-calculation-library/src/lib/presentation/base/utils/interceptors/error.interceptor';
+import { defaultInterceptor, tenantInterceptor } from 'core-ui-admin-library/src/lib/presentation/base/utils/interceptors';
+import { tokenInterceptor } from 'core-ui-admin-library/src/lib/presentation/base/utils/interceptors/token.interceptor';
+import { loaderInterceptor } from 'core-ui-admin-library/src/lib/presentation/base/utils/interceptors/loader.interceptor';
+import { errorInterceptor } from 'core-ui-admin-library/src/lib/presentation/base/utils/interceptors/error.interceptor';
 import { MessageService } from 'primeng/api';
+import { API_BASE_URL, Client } from 'core-ui-admin-library/src/lib/data/api-clients/admin-api.client';
 
 // AoT requires an exported function for factories
 export function HttpLoaderFactory(http: HttpClient) {
@@ -22,6 +23,11 @@ export function HttpLoaderFactory(http: HttpClient) {
 export const appConfig: ApplicationConfig = {
   providers: [
     MessageService,
+    Client,
+    {
+      provide: API_BASE_URL,
+      useValue: process.env["NX_BASE_DPS_URL"]
+    },
     provideHttpClient(withInterceptors([loaderInterceptor])),
     importProvidersFrom([
       TranslateModule.forRoot({

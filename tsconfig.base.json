@@ -12,11 +12,11 @@
     "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@embrace-it/core-ui-salary-calculation-library": [
-        "core-ui-salary-calculation-library/src/index.ts"
+      "@embrace-it/core-ui-admin-library": [
+        "core-ui-admin-library/src/index.ts"
       ],
-      "@embrace-it/salary-calculation-library": [
-        "core-ui-salary-calculation-library/src/index.ts"
+      "@embrace-it/admin-library": [
+        "core-ui-admin-library/src/index.ts"
       ],
       "@embrace-it/core-ui-daily-planning-library": [
         "core-ui-daily-planning-library/src/index.ts"

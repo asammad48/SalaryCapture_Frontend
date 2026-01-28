@@ -38,7 +38,7 @@ import { EditJobPackageData } from '../../../../core/domain/models/add-edit-job-
 import { ConfirmationDialogComponent } from '../../../shared/confirmation-dialog/confirmation-dialog.component';
 import { FuturePlansDialogComponent, FuturePlansDialogAction, FuturePlansDialogResult } from '../../../shared/future-plans-dialog/future-plans-dialog.component';
 import { DynamicDialogRef } from 'primeng/dynamicdialog';
-import { formatDateToDDMMYYYY, toIsoDateOnly } from 'core-ui-salary-calculation-library/src/lib/data/shared/helper.function';
+import { formatDateToDDMMYYYY, toIsoDateOnly } from 'core-ui-admin-library/src/lib/data/shared/helper.function';
 import { DateHelper } from 'core-ui-daily-planning-library/src/lib/core/utils/date.helper';
 
 interface JobPackageFilters {

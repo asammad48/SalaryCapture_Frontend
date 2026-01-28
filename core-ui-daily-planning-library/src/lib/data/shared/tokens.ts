@@ -16,7 +16,7 @@ import { InjectionToken } from '@angular/core';
  * ]
  * ```
  *
- * Or using environment variable (like in salary-calculation library):
+ * Or using environment variable (like in daily-planning library):
  * ```typescript
  * providers: [
  *   {

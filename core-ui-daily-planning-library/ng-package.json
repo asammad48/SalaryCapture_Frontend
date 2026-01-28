@@ -5,6 +5,6 @@
     "entryFile": "src/index.ts"
   },
   "allowedNonPeerDependencies": [
-    "@embrace-it/salary-calculation-library"
+    "@embrace-it/admin-library"
   ]
 }
