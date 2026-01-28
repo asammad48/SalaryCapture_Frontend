@@ -20,7 +20,6 @@ import { UserFilterRequest } from '../../core/domain/requests';
 import { DateTime } from 'luxon';
 import { AccessService } from '../../data/repositories/access/access.service';
 import { Role } from '../../core/domain/models/role.model';
-import { UsersRepository } from '../../core/repositories/users.repository';
 import { Menu } from 'primeng/menu';
 import { Popover, PopoverModule } from 'primeng/popover';
 import { formatDateToDDMMYYYY } from '../../data/shared/helper.function';
