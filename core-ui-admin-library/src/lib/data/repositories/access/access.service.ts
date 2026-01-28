@@ -4,13 +4,11 @@ import { CurrentUserAreaRoles } from "core-ui-admin-library/src/lib/core/domain/
 import { ApiResponse } from "core-ui-admin-library/src/lib/core/domain/models/shared/response.model";
 import { BehaviorSubject, Observable, of } from "rxjs";
 import { map, tap } from "rxjs/operators";
-import { AccessApiUrl } from "./access-api-url.enum";
 import { LocalStorageService } from "core-ui-admin-library/src/lib/presentation/services/local-storage.service";
 import { PermissionsType } from "core-ui-admin-library/src/lib/core/domain/constants/claims.constants";
 import { LocalStorageKeys } from "./local-storage-keys";
 import { TenantConfigurationService } from "core-ui-admin-library/src/lib/presentation/services/tenant-configuration.service";
 import { Area } from "core-ui-admin-library/src/lib/core/domain/models/area.model";
-import { UsersApiUrls } from "../usersManagement/users-api-urls.enum";
 
 @Injectable()
 export class AccessService {
