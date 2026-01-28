@@ -38,7 +38,7 @@ export class DailyPlanningAccessService {
 
   getRoleClaims(): Observable<ApiResponse<string[]>> {
     return this.http.get<ApiResponse<string[]>>(
-      `${process.env['NX_BASE_DP_URL']}${AccessApiUrl.GetRoleClaims}`
+      `${process.env['NX_BASE_DPS_URL']}${AccessApiUrl.GetRoleClaims}`
     );
   }
 
@@ -69,7 +69,7 @@ export class DailyPlanningAccessService {
 
   fetchAndSaveUserRegions(): Observable<Area[]> {
     return this.http.get<ApiResponse<Area[]>>(
-      `${process.env['NX_BASE_DP_URL']}${UsersApiUrls.GetUserAssignedAreasAndSubAreas}`,
+      `${process.env['NX_BASE_DPS_URL']}${UsersApiUrls.GetUserAssignedAreasAndSubAreas}`,
       {
         headers: { 'x-loader-key': 'UserMgt_AddUsers' }
       }

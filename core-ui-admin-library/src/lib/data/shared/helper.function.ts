@@ -1,13 +1,13 @@
 // export class HelperFunctions {
 //     static createApiUrl(apiUrl: string): string {
-//       return `${process.env["NX_BASE_DP_URL"]}${apiUrl}`;
+//       return `${process.env["NX_BASE_DPS_URL"]}${apiUrl}`;
 //     }
 
 import { HttpResponse } from "@angular/common/http";
 import { DateTime, Duration } from "luxon";
 
 //     static returnEnvUrl(): string {
-//       return `${process.env["NX_BASE_DP_URL"]}`;
+//       return `${process.env["NX_BASE_DPS_URL"]}`;
 //     }
 //   }
 

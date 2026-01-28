@@ -33,7 +33,6 @@ This is an Angular 19 application using Nx workspace for daily planning function
 
 ## Environment Variables
 The app uses env-cmd to manage environment-specific API URLs:
-- `NX_BASE_DP_URL`: Salary capture API endpoint
 - `NX_BASE_DPS_URL`: Daily planning API endpoint
 
 ## Recent Changes
