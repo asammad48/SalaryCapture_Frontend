@@ -1,67 +1,50 @@
-import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { Area } from "../../../core/domain/models/area.model";
 import { ApiResponse } from "../../../core/domain/models/shared/response.model";
 import { Role} from "../../../core/domain/models/role.model";
 import { User } from "../../../core/domain/models/user.model";
 import { Observable } from "rxjs";
-import { UsersApiUrls } from "./users-api-urls.enum";
 import { AreaRole } from "../../../core/domain/models/areaRole.model";
 import { UserFilterRequest } from "../../../core/domain/requests";
+import { Client as AdminApiClient, UsersFilterDTO, UserResponseDto } from "../../api-clients/admin-api.client";
 
 @Injectable()
   export class UsersService {
-    constructor(private http: HttpClient) { }
+    constructor(private adminApiClient: AdminApiClient) { }
 
     getUsers(request: UserFilterRequest) : Observable<ApiResponse<User[]>>{
-        return this.http.post<ApiResponse<User[]>>(`${process.env["NX_BASE_DPS_URL"]}${UsersApiUrls.GetUsers}`, request, {
-          headers: { 'x-loader-key': 'UserMgt_ViewUsers' }
-        });
+        return this.adminApiClient.getUsers(UsersFilterDTO.fromJS(request)) as any;
     }
 
     disableUser(user: User) : Observable<ApiResponse<string>>{
-      return this.http.put<ApiResponse<string>>(`${process.env["NX_BASE_DPS_URL"]}${UsersApiUrls.DisableUser}`, user, {
-          headers: { 'x-loader-key': 'UserMgt_ViewUsers' }
-        })
+      return this.adminApiClient.disableUser(UserResponseDto.fromJS(user)) as any;
     }
 
     enableUser(user: User) : Observable<ApiResponse<string>>{
-      return this.http.put<ApiResponse<string>>(`${process.env["NX_BASE_DPS_URL"]}${UsersApiUrls.EnableUser}`, user, {
-          headers: { 'x-loader-key': 'UserMgt_ViewUsers' }
-        })
+      return this.adminApiClient.enableUser(UserResponseDto.fromJS(user)) as any;
     }
 
     updateUser(user: User) : Observable<ApiResponse<string>>{
-      return this.http.put<ApiResponse<string>>(`${process.env["NX_BASE_DPS_URL"]}${UsersApiUrls.UpdateUser}`, user, {
-          headers: { 'x-loader-key': 'UserMgt_AddUsers' }
-        })
+      return this.adminApiClient.updateUser(UserResponseDto.fromJS(user)) as any;
     }
 
     getRoles() : Observable<ApiResponse<Role[]>>{
-        return this.http.get<ApiResponse<Role[]>>(`${process.env["NX_BASE_DPS_URL"]}${UsersApiUrls.GetRoles}`)
+        return this.adminApiClient.getRoles() as any;
     }
 
     getAreas() : Observable<ApiResponse<Area[]>>{
-      return this.http.get<ApiResponse<Area[]>>(`${process.env["NX_BASE_DPS_URL"]}${UsersApiUrls.GetAreas}`, {
-          headers: { 'x-loader-key': 'UserMgt_AddUsers' }
-        })
+      return this.adminApiClient.getUserAssignedAreasAndSubAreas() as any;
     }
 
     getUserAssignedAreasAndSubAreas() : Observable<ApiResponse<Area[]>>{
-      return this.http.get<ApiResponse<Area[]>>(`${process.env["NX_BASE_DPS_URL"]}${UsersApiUrls.GetUserAssignedAreasAndSubAreas}`, {
-          headers: { 'x-loader-key': 'UserMgt_AddUsers' }
-        })
+      return this.adminApiClient.getUserAssignedAreasAndSubAreas() as any;
     }
 
     deleteUser(userId: string) : Observable<ApiResponse<string>>{
-      return this.http.delete<ApiResponse<string>>(`${process.env["NX_BASE_DPS_URL"]}${UsersApiUrls.DeleteUser}/${userId}`, {
-          headers: { 'x-loader-key': 'UserMgt_ViewUsers' }
-        })
+      return this.adminApiClient.deleteUser(userId) as any;
     }
 
     getAreaRoles() : Observable<ApiResponse<AreaRole[]>>{
-      return this.http.get<ApiResponse<AreaRole[]>>(`${process.env["NX_BASE_DPS_URL"]}${UsersApiUrls.GetAreaRoles}`, {
-          headers: { 'x-loader-key': 'UserMgt_AddUsers' }
-        })
+      return this.adminApiClient.getAreaRoles() as any;
     }
   }

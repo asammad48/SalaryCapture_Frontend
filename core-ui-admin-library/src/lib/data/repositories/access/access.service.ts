@@ -1,5 +1,5 @@
-import { HttpClient } from "@angular/common/http";
-import { Injectable } from "@angular/core";
+import { Injectable, Inject, Optional } from "@angular/core";
+import { Client as AdminApiClient, API_BASE_URL } from "../../api-clients/admin-api.client";
 import { CurrentUserAreaRoles } from "core-ui-admin-library/src/lib/core/domain/models/Access/CurrentUserAreaRoles.model";
 import { ApiResponse } from "core-ui-admin-library/src/lib/core/domain/models/shared/response.model";
 import { BehaviorSubject, Observable, of } from "rxjs";
@@ -16,7 +16,11 @@ import { UsersApiUrls } from "../usersManagement/users-api-urls.enum";
 export class AccessService {
   private claims: string[] = [];
 
-  constructor(private http: HttpClient, private localStorage: LocalStorageService, private tenantConfig: TenantConfigurationService) {
+  constructor(
+    private adminApiClient: AdminApiClient,
+    private localStorage: LocalStorageService,
+    private tenantConfig: TenantConfigurationService
+  ) {
     this.loadClaims();
   }
 
@@ -35,21 +39,15 @@ export class AccessService {
   }
 
   getUserAreasRoles(userId: string): Observable<ApiResponse<CurrentUserAreaRoles[]>> {
-    return this.http.get<ApiResponse<CurrentUserAreaRoles[]>>(
-      `${process.env["NX_BASE_DPS_URL"]}${AccessApiUrl.CurrentUserAreasRoles}/${userId}`
-    );
+    return this.adminApiClient.getCurrentUserAreasRoles(userId) as any;
   }
 
   getCurrentUserSelectedRegionAccess(regionId: string): Observable<ApiResponse<boolean>> {
-    return this.http.get<ApiResponse<boolean>>(
-      `${process.env["NX_BASE_DPS_URL"]}${AccessApiUrl.GetCurrentUserSelectedRegionAccess}/${regionId}`
-    );
+    return this.adminApiClient.getCurrentUserSelectedRegionAccess(regionId) as any;
   }
 
   getRoleClaims(): Observable<ApiResponse<string[]>> {
-    return this.http.get<ApiResponse<string[]>>(
-      `${process.env["NX_BASE_DPS_URL"]}${AccessApiUrl.GetRoleClaims}`
-    );
+    return this.adminApiClient.getRoleClaims() as any;
   }
 
   hasPermission(userClaim: PermissionsType): boolean {
@@ -83,11 +81,9 @@ export class AccessService {
   }
 
   fetchAndSaveUserRegions(): Observable<Area[]> {
-    return this.http.get<ApiResponse<Area[]>>(`${process.env["NX_BASE_DPS_URL"]}${UsersApiUrls.GetUserAssignedAreasAndSubAreas}`, {
-      headers: { 'x-loader-key': 'UserMgt_AddUsers' }
-    }).pipe(
-      map((response) => response?.data || []),
-      tap((regions) => {
+    return (this.adminApiClient.getUserAssignedAreasAndSubAreas() as any).pipe(
+      map((response: any) => response?.data || []),
+      tap((regions: any) => {
         this.localStorage.add(LocalStorageKeys.USER_REGIONS, regions);
       })
     );
