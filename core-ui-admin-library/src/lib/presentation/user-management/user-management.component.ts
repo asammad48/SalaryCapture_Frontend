@@ -18,7 +18,9 @@ import { Checkbox, CheckboxModule } from 'primeng/checkbox';
 import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { UserFilterRequest } from '../../core/domain/requests';
 import { DateTime } from 'luxon';
+import { AccessService } from '../../data/repositories/access/access.service';
 import { Role } from '../../core/domain/models/role.model';
+import { UsersRepository } from '../../core/repositories/users.repository';
 import { Menu } from 'primeng/menu';
 import { Popover, PopoverModule } from 'primeng/popover';
 import { formatDateToDDMMYYYY } from '../../data/shared/helper.function';
@@ -358,23 +360,22 @@ export class UserManagementComponent
   }
 
   getUserMenus(item: User): MenuItem[] {
-    const user = item as any;
     return [
       {
         label: 'Edit User',
-        command: () => this.UpdateUserModal(user),
-        disabled: !user.isActive,
+        command: () => this.UpdateUserModal(item),
+        disabled: !item.isActive,
         styleClass: !this.accessService.hasPermission(Permissions.USER_MANAGEMENT_EDIT_USER)
           ? 'color-gray-500 pe-none'
           : 'color-gray-900',
       },
       {
-        label: user.isActive ? 'Block User' : 'Unblock User',
+        label: item.isActive ? 'Block User' : 'Unblock User',
         command: () =>
-          user.isActive
-            ? this.disableUserModal(user)
-            : this.enableUserModal(user),
-        styleClass: user.isActive
+          item.isActive
+            ? this.disableUserModal(item)
+            : this.enableUserModal(item),
+        styleClass: item.isActive
           ? !this.accessService.hasPermission(Permissions.USER_MANAGEMENT_DISABLE_USER)
             ? 'color-gray-500 pe-none'
             : 'text-warning'
@@ -384,7 +385,7 @@ export class UserManagementComponent
       },
       {
         label: 'Delete User',
-        command: () => this.deleteUserModal(user),
+        command: () => this.deleteUserModal(item),
         styleClass: !this.accessService.hasPermission(Permissions.USER_MANAGEMENT_DELETE_USER)
           ? 'color-gray-500 pe-none'
           : 'text-danger',

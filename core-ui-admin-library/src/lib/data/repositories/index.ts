@@ -1,4 +1,2 @@
-export * from './access/access.service';
-export * from './usersManagement/users.service';
-export * from './settings/settings.nswag.repository';
-export * from './users/users.nswag.repository';
+export * from './organization-units-deadlines/organization-units-deadlines-web-repository/organization-unit-deadlines.web-repository';
+
