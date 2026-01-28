@@ -358,22 +358,23 @@ export class UserManagementComponent
   }
 
   getUserMenus(item: User): MenuItem[] {
+    const user = item as any;
     return [
       {
         label: 'Edit User',
-        command: () => this.UpdateUserModal(item),
-        disabled: !item.isActive,
+        command: () => this.UpdateUserModal(user),
+        disabled: !user.isActive,
         styleClass: !this.accessService.hasPermission(Permissions.USER_MANAGEMENT_EDIT_USER)
           ? 'color-gray-500 pe-none'
           : 'color-gray-900',
       },
       {
-        label: item.isActive ? 'Block User' : 'Unblock User',
+        label: user.isActive ? 'Block User' : 'Unblock User',
         command: () =>
-          item.isActive
-            ? this.disableUserModal(item)
-            : this.enableUserModal(item),
-        styleClass: item.isActive
+          user.isActive
+            ? this.disableUserModal(user)
+            : this.enableUserModal(user),
+        styleClass: user.isActive
           ? !this.accessService.hasPermission(Permissions.USER_MANAGEMENT_DISABLE_USER)
             ? 'color-gray-500 pe-none'
             : 'text-warning'
@@ -383,7 +384,7 @@ export class UserManagementComponent
       },
       {
         label: 'Delete User',
-        command: () => this.deleteUserModal(item),
+        command: () => this.deleteUserModal(user),
         styleClass: !this.accessService.hasPermission(Permissions.USER_MANAGEMENT_DELETE_USER)
           ? 'color-gray-500 pe-none'
           : 'text-danger',
