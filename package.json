@@ -25,6 +25,8 @@
     "@angular/platform-browser-dynamic": "19.2.14",
     "@angular/router": "19.2.14",
     "@auth0/angular-jwt": "^5.2.0",
+    "@azure/msal-angular": "^5.0.2",
+    "@azure/msal-browser": "^5.0.2",
     "@babel/runtime": "^7.27.3",
     "@bluehalo/ngx-leaflet": "^19.0.0",
     "@eslint/config-array": "^0.20.0",
