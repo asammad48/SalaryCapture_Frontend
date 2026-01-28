@@ -11,7 +11,7 @@ interface SalaryCaptureFilterRequest {
   serviceProviderId?: string;
 }
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class ServiceWorkerService {
 
   constructor(private adminApiClient: AdminApiClient) {}

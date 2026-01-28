@@ -6,7 +6,7 @@ import { UploadDeadlineRequest } from "core-ui-admin-library/src/lib/core/domain
 import { DeadlinesData, UploadedDeadlineResponseDto } from "core-ui-admin-library/src/lib/core/domain/models/Deadlines/deadlines.model";
 import { Client as AdminApiClient } from "../../../api-clients/admin-api.client";
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class ImportService {
 
   constructor(private adminApiClient: AdminApiClient) {

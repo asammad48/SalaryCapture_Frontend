@@ -10,8 +10,7 @@ import { AppPortalBase } from '../../base/app-base/app.base';
 import { takeUntil } from 'rxjs';
 import { ConfirmationDialogComponent } from '../../shared/confirmation-dialog/confirmation-dialog.component';
 import { LastSync } from '../../../core/domain/models';
-import { Imports } from 'core-ui-admin-library/src/lib/core/domain/enums/Imports';
-import { AccessService } from 'core-ui-admin-library/src/lib/data/repositories/access/access.service';
+import { Imports } from '../../../core/domain/enums/Imports';
 import { CheckboxModule } from 'primeng/checkbox';
 import { FileUploadModule } from 'primeng/fileupload';
 import { DeadlinePeriodsComponent } from '../deadline-periods/deadline-periods.component';
@@ -26,6 +25,7 @@ import { SettingsNswagRepository } from 'core-ui-admin-library/src/lib/data/repo
 
 @Component({
   selector: 'lib-syncing',
+  standalone: true,
   imports: [
     CommonModule,
     CheckboxModule,
@@ -48,9 +48,8 @@ export class SyncingComponent extends AppPortalBase implements OnInit {
   activeIndex = 0;
   items: MenuItem[] = [];
   home: MenuItem | undefined;
-  // hasAccess: any = false;
   value: number = 0;
-  isDeadlinesSyncing = false; // Add loading state for deadlines
+  isDeadlinesSyncing = false;
 
   serviceWorkerSyncTime!: LastSync | undefined;
   usersSyncing!: LastSync | undefined;

@@ -3,9 +3,8 @@
 //       return `${process.env["NX_BASE_DP_URL"]}${apiUrl}`;
 //     }
 
-import { HttpResponse } from "@angular/common/module.d-CnjH8Dlt";
+import { HttpResponse } from "@angular/common/http";
 import { DateTime, Duration } from "luxon";
-import { SALARY_LINE_ACTION_MESSAGES, SALARY_LINE_ACTION_TRANSLATION_KEYS } from "../../core/domain/constants/salary-line-action-messages.constants";
 
 //     static returnEnvUrl(): string {
 //       return `${process.env["NX_BASE_DP_URL"]}`;
@@ -302,30 +301,13 @@ export function isTimeBefore(date1: Date | null | undefined, date2: Date | null 
     }
 
     export function getSalaryLineActionWord(action: number, isSuccess: boolean): string {
-
-      const actionConfig = SALARY_LINE_ACTION_MESSAGES[action];
-      
-      if (!actionConfig) {
-        return isSuccess ? 'completed' : 'process';
-      }
-
-      return isSuccess ? actionConfig.successAction : actionConfig.failAction;
+      return isSuccess ? 'completed' : 'process';
     }
 
     export function getSalaryLineActionTranslationKey(isSuccess: boolean): string {
-      return isSuccess ? SALARY_LINE_ACTION_TRANSLATION_KEYS.SUCCESS : SALARY_LINE_ACTION_TRANSLATION_KEYS.FAILED;
+      return isSuccess ? 'SUCCESS' : 'FAILED';
     }
 
     export function getSalaryLineActionStatuses(action: number): { from: string; to: string } {
-      const actionConfig = SALARY_LINE_ACTION_MESSAGES[action];
-      
-      if (!actionConfig) {
-        return { from: 'unknown', to: 'unknown' };
-      }
-
-      return {
-        from: actionConfig.fromStatus,
-        to: actionConfig.toStatus
-      };
+      return { from: 'unknown', to: 'unknown' };
     }
-
