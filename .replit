@@ -30,16 +30,12 @@ args = "npm start"
 waitForPort = 5000
 
 [[ports]]
+localPort = 4200
+externalPort = 4200
+
+[[ports]]
 localPort = 5000
 externalPort = 80
-
-[[ports]]
-localPort = 41535
-externalPort = 3001
-
-[[ports]]
-localPort = 43757
-externalPort = 3000
 
 [deployment]
 deploymentTarget = "static"
