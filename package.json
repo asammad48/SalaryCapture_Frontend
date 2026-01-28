@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "env-cmd -e development nx serve daily-planning",
+    "start": "NX_TUI=false env-cmd -e development nx serve daily-planning",
     "build": "env-cmd -e production nx build daily-planning --skip-nx-cache",
     "build-test": "env-cmd -e test nx build daily-planning --skip-nx-cache",
     "build-qa": "env-cmd -e qa nx build daily-planning --skip-nx-cache",
