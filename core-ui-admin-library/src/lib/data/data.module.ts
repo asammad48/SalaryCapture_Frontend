@@ -11,7 +11,6 @@ import { ServiceWorkerService } from './repositories/service-worker/service-work
 import { UsersService } from './repositories/usersManagement/users.service';
 import { AccessService } from './repositories/access/access.service';
 import { ImportService } from './repositories/imports/imports-web.repository/imports.service';
-import { DailyJobsService } from './repositories/daily-jobs/daily-jobs.service';
 
 @NgModule({
   imports: [CommonModule, HttpClientModule],
@@ -22,8 +21,7 @@ import { DailyJobsService } from './repositories/daily-jobs/daily-jobs.service';
     {provide: UsersService, useClass: UsersService},
     {provide: AccessService, useClass: AccessService},
     {provide: OrganizationUnitsDeadLineRepository, useClass: OrganizationUnitDeadlinesWebRepository},
-    {provide: ImportService, useClass: ImportService },
-    {provide: DailyJobsService, useClass: DailyJobsService }
+    {provide: ImportService, useClass: ImportService }
   ],
 })
 export class DataModule { }

@@ -1,4 +1,8 @@
-import { DailyJobsTab } from "../models/DailyJobs/daily-jobs-tab.";
+interface DailyJobsTab {
+  path: string;
+  label: string;
+  icon: string;
+}
 
 export const SegmentConstant = 'Segment';
 

@@ -1,4 +1,7 @@
-import { VehicleTypeOption } from "../models/SalaryLine/vehicle-type.model";
+interface VehicleTypeOption {
+  id: string;
+  name: string;
+}
 
 export interface AddEditSalaryLineDto {
   id?: string | null;

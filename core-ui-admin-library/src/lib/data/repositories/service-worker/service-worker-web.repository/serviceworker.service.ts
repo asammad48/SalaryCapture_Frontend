@@ -3,9 +3,14 @@ import { Injectable } from "@angular/core";
 import { catchError, map, Observable } from "rxjs";
 import { ApiResponse } from "../../../../core/domain/models/shared/response.model";
 import { ServiceWorkerApiUrls } from "./service-workers-api-urls.enum";
-import { SalaryCaptureFilterRequest } from "../../../../core/domain/models/SalaryLine/salary-capture-filter-request.model";
 import { RegionalWorkerResponse, ServiceWorkersByFilterResponse } from "../../../../core/domain/models/ServiceWorker/service-worker-by-filter-response.model";
 import { GetServiceWorkerAgainstSalariesResponse } from "../../../../core/domain/models/ServiceWorker/service-worker-against-salaries-response.model";
+
+interface SalaryCaptureFilterRequest {
+  organizationUnitId?: string;
+  productionDate?: string;
+  serviceProviderId?: string;
+}
 
 @Injectable()
 export class ServiceWorkerService {

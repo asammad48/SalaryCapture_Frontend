@@ -38,3 +38,10 @@ The app uses env-cmd to manage environment-specific API URLs:
 
 ## Recent Changes
 - 2026-01-28: Configured for Replit environment with dev server on port 5000
+- 2026-01-28: Removed unused files and folders:
+  - core-ui-admin-library/src/lib/core/domain/models/DailyJobs
+  - core-ui-admin-library/src/lib/core/domain/models/Salary
+  - core-ui-admin-library/src/lib/core/domain/models/SalaryLine
+  - core-ui-admin-library/src/lib/presentation/settings/deadline-periods
+  - core-ui-admin-library/src/lib/presentation/settings/syncing
+  - core-ui-admin-library/src/lib/data/repositories/daily-jobs
