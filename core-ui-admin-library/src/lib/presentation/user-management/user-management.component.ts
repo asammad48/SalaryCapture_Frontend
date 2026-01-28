@@ -13,7 +13,7 @@ import { NewUserDialogComponent } from './new-user-dialog/new-user-dialog.compon
 import { ConfirmationDialogComponent } from '../shared/confirmation-dialog/confirmation-dialog.component';
 import { User } from '../../core/domain/models/user.model';
 import { ApiResponse } from 'core-ui-admin-library/src/lib/core/domain/models/shared/response.model';
-import { lastValueFrom, takeUntil } from 'rxjs';
+import { lastValueFrom, takeUntil, map } from 'rxjs';
 import { Checkbox, CheckboxModule } from 'primeng/checkbox';
 import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { UserFilterRequest } from '../../core/domain/requests';
@@ -26,8 +26,9 @@ import { formatDateToDDMMYYYY } from '../../data/shared/helper.function';
 import { ProgressLoadingComponent } from "../shared/progress-loading/progress-loading.component";
 import { RegionListDialogComponent } from './region-list-dialog/region-list-dialog.component';
 import { AreaListDialogComponent } from './area-list-dialog/area-list-dialog.component';
-import { UsersNswagRepository } from '../../data/repositories/users/users.nswag.repository';
+import { Client as AdminApiClient, UsersFilterDTO, UserResponseDto } from '../../data/api-clients/admin-api.client';
 import { LoaderService } from '../../data/shared/loader.service';
+import { UserMapper, RoleMapper } from 'core-ui-admin-library/src/lib/core/mappers';
 
 @Component({
   selector: 'lib-user-management',
@@ -70,7 +71,7 @@ export class UserManagementComponent
   constructor(
     inject: Injector,
     private fb: FormBuilder,
-    private UserRepository: UsersNswagRepository,
+    private adminApiClient: AdminApiClient,
     private loaderService: LoaderService,
   ) {
     super(inject);
@@ -247,12 +248,22 @@ export class UserManagementComponent
     const filters = this.createFilters();
     this.loaderService.show('UserMgt_ViewUsers');
 
-    this.UserRepository.getUsers(filters)
-      .pipe(takeUntil(this.destroyer$))
+    const dto = new UsersFilterDTO();
+    dto.init(filters);
+
+    this.adminApiClient.getUsers(dto)
+      .pipe(
+        takeUntil(this.destroyer$),
+        map(res => {
+          if (!res.success || !res.data) {
+            throw new Error(res.message);
+          }
+          return res.data.map(dto => UserMapper.fromDto(dto));
+        })
+      )
       .subscribe({
         next: (users: User[]) => {
           this.loaderService.hide('UserMgt_ViewUsers');
-          // Clone and modify users locally
           this.userManagement = JSON.parse(JSON.stringify(users));
         },
         error: (err) => {
@@ -263,8 +274,16 @@ export class UserManagementComponent
   }
 
   getRoles(): void {
-    this.UserRepository.getRoles()
-      .pipe(takeUntil(this.destroyer$))
+    this.adminApiClient.getRoles()
+      .pipe(
+        takeUntil(this.destroyer$),
+        map(res => {
+          if (!res.success || !res.data) {
+            throw new Error(res.message);
+          }
+          return res.data.map(dto => RoleMapper.fromDto(dto));
+        })
+      )
       .subscribe({
         next: (roles: Role[]) => {
           this.roles = roles;
@@ -415,8 +434,16 @@ export class UserManagementComponent
         this.loaderService.show('UserMgt_ViewUsers');
         
         try {
+          const dto = new UserResponseDto();
+          dto.init(result.data);
+
           await lastValueFrom(
-             this.UserRepository.updateUser(result.data)
+             this.adminApiClient.updateUser(dto).pipe(
+               map(res => {
+                 if(res.success) return res.data;
+                 throw new Error(res.message);
+               })
+             )
           );
           this.loaderService.hide('UserMgt_ViewUsers');
           this.messageService.add({
@@ -464,42 +491,6 @@ export class UserManagementComponent
     });
   }
 
-  // syncUser(){
-  //   this.store
-  //         .dispatch(new SyncEligaUsers())
-  //         .pipe(
-  //           takeUntil(this.destroyer$),
-  //           catchError((err) => {
-  //             this.messageService.clear();
-  //             this.messageService.add({
-  //               severity: 'error',
-  //               summary: this.translate.instant('USER_TITLE'),
-  //               detail: err.message,
-  //             });
-  //             return EMPTY;
-  //           })
-  //         )
-  //         .subscribe((data) => {
-  //           const isSynced = data.userManagement.eligaUsersSynced;
-  //           if(isSynced){
-  //              this.messageService.clear();
-  //                   this.messageService.add({
-  //                     severity: 'success',
-  //                     summary: this.translate.instant('ELIGA_USERS_SYNCED_TITLE'),
-  //                     detail: this.translate.instant('ELIGA_USERS_SYNCED_SUCCESSFULLY'),
-  //                   });
-  //           }
-  //           else {
-  //             this.messageService.clear();
-  //             this.messageService.add({
-  //               severity: 'error',
-  //               summary: this.translate.instant('ELIGA_USERS_SYNCED_TITLE'),
-  //               detail: this.translate.instant('ELIGA_USERS_SYNCED_ERROR'),
-  //             });
-  //           }
-  //         });
-  // }
-
   deleteUserModal(user: User): void {
     const ref = this.dialogService.open(ConfirmationDialogComponent, {
       header: 'Delete User',
@@ -525,7 +516,12 @@ export class UserManagementComponent
       try {
         this.loaderService.show('UserMgt_ViewUsers');
         await lastValueFrom(
-          this.UserRepository.deleteUser(user.id)
+          this.adminApiClient.deleteUser(user.id).pipe(
+            map(res => {
+              if(res.success) return res.data;
+              throw new Error(res.message);
+            })
+          )
         );
         this.loaderService.hide('UserMgt_ViewUsers');
         this.messageService.add({
@@ -580,8 +576,15 @@ export class UserManagementComponent
       if (!confirmed) return;
       this.loaderService.show('UserMgt_ViewUsers');
       try {
+        const dto = new UserResponseDto();
+        dto.init(user);
         await lastValueFrom(
-          this.UserRepository.disableUser(user)
+          this.adminApiClient.disableUser(dto).pipe(
+            map(res => {
+              if(res.success) return res.data;
+              throw new Error(res.message);
+            })
+          )
         );
         this.getUsers();
         this.loaderService.hide('UserMgt_ViewUsers');
@@ -592,10 +595,6 @@ export class UserManagementComponent
           detail: this.translate.instant('USER_DISABLED'),
           life: 3000,
         });
-
-        // Optional: Update local list if needed
-        //const updatedUser = { ...user, isActive: false, status: 'Block' };
-        //this.users[i] = updatedUser;
       } catch (error: any) {
         this.showError(error);
       }
@@ -625,9 +624,15 @@ export class UserManagementComponent
       if (confirmed) {
         this.loaderService.show('UserMgt_ViewUsers');
         try {
+          const dto = new UserResponseDto();
+          dto.init(user);
           await lastValueFrom(
-            this.UserRepository.enableUser(user).pipe(
-              takeUntil(this.destroyer$)
+            this.adminApiClient.enableUser(dto).pipe(
+              takeUntil(this.destroyer$),
+              map(res => {
+                if(res.success) return res.data;
+                throw new Error(res.message);
+              })
             )
           );
           this.loaderService.hide('UserMgt_ViewUsers');
@@ -681,8 +686,6 @@ export class UserManagementComponent
       if (key) {
         this.applyFilters(key);
       }
-
-      // Add your custom logic here
     }
   }
 
@@ -759,56 +762,27 @@ createFilters() {
   return filter;
 }
 
-private updateRolesFilter(roles: string[] | null): void {
-
-  if (!roles || roles.length === 0) return;
-
-  // Convert role names to display names
-  const displayNames = roles.map(roleName => {
-    const role = this.roles.find(r => r.roleName === roleName);
-    return role ? role.displayName : roleName;
-  });
-
-  // Add to applied filters
-  this.appliedFilters.push({
-    key: 'roleFilter',
-    label: roles.length > 1 ? 'Roles' : 'Role',
-    value: displayNames.join(', ')
-  });
-
-}
-
-private updateAppliedFilters(filter: UserFilterRequest) {
+updateAppliedFilters(filters: any) {
   this.appliedFilters = [];
-
-  if (filter.name) this.appliedFilters.push({ key: 'name', label: 'Name', value: filter.name });
-  if (filter.userName) this.appliedFilters.push({ key: 'userName', label: 'Username', value: filter.userName });
-  if (filter.status !== null)
-    this.appliedFilters.push({
-      key: 'statusFilter',
-      label: 'Status',
-      value: filter.status ? 'Active' : 'Blocked',
-    });
-
-  // Handle roles with the separate method
-  if (filter.roles) {
-    this.updateRolesFilter(filter.roles);
-  }
-
-  if (filter.area) this.appliedFilters.push({ key: 'area', label: 'Area', value: filter.area });
-  if (filter.subArea) this.appliedFilters.push({ key: 'subArea', label: 'Sub Area', value: filter.subArea });
-  if (filter.createdBy)
-    this.appliedFilters.push({ key: 'createdBy', label: 'Created By', value: filter.createdBy });
-  if (filter.createdAt)
-    this.appliedFilters.push({ key: 'createdAt', label: 'Created At', value: filter.createdAt });
-
-  this.isFilterApplied = this.appliedFilters.length > 0;
+  Object.keys(filters).forEach(key => {
+    if (filters[key] !== null && filters[key] !== undefined && filters[key] !== '') {
+      this.appliedFilters.push({
+        key: key,
+        label: key.charAt(0).toUpperCase() + key.slice(1),
+        value: filters[key]
+      });
+    }
+  });
 }
+
 removeFilter(key: string) {
-  if (key === 'statusFilter') {
-    this.resetStatusFilter(key);
-  } else if (key === 'roleFilter') {
-    this.resetRoleFilter(key);
+  if (key === 'status') {
+    const statusGroup = this.userFilters.get('statusFilter') as FormGroup;
+    statusGroup.patchValue({ all: false, active: false, blocked: false });
+  } else if (key === 'roles') {
+    const roleGroup = this.userFilters.get('roleFilter') as FormGroup;
+    roleGroup.get('all')?.patchValue(false);
+    this.roles.forEach(role => roleGroup.get(role.roleName)?.patchValue(false));
   } else {
     this.userFilters.get(key)?.patchValue(null);
   }

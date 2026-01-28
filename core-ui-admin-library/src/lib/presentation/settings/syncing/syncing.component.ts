@@ -21,7 +21,8 @@ import { ButtonModule } from 'primeng/button';
 import { ImportService } from 'core-ui-admin-library/src/lib/data/repositories/imports/imports-web.repository/imports.service';
 import { formatDateWithTime } from 'core-ui-admin-library/src/lib/data/shared/helper.function';
 import { ProgressLoadingComponent } from '../../shared/progress-loading/progress-loading.component';
-import { SettingsNswagRepository } from 'core-ui-admin-library/src/lib/data/repositories/settings/settings.nswag.repository';
+import { Client as AdminApiClient } from 'core-ui-admin-library/src/lib/data/api-clients/admin-api.client';
+import { mapLastSyncDto } from 'core-ui-admin-library/src/lib/core/mappers';
 
 @Component({
   selector: 'lib-syncing',
@@ -59,7 +60,7 @@ export class SyncingComponent extends AppPortalBase implements OnInit {
     inject: Injector,
     private dataNextService: DataNextService,
     private importService: ImportService,
-    private settingsRepo: SettingsNswagRepository,
+    private adminApiClient: AdminApiClient,
   ) {
     super(inject);
   }
@@ -115,7 +116,7 @@ export class SyncingComponent extends AppPortalBase implements OnInit {
 
     ref.onClose.subscribe((result: any) => {
       if (result.confirmed) {
-        this.settingsRepo
+        this.adminApiClient
           .syncServiceWorkers()
           .pipe(takeUntil(this.destroyer$))
           .subscribe({
@@ -180,7 +181,7 @@ export class SyncingComponent extends AppPortalBase implements OnInit {
 
     ref.onClose.subscribe((result: any) => {
       if (result.confirmed) {
-        this.settingsRepo
+        this.adminApiClient
           .syncUsers()
           .pipe(takeUntil(this.destroyer$))
           .subscribe({
@@ -238,7 +239,7 @@ export class SyncingComponent extends AppPortalBase implements OnInit {
 
     ref.onClose.subscribe((result: any) => {
       if (result?.confirmed) {
-        this.settingsRepo
+        this.adminApiClient
           .syncVehicles()
           .pipe(takeUntil(this.destroyer$))
           .subscribe({
@@ -281,12 +282,14 @@ export class SyncingComponent extends AppPortalBase implements OnInit {
   }
 
   getLastSyncTime(): void {
-    this.settingsRepo
+    this.adminApiClient
       .getLastSyncTime()
       .pipe(takeUntil(this.destroyer$))
       .subscribe({
         next: (data: any) => {
-          this.assignSyncing(data);
+          if (data.success && data.data) {
+             this.assignSyncing(data.data.map(mapLastSyncDto));
+          }
         },
         error: (err: any) => {
           this.messageService.clear();
