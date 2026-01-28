@@ -11,7 +11,6 @@ import { takeUntil } from 'rxjs';
 import { ConfirmationDialogComponent } from '../../shared/confirmation-dialog/confirmation-dialog.component';
 import { LastSync } from '../../../core/domain/models';
 import { Imports } from 'core-ui-admin-library/src/lib/core/domain/enums/Imports';
-import { AccessService } from 'core-ui-admin-library/src/lib/data/repositories/access/access.service';
 import { CheckboxModule } from 'primeng/checkbox';
 import { FileUploadModule } from 'primeng/fileupload';
 import { DeadlinePeriodsComponent } from '../deadline-periods/deadline-periods.component';
@@ -19,7 +18,6 @@ import { UploadDeadlinePeriodComponent } from '../deadline-periods/upload-deadli
 import { DataNextService } from '../../services/data-next.service';
 import { TabsModule } from 'primeng/tabs';
 import { ButtonModule } from 'primeng/button';
-import { ImportService } from 'core-ui-admin-library/src/lib/data/repositories/imports/imports-web.repository/imports.service';
 import { formatDateWithTime } from 'core-ui-admin-library/src/lib/data/shared/helper.function';
 import { ProgressLoadingComponent } from '../../shared/progress-loading/progress-loading.component';
 import { SettingsNswagRepository } from 'core-ui-admin-library/src/lib/data/repositories/settings/settings.nswag.repository';
@@ -59,7 +57,6 @@ export class SyncingComponent extends AppPortalBase implements OnInit {
   constructor(
     inject: Injector,
     private dataNextService: DataNextService,
-    private importService: ImportService,
     private settingsRepo: SettingsNswagRepository,
   ) {
     super(inject);
