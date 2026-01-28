@@ -1,10 +1,9 @@
-import { HttpClient, HttpErrorResponse } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { catchError, map, Observable } from "rxjs";
+import { Observable } from "rxjs";
 import { ApiResponse } from "../../../../core/domain/models/shared/response.model";
-import { ServiceWorkerApiUrls } from "./service-workers-api-urls.enum";
 import { RegionalWorkerResponse, ServiceWorkersByFilterResponse } from "../../../../core/domain/models/ServiceWorker/service-worker-by-filter-response.model";
 import { GetServiceWorkerAgainstSalariesResponse } from "../../../../core/domain/models/ServiceWorker/service-worker-against-salaries-response.model";
+import { Client as AdminApiClient, SalaryCaptureFilterRequestDTO } from "../../../api-clients/admin-api.client";
 
 interface SalaryCaptureFilterRequest {
   organizationUnitId?: string;
@@ -15,38 +14,18 @@ interface SalaryCaptureFilterRequest {
 @Injectable()
 export class ServiceWorkerService {
 
-  constructor(private http: HttpClient) {}
+  constructor(private adminApiClient: AdminApiClient) {}
 
   GetServiceWorkersAgainstSalaries(request: SalaryCaptureFilterRequest): Observable<ApiResponse<GetServiceWorkerAgainstSalariesResponse[]>> {
-    return this.http.post<ApiResponse<GetServiceWorkerAgainstSalariesResponse[]>>(`${process.env["NX_BASE_DP_URL"]}${ServiceWorkerApiUrls.GetServiceWorkersAgainstSalaries}`, request, {
-          headers: { 'x-loader-key': 'SalaryCapture_LineWorkers' }
-        })
-    .pipe(
-      map((response: ApiResponse<GetServiceWorkerAgainstSalariesResponse[]>) => response),
-      catchError((err: HttpErrorResponse) => {
-        throw err;
-      })
-    );
+    return this.adminApiClient.getServiceWorkersAgainstSalaries(SalaryCaptureFilterRequestDTO.fromJS(request)) as any;
   }
 
   getAreaWorkers(request: SalaryCaptureFilterRequest): Observable<ApiResponse<ServiceWorkersByFilterResponse[]>> {
-    return this.http.post<ApiResponse<ServiceWorkersByFilterResponse[]>>(`${process.env["NX_BASE_DP_URL"]}${ServiceWorkerApiUrls.GetServiceWorkersByFilter}`, request)
-    .pipe(
-      map((response: ApiResponse<ServiceWorkersByFilterResponse[]>) => response),
-      catchError((err: HttpErrorResponse) => {
-        throw err;
-      })
-    );
+    return this.adminApiClient.getServiceWorkersByFilter(SalaryCaptureFilterRequestDTO.fromJS(request)) as any;
   }
 
   getRegionalWorkers(request: SalaryCaptureFilterRequest): Observable<ApiResponse<RegionalWorkerResponse[]>> {
-    return this.http.post<ApiResponse<RegionalWorkerResponse[]>>(`${process.env["NX_BASE_DP_URL"]}${ServiceWorkerApiUrls.GetRegionalWorkers}`, request)
-    .pipe(
-      map((response: ApiResponse<RegionalWorkerResponse[]>) => response),
-      catchError((err: HttpErrorResponse) => {
-        throw err;
-      })
-    );
+    return this.adminApiClient.getRegionalWorkers(SalaryCaptureFilterRequestDTO.fromJS(request)) as any;
   }
 
 }
