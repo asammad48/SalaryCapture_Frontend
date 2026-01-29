@@ -22,12 +22,12 @@ name = "Angular Dev Server"
 author = "agent"
 
 [workflows.workflow.metadata]
-outputType = "console"
+outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "cd /home/runner/workspace && NX_DAEMON=false npx nx serve daily-planning --configuration=development --host 0.0.0.0 --port 4200 --poll 2000"
-waitForPort = 4200
+args = "cd /home/runner/workspace && NX_DAEMON=false NX_TUI=false npx nx serve daily-planning --configuration=development --host 0.0.0.0 --port 5000 --poll 2000"
+waitForPort = 5000
 
 [[ports]]
 localPort = 4200
