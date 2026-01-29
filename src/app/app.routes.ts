@@ -3,6 +3,11 @@ import { dailyPlanningModuleAccessGuard, salaryModuleAccessGuard, authGuard } fr
  
 export const appRoutes: Route[] = [
   {
+    path: 'accounts',
+    loadChildren: () =>
+      import('@embrace-it/admin-library').then((m) => m.ACCOUNTS_ROUTES),
+  },
+  {
     path: '',
     canActivate: [authGuard],
     loadComponent: () =>
