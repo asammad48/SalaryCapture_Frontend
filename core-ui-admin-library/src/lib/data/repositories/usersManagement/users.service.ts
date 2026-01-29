@@ -8,7 +8,9 @@ import { AreaRole } from "../../../core/domain/models/areaRole.model";
 import { UserFilterRequest } from "../../../core/domain/requests";
 import { Client as AdminApiClient, UsersFilterDTO, UserResponseDto } from "../../api-clients/admin-api.client";
 
-@Injectable()
+@Injectable({
+  providedIn: 'root'
+})
   export class UsersService {
     constructor(private adminApiClient: AdminApiClient) { }
 
