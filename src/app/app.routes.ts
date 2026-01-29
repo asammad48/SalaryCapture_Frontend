@@ -9,7 +9,7 @@ export const appRoutes: Route[] = [
     children: [
       {
         path: '',
-      //  canActivate: [salaryModuleAccessGuard],   //  THIS HAS ISSUE AS WE ALWAYS GO TO SALARY INITIALLY AND WE CANT GUARD THIS.  protect salary library
+        canActivate: [salaryModuleAccessGuard],
         loadChildren: () =>
           import('@embrace-it/admin-library').then(
             (m) => m.coreUiSalaryCalculationLibraryRoutes
@@ -17,7 +17,7 @@ export const appRoutes: Route[] = [
       },
       {
         path: 'daily-planning',
-        //canActivate: [dailyPlanningModuleAccessGuard],  //   protect daily planning library
+        canActivate: [dailyPlanningModuleAccessGuard],
         loadChildren: () =>
           import('@embrace-it/core-ui-daily-planning-library').then(
             (m) => m.coreUiDailyPlanningLibraryRoutes

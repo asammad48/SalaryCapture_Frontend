@@ -41,3 +41,11 @@ externalPort = 80
 deploymentTarget = "static"
 build = ["npm", "run", "build"]
 publicDir = "dist/daily-planning"
+
+[userenv]
+
+[userenv.shared]
+NX_MSAL_REDIRECT_URI = "http://localhost:4200"
+NX_MSAL_AUTHORITY = "https://cubivueidentityqa.ciamlogin.com/"
+NX_MSAL_CLIENT_ID = "2ee516a9-782c-440b-b794-ed4a52bbc785"
+NX_BASE_DPS_URL = "https://ca-dailyplanningapi-test.ambitiousfield-e9e92f92.westeurope.azurecontainerapps.io"

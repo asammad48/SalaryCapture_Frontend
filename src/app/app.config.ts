@@ -60,30 +60,17 @@ export const appConfig: ApplicationConfig = {
     MsalService,
     MsalGuard,
     MsalBroadcastService,
-    provideHttpClient(withInterceptors([loaderInterceptor])),
-    importProvidersFrom([
-      TranslateModule.forRoot({
-        loader: {
-          provide: TranslateLoader,
-          useFactory: HttpLoaderFactory,
-          deps: [HttpClient],
-        },
-        isolate: false,
-        extend: true,
-      }),
-    ]),
-    provideRouter(appRoutes, withEnabledBlockingInitialNavigation(),
-      withPreloading(PreloadAllModules)),
-    provideAnimations(),
     provideHttpClient(
       withInterceptors(
         [
+          loaderInterceptor,
           defaultInterceptor,
           tenantInterceptor,
           tokenInterceptor,
           errorInterceptor
       ]
     )),
+    importProvidersFrom([
     providePrimeNG({
       theme: {
         preset: Aura,
