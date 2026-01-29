@@ -71,6 +71,19 @@ export const appConfig: ApplicationConfig = {
       ]
     )),
     importProvidersFrom([
+      TranslateModule.forRoot({
+        loader: {
+          provide: TranslateLoader,
+          useFactory: HttpLoaderFactory,
+          deps: [HttpClient],
+        },
+        isolate: false,
+        extend: true,
+      }),
+    ]),
+    provideRouter(appRoutes, withEnabledBlockingInitialNavigation(),
+      withPreloading(PreloadAllModules)),
+    provideAnimations(),
     providePrimeNG({
       theme: {
         preset: Aura,
