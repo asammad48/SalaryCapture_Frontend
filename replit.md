@@ -26,7 +26,7 @@ This is an Angular 19 application using Nx workspace for daily planning function
 ```
 
 ## Development
-- **Dev Server**: `npm start` - Runs on port 5000
+- **Dev Server**: `npm start` - Runs on port 4200
 - **Build**: `npm run build` - Production build
 - **Build (Test)**: `npm run build-test`
 - **Build (QA)**: `npm run build-qa`
@@ -37,7 +37,7 @@ The app uses env-cmd to manage environment-specific API URLs:
 - `NX_BASE_DPS_URL`: Daily planning API endpoint
 
 ## Recent Changes
-- 2026-01-28: Configured for Replit environment with dev server on port 5000
+- 2026-01-28: Configured for Replit environment with dev server on port 4200
 - 2026-01-28: Removed unused files and folders:
   - core-ui-admin-library/src/lib/core/domain/models/DailyJobs
   - core-ui-admin-library/src/lib/core/domain/models/Salary

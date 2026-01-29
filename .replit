@@ -30,12 +30,12 @@ args = "cd /home/runner/workspace && NX_DAEMON=false npx nx serve daily-planning
 waitForPort = 4200
 
 [[ports]]
-localPort = 5000
-externalPort = 80
-
-[[ports]]
 localPort = 4200
 externalPort = 4200
+
+[[ports]]
+localPort = 5000
+externalPort = 80
 
 [deployment]
 deploymentTarget = "static"
