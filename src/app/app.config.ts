@@ -30,6 +30,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     MessageService,
     Client,
+    AccessService,
     {
       provide: API_BASE_URL,
       useValue: process.env["NX_BASE_DPS_URL"]
