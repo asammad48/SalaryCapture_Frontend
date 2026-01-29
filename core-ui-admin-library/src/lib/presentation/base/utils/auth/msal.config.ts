@@ -12,8 +12,8 @@ export function MSALInstanceFactory(): IPublicClientApplication {
     auth: {
       clientId: clientId,
       authority: process.env['NX_MSAL_AUTHORITY'] || 'https://login.microsoftonline.com/common',
-      redirectUri: process.env['NX_MSAL_REDIRECT_URI'] || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5000'),
-      postLogoutRedirectUri: typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5000',
+      redirectUri: process.env['NX_MSAL_REDIRECT_URI'] || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:4200'),
+      postLogoutRedirectUri: typeof window !== 'undefined' ? window.location.origin : 'http://localhost:4200',
     },
     cache: {
       cacheLocation: BrowserCacheLocation.LocalStorage,
