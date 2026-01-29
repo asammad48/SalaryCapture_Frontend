@@ -1,9 +1,10 @@
 import { Route } from '@angular/router';
-import { dailyPlanningModuleAccessGuard, salaryModuleAccessGuard } from 'core-ui-admin-library/src/lib/presentation/base/utils/guards';
+import { dailyPlanningModuleAccessGuard, salaryModuleAccessGuard, authGuard } from 'core-ui-admin-library/src/lib/presentation/base/utils/guards';
  
 export const appRoutes: Route[] = [
   {
     path: '',
+    canActivate: [authGuard],
     loadComponent: () =>
       import('./app.component').then((a) => a.AppComponent),
     children: [

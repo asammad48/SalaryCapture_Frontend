@@ -34,13 +34,16 @@ export class MsalAuthService {
 
     this.msalBroadcastService.msalSubject$
       .pipe(
-        filter((msg: EventMessage) => msg.eventType === EventType.LOGIN_SUCCESS),
+        filter((msg: EventMessage) => msg.eventType === EventType.LOGIN_SUCCESS || msg.eventType === EventType.HANDLE_REDIRECT_END),
         takeUntil(this._destroying$)
       )
       .subscribe((result: EventMessage) => {
-        const payload = result.payload as AuthenticationResult;
-        this.msalService.instance.setActiveAccount(payload.account);
-        this.storeTokenData(payload);
+        if (result.eventType === EventType.LOGIN_SUCCESS) {
+          const payload = result.payload as AuthenticationResult;
+          this.msalService.instance.setActiveAccount(payload.account);
+          this.storeTokenData(payload);
+        }
+        this.checkAndSetActiveAccount();
       });
 
     this.msalBroadcastService.msalSubject$
