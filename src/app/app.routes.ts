@@ -1,7 +1,12 @@
 import { Route } from '@angular/router';
+import { MsalRedirectComponent } from '@azure/msal-angular';
 import { dailyPlanningModuleAccessGuard, salaryModuleAccessGuard, authGuard } from 'core-ui-admin-library/src/lib/presentation/base/utils/guards';
  
 export const appRoutes: Route[] = [
+  {
+    path: 'auth-callback',
+    component: MsalRedirectComponent,
+  },
   {
     path: 'accounts',
     loadChildren: () =>

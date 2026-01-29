@@ -3,6 +3,7 @@ import {ActivatedRoute, NavigationEnd, Router, RouterModule, RouterOutlet} from 
 import {filter, map, Subject, takeUntil} from "rxjs";
 import {Title} from "@angular/platform-browser";
 import {TranslateService} from "@ngx-translate/core";
+import { MsalService } from '@azure/msal-angular';
 
 @Component({
     selector: 'app-root',
@@ -17,6 +18,7 @@ export class AppComponent implements OnInit, OnDestroy{
     private activatedRoute: ActivatedRoute,
     private title: Title,
     private router: Router,
+    private msalService: MsalService,
     translate: TranslateService
   ) {
       translate.setDefaultLang('en');
@@ -24,6 +26,9 @@ export class AppComponent implements OnInit, OnDestroy{
   }
 
   ngOnInit(): void {
+      this.msalService.instance.handleRedirectPromise().then(() => {
+        console.log('AppComponent: MSAL Redirect handled');
+      });
       this.setPageTitle();
   }
 

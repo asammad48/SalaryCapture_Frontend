@@ -38,9 +38,15 @@ export class MsalAuthService {
 
     this.msalService.instance.handleRedirectPromise().then(result => {
       if (result) {
+        console.log('MSAL Redirect Result:', result);
         const payload = result;
         this.msalService.instance.setActiveAccount(payload.account);
         this.storeTokenData(payload);
+        
+        // After processing the redirect, clean up the URL hash to prevent re-triggering
+        if (window.location.hash) {
+          window.history.replaceState(null, '', window.location.pathname + window.location.search);
+        }
       }
       this.checkAndSetActiveAccount();
     }).catch(error => {

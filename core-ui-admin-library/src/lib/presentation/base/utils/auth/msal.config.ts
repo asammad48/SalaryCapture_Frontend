@@ -12,7 +12,7 @@ export function MSALInstanceFactory(): IPublicClientApplication {
     auth: {
       clientId: clientId,
       authority: process.env['NX_MSAL_AUTHORITY'] || 'https://login.microsoftonline.com/common',
-      redirectUri: process.env['NX_MSAL_REDIRECT_URI'] || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:4200'),
+      redirectUri: process.env['NX_MSAL_REDIRECT_URI'] || (typeof window !== 'undefined' ? window.location.origin + '/auth-callback' : 'http://localhost:4200/auth-callback'),
       postLogoutRedirectUri: typeof window !== 'undefined' ? window.location.origin : 'http://localhost:4200',
     },
     cache: {
