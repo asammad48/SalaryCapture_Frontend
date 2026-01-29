@@ -12,10 +12,16 @@ export const authGuard: CanActivateFn = (
   const router = inject(Router);
   const localStorageService = inject(LocalStorageService);
 
+  console.log('AuthGuard checking route:', state.url);
+
+  if (state.url.includes('/accounts/login')) {
+    console.log('AuthGuard: Accessing login page, bypassing check');
+    return true;
+  }
+
   const accounts = msalService.instance.getAllAccounts();
   const hasToken = localStorageService.get(LocalStorageKeys.ACCESS_TOKEN);
 
-  console.log('AuthGuard checking route:', state.url);
   console.log('MSAL Accounts count:', accounts.length);
   console.log('Access Token present:', !!hasToken);
 
