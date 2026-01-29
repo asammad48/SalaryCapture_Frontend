@@ -22,12 +22,14 @@ export const authGuard: CanActivateFn = (
 
   const accounts = msalService.instance.getAllAccounts();
   const hasToken = localStorageService.get(LocalStorageKeys.ACCESS_TOKEN);
+  const isHash = typeof window !== 'undefined' && (window.location.hash.includes('code=') || window.location.hash.includes('error=') || window.location.hash.includes('id_token='));
 
   console.log('MSAL Accounts count:', accounts.length);
   console.log('Access Token present:', !!hasToken);
+  console.log('Is MSAL Callback Hash:', isHash);
 
-  if (accounts.length > 0 || hasToken) {
-    console.log('AuthGuard: Access granted');
+  if (accounts.length > 0 || hasToken || isHash) {
+    console.log('AuthGuard: Access granted (authenticated or MSAL callback)');
     return true;
   }
 

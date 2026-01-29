@@ -1,0 +1,38 @@
+AuthGuard checking route: /user-management#code=1.AZgA5G6r2ixraEyQsYq8KmIaJ6kW5S4seAtEt5TtSlK7x4UAAACYAA.BQABBAIAAAADAOz_BQD0_0V2b1N0c0FydGlmYWN0cwIAAAAAAKgRJepMfaVVTP3FA0yrj-3k8Bu3p_u4rlGLrqw91MIS8AVtl94Ag1Kmp6WqYAlS5gjVf09imhZ_bTi--jvte7PGyHB9OVuAcvifBo1NrRBSNPWQJJQkMvepSLIRgW2x7c_JAPSKD_EcYlDOK822SaG1AUyqr9A-CyrYAYl9B-CMUF0rbyQmAN4w24AOVgJE1dOs6Z2MOBE2JOx7rB-UhoCbW-VwN-Di0DMkE6JAnHGvjsAWM8ePU5E9quBNCvKWrkVfXJH85D5P4vOPFG62A7LeeZ6yy3aJ2nGBQTt7JfAemb2Tj2mX6PKlqtdk8h2ZZyPHghmRsdBETMylw_k917zB5CYkLPPxweKqFDEWBgZwrs7c8Pr3EPXXMpJLEm2vMQRCfUvIXhhEgTRHydsJtAptNgUJNEzBSMd5PflRPrFzk9D1DbqU9rG3EX6XyXhmUnQDg3jaaTaRx_g9_vM2TIO6rkhGe4l1fjYQgLZLtzIJMNTr_8aCG9rLxaxp-jLEKn10dDODGHLGnRM6RTkDflWREOTAas4sq1kWulgEK7T5v7-1LDI4-3ANjLSCaIowKiWB436MRv4alZG0XtPpY4zYvUKuT0LfSzi-LBUryE_9FV-OHThZgAojUVybg4KGUyv_ug3KqOGe--blXu22KZ_M-8gYP0pb2GH8-CgnETH56EiXm-_vAlcO3Tm0_l4-NiouqER4IHe6Y8iL4pcniVXEeR2ZnIW4-D3t1oKA0UAzO4ixuhJTdYfhap6HvMcJhtR8By4raYkXU08mpn5rW5NfZM9EK4ojYlemhQqov6D8hCPyqovYFUyDA5leR5aseT3bZBVsG3L55Iv4jIWv8jQqxzoboyR3c1QrrQfrOePSXfv-MdYg3FQ_jPzT8yN2V5fCxHb2n0uFCtmvBHakc-6Gq2a4IOZXpT1Bsy5FAKX_sZMNhEXq2wTqO0espSq5bVMPvqKoIKFmHWGuTe73S_iFToXmN1qoL8aEo4y0hTHmilHaCT1Vyez7WCKwFHbaWCggyI-He9nxUl5pKvHRVUuYCVfvZggYEzVeIIgoIZwAeQMFTaNW3IO93sVVkGSdIulqlWUb8KuEqGE4GnhNmRsTy54uUdOVAJKM4o-QPo5O2x8oBJRmUk3iyvqqiyIyg2sIs8IxSvrBB9naqAwRFC0x5a5ckssrUSBQIRx6fv38L2OpVOfAJCuskFOC1BDhvbYszKsJnUO3y3KlU7TWc6RRLZd9dpjYGb6nsoCOzIpK0xIaYGzKZOq9V_Yff0OghnB67SyA8dDuNfBRtYApxyTlxlcpgmUGBTomTsr7xLNTnXUZ1ypM8UAUCD2kOqB4g5kpmeTf5HtwrJ_1thpj4mCgUF91syOoXSMYq7z_7jTgKQ&client_info=eyJ1aWQiOiIzZjI0ZDgxZS1iZjc1LTQ2OTUtYjVlMy1lZmUwYzE1NGZjMWQiLCJ1dGlkIjoiZGFhYjZlZTQtNmIyYy00YzY4LTkwYjEtOGFiYzJhNjIxYTI3IiwieG1zX3RkYnIiOiJFVSJ9&state=eyJpZCI6IjAxOWMwOTVmLTQ4YzItNzllZi1iYjAzLTk1NjUxMmMwZGQyZSIsIm1ldGEiOnsiaW50ZXJhY3Rpb25UeXBlIjoicmVkaXJlY3QifX0=&session_state=0013b6fa-5ef3-e727-0661-ba13bc826e31
+auth.guard.ts:25 MSAL Accounts count: 0
+auth.guard.ts:26 Access Token present: false
+auth.guard.ts:33 AuthGuard: Access denied, redirecting to login
+core.mjs:21536 Angular is running in development mode.
+core.mjs:6720 ERROR BrowserAuthError: interaction_in_progress: See https://aka.ms/msal.js.errors#interaction_in_progress for details
+    at createBrowserAuthError (BrowserAuthError.mjs:23:12)
+    at BrowserCacheManager.setInteractionInProgress (BrowserCacheManager.mjs:1279:49)
+    at StandardController.mjs:316:33
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (asyncToGenerator.js:3:1)
+    at _next (asyncToGenerator.js:17:1)
+    at asyncToGenerator.js:22:1
+    at new ZoneAwarePromise (zone.js:2701:25)
+    at asyncToGenerator.js:14:1
+    at StandardController.acquireTokenRedirect (StandardController.mjs:361:10)
+handleError @ core.mjs:6720
+next @ core.mjs:35818
+next @ Subscriber.js:91
+_next @ Subscriber.js:60
+next @ Subscriber.js:31
+(anonymous) @ Subject.js:34
+errorContext @ errorContext.js:19
+next @ Subject.js:27
+emit @ core.mjs:6099
+(anonymous) @ core.mjs:6605
+invoke @ zone.js:398
+run @ zone.js:113
+runOutsideAngular @ core.mjs:6459
+onHandleError @ core.mjs:6605
+handleError @ zone.js:402
+runGuarded @ zone.js:126
+api.microtaskDrainDone @ zone.js:2324
+drainMicroTaskQueue @ zone.js:619
+invokeTask @ zone.js:519
+invokeTask @ zone.js:1141
+globalCallback @ zone.js:1172
+globalZoneAwareCallback @ zone.js:1205Understand this error

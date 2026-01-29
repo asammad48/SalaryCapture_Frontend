@@ -36,6 +36,17 @@ export class MsalAuthService {
         }
       });
 
+    this.msalService.instance.handleRedirectPromise().then(result => {
+      if (result) {
+        const payload = result;
+        this.msalService.instance.setActiveAccount(payload.account);
+        this.storeTokenData(payload);
+      }
+      this.checkAndSetActiveAccount();
+    }).catch(error => {
+      console.error('MSAL Redirect Error:', error);
+    });
+
     this.msalBroadcastService.msalSubject$
       .pipe(
         filter((msg: EventMessage) => msg.eventType === EventType.LOGIN_SUCCESS || msg.eventType === EventType.HANDLE_REDIRECT_END),
