@@ -1,4 +1,4 @@
-import { ApplicationConfig, importProvidersFrom, } from '@angular/core';
+import { ApplicationConfig, APP_INITIALIZER, importProvidersFrom, } from '@angular/core';
 import { PreloadAllModules, provideRouter, withEnabledBlockingInitialNavigation, withPreloading, } from '@angular/router';
 import { appRoutes } from './app.routes';
 import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common/http';
@@ -16,6 +16,11 @@ import { API_BASE_URL, Client } from 'core-ui-admin-library/src/lib/data/api-cli
 import { MSAL_GUARD_CONFIG, MSAL_INSTANCE, MSAL_INTERCEPTOR_CONFIG, MsalBroadcastService, MsalGuard, MsalInterceptor, MsalService } from '@azure/msal-angular';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { MSALGuardConfigFactory, MSALInstanceFactory, MSALInterceptorConfigFactory } from 'core-ui-admin-library/src/lib/presentation/base/utils/auth/msal.config';
+import { IPublicClientApplication } from '@azure/msal-browser';
+
+export function initializeMsalFactory(msalInstance: IPublicClientApplication): () => Promise<void> {
+  return () => msalInstance.initialize();
+}
 
 export function HttpLoaderFactory(http: HttpClient) {
   return new TranslateHttpLoader(http);
@@ -40,6 +45,12 @@ export const appConfig: ApplicationConfig = {
     {
       provide: MSAL_INTERCEPTOR_CONFIG,
       useFactory: MSALInterceptorConfigFactory
+    },
+    {
+      provide: APP_INITIALIZER,
+      useFactory: initializeMsalFactory,
+      deps: [MSAL_INSTANCE],
+      multi: true
     },
     {
       provide: HTTP_INTERCEPTORS,
