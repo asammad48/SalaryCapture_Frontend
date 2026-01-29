@@ -10,3 +10,4 @@ export * from './lib/presentation/base/utils/interceptors';
 export * from './lib/data/repositories/usersManagement/users.service';
 export * from './lib/data/repositories/access/access.service';
 export * from './lib/presentation/accounts/accounts.routes';
+export * from './lib/presentation/presentation.routes';

@@ -14,6 +14,13 @@ export const appRoutes: Route[] = [
       import('./app.component').then((a) => a.AppComponent),
     children: [
       {
+        path: 'admin',
+        loadChildren: () =>
+          import('@embrace-it/admin-library').then(
+            (m) => m.PRESENTATION_ROUTES
+          ),
+      },
+      {
         path: '',
         canActivate: [salaryModuleAccessGuard],
         loadChildren: () =>
