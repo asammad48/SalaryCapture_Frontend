@@ -13,6 +13,7 @@ import { loaderInterceptor } from 'core-ui-admin-library/src/lib/presentation/ba
 import { errorInterceptor } from 'core-ui-admin-library/src/lib/presentation/base/utils/interceptors/error.interceptor';
 import { MessageService } from 'primeng/api';
 import { API_BASE_URL, Client } from 'core-ui-admin-library/src/lib/data/api-clients/admin-api.client';
+import { AccessService } from 'core-ui-admin-library/src/lib/data/repositories/access/access.service';
 import { MSAL_GUARD_CONFIG, MSAL_INSTANCE, MSAL_INTERCEPTOR_CONFIG, MsalBroadcastService, MsalGuard, MsalInterceptor, MsalService } from '@azure/msal-angular';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { MSALGuardConfigFactory, MSALInstanceFactory, MSALInterceptorConfigFactory } from 'core-ui-admin-library/src/lib/presentation/base/utils/auth/msal.config';
