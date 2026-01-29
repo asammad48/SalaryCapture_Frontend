@@ -3,6 +3,8 @@ import {ActivatedRoute, NavigationEnd, Router, RouterModule, RouterOutlet} from 
 import {filter, map, Subject, takeUntil} from "rxjs";
 import {Title} from "@angular/platform-browser";
 import {TranslateService} from "@ngx-translate/core";
+import { MsalService, MsalBroadcastService } from '@azure/msal-angular';
+import { InteractionStatus, AuthenticationResult } from '@azure/msal-browser';
 
 @Component({
     selector: 'app-root',
@@ -17,6 +19,8 @@ export class AppComponent implements OnInit, OnDestroy{
     private activatedRoute: ActivatedRoute,
     private title: Title,
     private router: Router,
+    private msalService: MsalService,
+    private msalBroadcastService: MsalBroadcastService,
     translate: TranslateService
   ) {
       translate.setDefaultLang('en');
@@ -24,7 +28,35 @@ export class AppComponent implements OnInit, OnDestroy{
   }
 
   ngOnInit(): void {
+      this.msalService.handleRedirectObservable().subscribe({
+        next: (result: AuthenticationResult) => {
+          if (result && result.account) {
+            this.msalService.instance.setActiveAccount(result.account);
+            // Requirement: Insert all of the Claim in Storage as it is
+            if (result.idTokenClaims) {
+              localStorage.setItem('id_token_claims', JSON.stringify(result.idTokenClaims));
+            }
+          }
+        },
+        error: (error) => console.error('MSAL Redirect Error:', error)
+      });
+
+      this.msalBroadcastService.inProgress$
+        .pipe(
+          filter((status: InteractionStatus) => status === InteractionStatus.None),
+          takeUntil(this.destroy$)
+        )
+        .subscribe(() => {
+          this.checkAndLogin();
+        });
+
       this.setPageTitle();
+  }
+
+  private checkAndLogin() {
+    if (this.msalService.instance.getAllAccounts().length === 0) {
+      this.msalService.loginRedirect();
+    }
   }
 
   ngOnDestroy() {

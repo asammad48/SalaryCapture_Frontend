@@ -5,15 +5,75 @@ import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
-// eslint-disable-next-line @nx/enforce-module-boundaries
 import Aura from '@primeng/themes/aura';
 import { providePrimeNG } from 'primeng/config';
-import { defaultInterceptor, tenantInterceptor } from 'core-ui-admin-library/src/lib/presentation/base/utils/interceptors';
-import { tokenInterceptor } from 'core-ui-admin-library/src/lib/presentation/base/utils/interceptors/token.interceptor';
-import { loaderInterceptor } from 'core-ui-admin-library/src/lib/presentation/base/utils/interceptors/loader.interceptor';
-import { errorInterceptor } from 'core-ui-admin-library/src/lib/presentation/base/utils/interceptors/error.interceptor';
 import { MessageService } from 'primeng/api';
 import { API_BASE_URL, Client } from 'core-ui-admin-library/src/lib/data/api-clients/admin-api.client';
+
+import { 
+  IPublicClientApplication, 
+  PublicClientApplication, 
+  InteractionType, 
+  BrowserCacheLocation, 
+  LogLevel 
+} from '@azure/msal-browser';
+import { 
+  MsalInterceptor, 
+  MSAL_INSTANCE, 
+  MsalService, 
+  MSAL_GUARD_CONFIG, 
+  MSAL_INTERCEPTOR_CONFIG, 
+  MsalGuardConfiguration, 
+  MsalInterceptorConfiguration, 
+  MsalGuard, 
+  MsalBroadcastService 
+} from '@azure/msal-angular';
+import { environment } from '../environment';
+import { tokenInterceptor } from './token.interceptor';
+
+export function loggerCallback(logLevel: LogLevel, message: string) {
+  console.log(message);
+}
+
+export function MSALInstanceFactory(): IPublicClientApplication {
+  return new PublicClientApplication({
+    auth: {
+      clientId: environment.NX_CLIENTID,
+      authority: environment.NX_AUTHORITY,
+      redirectUri: environment.NX_REDIRECT_URL,
+    },
+    cache: {
+      cacheLocation: BrowserCacheLocation.LocalStorage,
+      storeAuthStateInCookie: false,
+    },
+    system: {
+      loggerOptions: {
+        loggerCallback,
+        logLevel: LogLevel.Info,
+        piiLoggingEnabled: false,
+      },
+    },
+  });
+}
+
+export function MSALInterceptorConfigFactory(): MsalInterceptorConfiguration {
+  const protectedResourceMap = new Map<string, Array<string>>();
+  protectedResourceMap.set(environment.NX_BASE_AM_URL, environment.NX_SCOPES);
+
+  return {
+    interactionType: InteractionType.Redirect,
+    protectedResourceMap,
+  };
+}
+
+export function MSALGuardConfigFactory(): MsalGuardConfiguration {
+  return {
+    interactionType: InteractionType.Redirect,
+    authRequest: {
+      scopes: environment.NX_SCOPES,
+    },
+  };
+}
 
 // AoT requires an exported function for factories
 export function HttpLoaderFactory(http: HttpClient) {
@@ -26,9 +86,8 @@ export const appConfig: ApplicationConfig = {
     Client,
     {
       provide: API_BASE_URL,
-      useValue: process.env["NX_BASE_DPS_URL"]
+      useValue: environment.NX_BASE_AM_URL
     },
-    provideHttpClient(withInterceptors([loaderInterceptor])),
     importProvidersFrom([
       TranslateModule.forRoot({
         loader: {
@@ -46,10 +105,7 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(
       withInterceptors(
         [
-          defaultInterceptor,
-          tenantInterceptor,
-          tokenInterceptor,
-          errorInterceptor
+          tokenInterceptor
       ]
     )),
     providePrimeNG({
@@ -63,6 +119,21 @@ export const appConfig: ApplicationConfig = {
         },
       },
     }),
+    {
+      provide: MSAL_INSTANCE,
+      useFactory: MSALInstanceFactory,
+    },
+    {
+      provide: MSAL_GUARD_CONFIG,
+      useFactory: MSALGuardConfigFactory,
+    },
+    {
+      provide: MSAL_INTERCEPTOR_CONFIG,
+      useFactory: MSALInterceptorConfigFactory,
+    },
+    MsalService,
+    MsalGuard,
+    MsalBroadcastService,
   ]
 };
 
