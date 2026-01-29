@@ -58,7 +58,9 @@ export function MSALInstanceFactory(): IPublicClientApplication {
 
 export function MSALInterceptorConfigFactory(): MsalInterceptorConfiguration {
   const protectedResourceMap = new Map<string, Array<string>>();
+  // Map API URLs to their respective scopes. If specific scopes are unknown, openid/profile is used as a baseline.
   protectedResourceMap.set(environment.NX_BASE_AM_URL, environment.NX_SCOPES);
+  protectedResourceMap.set(environment.apiUrl, environment.NX_SCOPES);
 
   return {
     interactionType: InteractionType.Redirect,

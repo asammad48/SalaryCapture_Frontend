@@ -37,9 +37,20 @@ export class AuthService {
       } catch (error) {
         console.error('Token acquisition failed', error);
           if (error instanceof InteractionRequiredAuthError) {
-            this.msalService.logoutRedirect();
-            localStorage.clear();
-            sessionStorage.clear();
+            // Fallback to default scopes if specific API scope fails
+            try {
+               const response = await firstValueFrom(
+                  this.msalService.acquireTokenSilent({
+                    account: activeAccount,
+                    scopes: ['openid', 'profile'],
+                  })
+                );
+                return response.accessToken;
+            } catch (innerError) {
+              this.msalService.logoutRedirect();
+              localStorage.clear();
+              sessionStorage.clear();
+            }
         }
         return null;
       }
