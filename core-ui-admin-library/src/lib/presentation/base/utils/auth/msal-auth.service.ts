@@ -22,14 +22,18 @@ export class MsalAuthService {
     this.initializeMsal();
   }
 
+  private isInProgress = false;
+
   private initializeMsal(): void {
     this.msalBroadcastService.inProgress$
       .pipe(
-        filter((status: InteractionStatus) => status === InteractionStatus.None),
         takeUntil(this._destroying$)
       )
-      .subscribe(() => {
-        this.checkAndSetActiveAccount();
+      .subscribe((status: InteractionStatus) => {
+        this.isInProgress = status !== InteractionStatus.None;
+        if (status === InteractionStatus.None) {
+          this.checkAndSetActiveAccount();
+        }
       });
 
     this.msalBroadcastService.msalSubject$
@@ -81,6 +85,11 @@ export class MsalAuthService {
   }
 
   login(): void {
+    if (this.isInProgress) {
+      console.warn('MSAL: Interaction already in progress');
+      return;
+    }
+    
     if (this.msalGuardConfig.authRequest) {
       this.msalService.loginRedirect({
         ...this.msalGuardConfig.authRequest

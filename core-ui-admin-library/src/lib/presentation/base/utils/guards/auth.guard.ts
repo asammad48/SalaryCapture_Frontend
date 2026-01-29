@@ -1,6 +1,7 @@
 import { inject } from '@angular/core';
 import { ActivatedRouteSnapshot, Router, RouterStateSnapshot, CanActivateFn } from '@angular/router';
 import { MsalService } from '@azure/msal-angular';
+import { InteractionStatus } from '@azure/msal-browser';
 import { LocalStorageService } from '../../../services/local-storage.service';
 import { LocalStorageKeys } from 'core-ui-admin-library/src/lib/data/repositories/access/local-storage-keys';
 
