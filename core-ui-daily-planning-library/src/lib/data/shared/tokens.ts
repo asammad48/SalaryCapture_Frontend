@@ -21,7 +21,7 @@ import { InjectionToken } from '@angular/core';
  * providers: [
  *   {
  *     provide: API_BASE_URL,
- *     useValue: process.env["NX_BASE_DP_URL"]
+ *     useValue: process.env["NX_BASE_DPS_URL"] + "/api"
  *   }
  * ]
  * ```

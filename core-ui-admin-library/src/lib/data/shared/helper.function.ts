@@ -1,14 +1,14 @@
 // export class HelperFunctions {
 //     static createApiUrl(apiUrl: string): string {
-//       return `${process.env["NX_BASE_DP_URL"]}${apiUrl}`;
+//       return `${process.env["NX_BASE_DPS_URL"]}/api${apiUrl}`;
 //     }
 
-import { HttpResponse } from "@angular/common/module.d-CnjH8Dlt";
+import { HttpResponse } from "@angular/common/http";
 import { DateTime, Duration } from "luxon";
 import { SALARY_LINE_ACTION_MESSAGES, SALARY_LINE_ACTION_TRANSLATION_KEYS } from "../../core/domain/constants/salary-line-action-messages.constants";
 
 //     static returnEnvUrl(): string {
-//       return `${process.env["NX_BASE_DP_URL"]}`;
+//       return `${process.env["NX_BASE_DPS_URL"]}/api`;
 //     }
 //   }
 

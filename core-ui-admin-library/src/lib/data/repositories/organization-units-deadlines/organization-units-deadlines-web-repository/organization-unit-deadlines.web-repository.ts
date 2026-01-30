@@ -13,7 +13,7 @@ export class OrganizationUnitDeadlinesWebRepository extends OrganizationUnitsDea
 
     getOrganizationUnitsDeadlines(request: DeadlineRequest): Observable<RemainingTime>{
         return this.http.post(
-            `${process.env["NX_BASE_DP_URL"]}${OrganizationUnitDeadlinesUrls.GetOrganizationUnitDeadlines}`, request, {
+            `${process.env["NX_BASE_DPS_URL"]}/api${OrganizationUnitDeadlinesUrls.GetOrganizationUnitDeadlines}`, request, {
           headers: { 'x-loader-key': 'SalaryCapture_LineWorkers' }
         }
           )

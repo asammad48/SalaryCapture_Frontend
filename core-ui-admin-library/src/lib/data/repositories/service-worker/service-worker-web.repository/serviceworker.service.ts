@@ -18,7 +18,7 @@ export class ServiceWorkerService {
   constructor(private http: HttpClient) {}
 
   GetServiceWorkersAgainstSalaries(request: SalaryCaptureFilterRequest): Observable<ApiResponse<GetServiceWorkerAgainstSalariesResponse[]>> {
-    return this.http.post<ApiResponse<GetServiceWorkerAgainstSalariesResponse[]>>(`${process.env["NX_BASE_DP_URL"]}${ServiceWorkerApiUrls.GetServiceWorkersAgainstSalaries}`, request, {
+    return this.http.post<ApiResponse<GetServiceWorkerAgainstSalariesResponse[]>>(`${process.env["NX_BASE_DPS_URL"]}/api${ServiceWorkerApiUrls.GetServiceWorkersAgainstSalaries}`, request, {
           headers: { 'x-loader-key': 'SalaryCapture_LineWorkers' }
         })
     .pipe(
@@ -30,7 +30,7 @@ export class ServiceWorkerService {
   }
 
   getAreaWorkers(request: SalaryCaptureFilterRequest): Observable<ApiResponse<ServiceWorkersByFilterResponse[]>> {
-    return this.http.post<ApiResponse<ServiceWorkersByFilterResponse[]>>(`${process.env["NX_BASE_DP_URL"]}${ServiceWorkerApiUrls.GetServiceWorkersByFilter}`, request)
+    return this.http.post<ApiResponse<ServiceWorkersByFilterResponse[]>>(`${process.env["NX_BASE_DPS_URL"]}/api${ServiceWorkerApiUrls.GetServiceWorkersByFilter}`, request)
     .pipe(
       map((response: ApiResponse<ServiceWorkersByFilterResponse[]>) => response),
       catchError((err: HttpErrorResponse) => {
@@ -40,7 +40,7 @@ export class ServiceWorkerService {
   }
 
   getRegionalWorkers(request: SalaryCaptureFilterRequest): Observable<ApiResponse<RegionalWorkerResponse[]>> {
-    return this.http.post<ApiResponse<RegionalWorkerResponse[]>>(`${process.env["NX_BASE_DP_URL"]}${ServiceWorkerApiUrls.GetRegionalWorkers}`, request)
+    return this.http.post<ApiResponse<RegionalWorkerResponse[]>>(`${process.env["NX_BASE_DPS_URL"]}/api${ServiceWorkerApiUrls.GetRegionalWorkers}`, request)
     .pipe(
       map((response: ApiResponse<RegionalWorkerResponse[]>) => response),
       catchError((err: HttpErrorResponse) => {
