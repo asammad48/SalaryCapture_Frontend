@@ -41,6 +41,9 @@ export class AppComponent implements OnInit, OnDestroy{
             // 1. Store ID Token Claims
             if (result.idTokenClaims) {
               localStorage.setItem('id_token_claims', JSON.stringify(result.idTokenClaims));
+              // Store user name for display
+              const name = result.idTokenClaims['name'] || result.idTokenClaims['preferred_username'] || '';
+              localStorage.setItem('user_display_name', name);
             }
 
             // 2. Fetch Role Claims (GetRoleClaims) and Areas (GetUserAssignedAreasAndSubAreas)
