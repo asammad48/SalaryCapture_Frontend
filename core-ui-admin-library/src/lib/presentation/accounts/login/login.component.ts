@@ -11,6 +11,7 @@ import { LocalStorageKeys } from 'core-ui-admin-library/src/lib/data/repositorie
 import { TenantConfigurationService } from '../../services/tenant-configuration.service';
 import { AuthRepository } from 'core-ui-admin-library/src/lib/data/repositories/auth/auth.repository';
 import { LoaderService } from 'core-ui-admin-library/src/lib/data/shared/loader.service';
+import { MsalService } from '@azure/msal-angular';
 
 const defaultLoginDetails = {
   email: 'demoUser',
@@ -44,12 +45,17 @@ export class LoginComponent
     private authRepo: AuthRepository,
     private tenantConfig: TenantConfigurationService,
     private loaderService: LoaderService,
+    private msalService: MsalService,
   ) {
     super(inject);
   }
 
   ngOnInit(): void {
     this.initFormGroup();
+  }
+
+  signInWithEntra() {
+    this.msalService.loginRedirect();
   }
 
   initFormGroup() {

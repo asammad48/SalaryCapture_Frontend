@@ -26,8 +26,9 @@ export class HeaderComponent
     super(inject);
     const firstName = this.localStorageService.get<string>(LocalStorageKeys.FIRST_NAME);
     const lastName = this.localStorageService.get<string>(LocalStorageKeys.LAST_NAME);
+    const msalName = localStorage.getItem('user_display_name');
     const role = this.localStorageService.get<string>(LocalStorageKeys.ROLE);
-    this.fullName =  firstName || '';
+    this.fullName = msalName || firstName || '';
     this.role = role || '';
   }
   ngOnInit() {
