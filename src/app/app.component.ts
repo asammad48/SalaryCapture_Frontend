@@ -57,7 +57,7 @@ export class AppComponent implements OnInit, OnDestroy{
               }),
               takeUntil(this.destroy$)
             ).subscribe({
-              next: () => console.log('Claims and Regions loaded successfully'),
+              next: (regions: any) => console.log('Claims and Regions loaded successfully', regions),
               error: (err) => console.error('Error loading claims/regions:', err)
             });
           }

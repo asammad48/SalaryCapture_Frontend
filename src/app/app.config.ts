@@ -87,7 +87,7 @@ export const appConfig: ApplicationConfig = {
     Client,
     {
       provide: API_BASE_URL,
-      useValue: environment.NX_BASE_AM_URL
+      useValue: environment.NX_BASE_DPS_URL ? environment.NX_BASE_DPS_URL + '/api' : environment.NX_BASE_AM_URL
     },
     importProvidersFrom([
       TranslateModule.forRoot({

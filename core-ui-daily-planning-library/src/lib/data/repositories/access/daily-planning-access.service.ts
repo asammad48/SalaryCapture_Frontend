@@ -1,18 +1,10 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 import { Area } from '../../../core/domain/models/area.model';
 import { LocalStorageService } from '../../../presentation/services/local-storage.service';
-import { AccessApiUrl } from './access-api-url.enum';
 import { LocalStorageKeys } from './local-storage-keys';
-import { UsersApiUrls } from './users-api-urls.enum';
-
-interface ApiResponse<T> {
-  data: T;
-  success: boolean;
-  message?: string;
-}
+import { Client as AdminApiClient, StringListResponse, OrganizationUserResponseDtoListResponse } from 'core-ui-admin-library/src/lib/data/api-clients/admin-api.client';
 
 @Injectable({
   providedIn: 'root'
@@ -21,7 +13,7 @@ export class DailyPlanningAccessService {
   private claims: string[] = [];
 
   constructor(
-    private http: HttpClient,
+    private adminApiClient: AdminApiClient,
     private localStorage: LocalStorageService
   ) {
     this.loadClaims();
@@ -36,10 +28,8 @@ export class DailyPlanningAccessService {
     this.loadClaims();
   }
 
-  getRoleClaims(): Observable<ApiResponse<string[]>> {
-    return this.http.get<ApiResponse<string[]>>(
-      `${process.env['NX_BASE_DPS_URL']}/api${AccessApiUrl.GetRoleClaims}`
-    );
+  getRoleClaims(): Observable<StringListResponse> {
+    return this.adminApiClient.getRoleClaims();
   }
 
   hasPermission(userClaim: string): boolean {
@@ -68,13 +58,13 @@ export class DailyPlanningAccessService {
   }
 
   fetchAndSaveUserRegions(): Observable<Area[]> {
-    return this.http.get<ApiResponse<Area[]>>(
-      `${process.env['NX_BASE_DPS_URL']}/api${UsersApiUrls.GetUserAssignedAreasAndSubAreas}`,
-      {
-        headers: { 'x-loader-key': 'UserMgt_AddUsers' }
-      }
-    ).pipe(
-      map((response) => response?.data || []),
+    return this.adminApiClient.getUserAssignedAreasAndSubAreas().pipe(
+      map((response: OrganizationUserResponseDtoListResponse) => {
+        // Map the NSwag response to the Area model used in the application
+        // OrganizationUserResponseDtoListResponse usually contains a 'data' property
+        const areas = (response as any)?.data || [];
+        return areas;
+      }),
       tap((regions) => {
         this.localStorage.add(LocalStorageKeys.USER_REGIONS, regions);
       })
