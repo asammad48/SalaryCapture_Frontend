@@ -1,9 +1,9 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 import { Area } from '../../../core/domain/models/area.model';
 import { LocalStorageService } from '../../../presentation/services/local-storage.service';
-import { Client as AdminApiClient } from '../../api-clients';
+import { AdminApiClient } from '../../api-clients';
 import { LocalStorageKeys } from './local-storage-keys';
 
 @Injectable({
@@ -13,7 +13,7 @@ export class DailyPlanningAccessService {
   private claims: string[] = [];
 
   constructor(
-    private adminApiClient: AdminApiClient,
+    @Inject(AdminApiClient) private adminApiClient: any,
     private localStorage: LocalStorageService
   ) {
     this.loadClaims();

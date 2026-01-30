@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { Client, API_BASE_URL } from './api-clients/daily-planning-api.client';
-import { AdminApiClient } from './api-clients';
+import { AdminApiClient, ADMIN_API_BASE_URL } from './api-clients';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { tokenInterceptor, defaultInterceptor, tenantInterceptor, AccessService } from '@embrace-it/admin-library';
 import { httpErrorInterceptor } from '../core/interceptors';
@@ -30,6 +30,10 @@ import { DailyPlanningAccessService } from './repositories/access/daily-planning
     AccessService,
     {
       provide: API_BASE_URL,
+      useValue: process.env['NX_BASE_DPS_URL']
+    },
+    {
+      provide: ADMIN_API_BASE_URL,
       useValue: process.env['NX_BASE_DPS_URL']
     }
   ],
