@@ -1,0 +1,79 @@
+
+variables:
+  - group: DPS-FE-QA-VariableGroup
+  - name: projectName
+    value: 'daily-planning'
+
+trigger:
+- none
+name: $(date:yyyyMMdd)$(rev:.r)
+resources:
+  repositories:
+  - repository: self
+    type: git
+    ref: develop
+#Pipeline Stages#
+stages:
+  - stage: Build
+    jobs:
+    - job: BuildJob
+      displayName: BuildJob
+
+      pool:
+        vmImage: ubuntu-latest
+      variables:
+        CI: 'true'
+      steps:
+        - task: NodeTool@0
+          inputs:
+            versionSpec: '19.x'
+          displayName: 'Install Node.js'
+
+        - script: npm install
+          displayName: 'npm install'
+
+        - script: npm install -g env-cmd
+          displayName: 'npm env-cmd'
+
+        - script: npm run build-qa
+          displayName: 'ng build-qa'
+        - task: CopyFiles@2
+          displayName: 'Copy Files to staging directory'
+          inputs:
+            contents: 'dist/**'
+            targetFolder: $(Build.ArtifactStagingDirectory)
+        - task: PublishBuildArtifacts@1
+          displayName: 'Publish Artifact'
+          inputs:
+            pathToPublish: $(Build.ArtifactStagingDirectory)
+            artifactName: Publish
+
+  - stage: Deploy
+    displayName: 'Deploy stage'
+    dependsOn: Build
+    condition: succeeded()
+    jobs:
+    - deployment: Deploy
+      displayName: 'Deploy to AzureStaticWebApp'
+      environment: 'DPS-FE-QA'
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+            - task: DownloadBuildArtifacts@1
+              inputs:
+                buildType: 'current'
+                downloadType: 'single'
+                artifactName: 'Publish'
+                downloadPath: '$(System.DefaultWorkingDirectory)'
+            # - script: |
+            #     echo "Listing artifact structure..."
+            #     ls -R $(System.DefaultWorkingDirectory)
+            #   displayName: "List downloaded files"
+              
+            - task: AzureStaticWebApp@0
+              inputs:
+                app_location: 'Publish/dist/daily-planning'
+                skip_app_build: true
+                skip_api_build: true
+                azure_static_web_apps_api_token: $(DPS_Static_APP_TOKEN)

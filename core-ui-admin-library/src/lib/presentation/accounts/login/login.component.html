@@ -51,22 +51,40 @@
           <div class="heading-section">
             <h1 class="">Sign In</h1>
             <p class="">
-              Use your Microsoft Entra ID to sign in to the portal
+              Enter your username and password below
             </p>
           </div>
 
-          <div class="d-flex flex-column gap-3 mt-4">
-            <button type="button" (click)="signInWithEntra()" class="btn btn-primary w-100 py-2 d-flex align-items-center justify-content-center gap-2" id="login-entra-btn">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 23 23">
-                <path fill="#f3f3f3" d="M0 0h11v11H0zM12 0h11v11H12zM0 12h11v23H0zM12 12h11v23H12z" opacity=".1"/>
-                <path fill="#f35325" d="M0 0h11v11H0z"/>
-                <path fill="#81bc06" d="M12 0h11v11H12z"/>
-                <path fill="#05a6f0" d="M0 12h11v11H0z"/>
-                <path fill="#ffba08" d="M12 12h11v11H12z"/>
-              </svg>
-              Sign in with Entra ID
+          <form [formGroup]="loginFormGroup" (ngSubmit)="login()" id="login-form">
+            <div class="form-group">
+              <label class="form-label">Username</label>
+              <input type="text" class="form-control" id="login-name" placeholder="Enter username" autocomplete="off"
+                formControlName="email" [ngClass]="
+                (isSubmitted || loginFormGroup.controls['email'].touched) &&
+                loginFormGroup.controls['email'].invalid
+                  ? 'ng-invalid ng-dirty'
+                  : ''
+              " />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Password</label>
+              <div class="input-group-wrapper end">
+                <input class="form-control" placeholder="Enter password" formControlName="password" [ngClass]="
+                  (isSubmitted || loginFormGroup.controls['password'].touched) &&
+                  loginFormGroup.controls['password'].invalid
+                    ? 'ng-invalid ng-dirty'
+                    : ''
+                " [attr.type]="isShowPassword ? 'text': 'password'" id="login-password" />
+                <div class="input-group-media icon">
+                  <i class="fa" (click)="isShowPassword = !isShowPassword" aria-hidden="true"
+                    [ngClass]="isShowPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
+                </div>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary mt-4 mb-1 w-100" id="login-sign-in-btn">
+              Sign In
             </button>
-          </div>
+          </form>
         </div>
       </div>
       <div class="footer-section">

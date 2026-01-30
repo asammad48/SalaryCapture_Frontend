@@ -29,8 +29,7 @@
           },
           "src/favicon.ico",
           "src/assets",
-          "src/web.config",
-          "src/staticwebapp.config.json"
+          "src/web.config"
         ],
         "styles": [
           "./node_modules/primeicons/primeicons.css",
@@ -116,7 +115,6 @@
       "executor": "@nx/angular:dev-server",
       "options": {
         "host": "0.0.0.0",
-        "port": 4200,
         "disableHostCheck": true
       },
       "configurations": {

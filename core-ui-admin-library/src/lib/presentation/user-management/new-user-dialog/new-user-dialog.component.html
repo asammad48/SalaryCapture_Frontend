@@ -19,7 +19,7 @@
                             [ngClass]="!accessService.hasPermission(Permissions.USER_MANAGEMENT_EDIT_USER_ROLE) ? 'color-gray-500 pe-none' : ''"></p-select>
 
                     </div>
-                    <ng-container *ngIf="canEditModuleAccess">
+                    <!-- <ng-container *ngIf="canEditModuleAccess">
                         <label class="form-label">
                             Module Access
                         </label>
@@ -36,9 +36,7 @@
                                 <label class="fs-14">Daily Planning</label>
                             </div>
                         </div>
-                    </ng-container>
-
-
+                    </ng-container> -->
 
                     <div *ngIf="!selectedUser">
                         <hr class="color-gray-500 my-4">
