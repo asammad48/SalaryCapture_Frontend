@@ -1,18 +1,10 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 import { Area } from '../../../core/domain/models/area.model';
 import { LocalStorageService } from '../../../presentation/services/local-storage.service';
-import { AccessApiUrl } from './access-api-url.enum';
+import { Client as AdminApiClient } from '../../api-clients';
 import { LocalStorageKeys } from './local-storage-keys';
-import { UsersApiUrls } from './users-api-urls.enum';
-
-interface ApiResponse<T> {
-  data: T;
-  success: boolean;
-  message?: string;
-}
 
 @Injectable({
   providedIn: 'root'
@@ -21,7 +13,7 @@ export class DailyPlanningAccessService {
   private claims: string[] = [];
 
   constructor(
-    private http: HttpClient,
+    private adminApiClient: AdminApiClient,
     private localStorage: LocalStorageService
   ) {
     this.loadClaims();
@@ -36,10 +28,8 @@ export class DailyPlanningAccessService {
     this.loadClaims();
   }
 
-  getRoleClaims(): Observable<ApiResponse<string[]>> {
-    return this.http.get<ApiResponse<string[]>>(
-      `${process.env['NX_BASE_DPS_URL']}${AccessApiUrl.GetRoleClaims}`
-    );
+  getRoleClaims(): Observable<any> {
+    return this.adminApiClient.getRoleClaims();
   }
 
   hasPermission(userClaim: string): boolean {
@@ -68,13 +58,8 @@ export class DailyPlanningAccessService {
   }
 
   fetchAndSaveUserRegions(): Observable<Area[]> {
-    return this.http.get<ApiResponse<Area[]>>(
-      `${process.env['NX_BASE_DPS_URL']}${UsersApiUrls.GetUserAssignedAreasAndSubAreas}`,
-      {
-        headers: { 'x-loader-key': 'UserMgt_AddUsers' }
-      }
-    ).pipe(
-      map((response) => response?.data || []),
+    return this.adminApiClient.getUserAssignedAreasAndSubAreas().pipe(
+      map((response: any) => response?.data || []),
       tap((regions) => {
         this.localStorage.add(LocalStorageKeys.USER_REGIONS, regions);
       })
