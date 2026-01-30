@@ -6,15 +6,15 @@ import { AuthService } from './auth.service';
 const apiScopes: Map<string, string> = new Map<string, string>([
   [
     'https://localhost:7052',
-    'api://cubivue-api-to-api-test-001/.default',
+    'openid profile',
   ],
   [
     'https://app-cubivuesaasmicroservicesareamanagement-test-001.azurewebsites.net',
-    'api://cubivue-api-to-api-test-001/.default',
+    'openid profile',
   ],
   [
     'https://app-cubivuesaasmicroservicesareamanagement-qa-001.azurewebsites.net',
-    'api://cubivue-api-to-api-test-001/.default',
+    'openid profile',
   ]
 ]);
 

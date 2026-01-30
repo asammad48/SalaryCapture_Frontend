@@ -1,6 +1,6 @@
 export const environment = {
   production: false,
-  NX_CLIENTID: '2ee516a9-782c-440b-b794-ed4a52bbc785',
+  NX_CLIENTID: '99f54d54-ce51-46c9-8f30-4efd9ea250f4',
   NX_AUTHORITY: 'https://cubivueidentityqa.ciamlogin.com/',
   NX_SCOPES: ['openid', 'profile'],
   NX_REDIRECT_URL: 'http://localhost:4200',
