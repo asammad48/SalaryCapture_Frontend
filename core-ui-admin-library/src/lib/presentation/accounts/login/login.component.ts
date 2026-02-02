@@ -56,6 +56,11 @@ export class LoginComponent
   }
 
   private handleAuthResponse(result: AuthenticationResult) {
+    // Set the active account in MSAL
+    if (result.account) {
+      this.msalService.instance.setActiveAccount(result.account);
+    }
+    
     // Save token and navigate
     this.storageService.add(LocalStorageKeys.ACCESS_TOKEN, result.accessToken);
     
