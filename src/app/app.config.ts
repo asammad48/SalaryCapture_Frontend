@@ -17,11 +17,12 @@ import { PublicClientApplication, InteractionType, BrowserCacheLocation, LogLeve
 import { MsalInterceptor, MSAL_INSTANCE, MSAL_GUARD_CONFIG, MSAL_INTERCEPTOR_CONFIG, MsalGuardConfiguration, MsalInterceptorConfiguration, MsalService, MsalGuard, MsalBroadcastService } from '@azure/msal-angular';
 
 export function MSALInstanceFactory(): PublicClientApplication {
+  const redirectUri = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5000';
   return new PublicClientApplication({
     auth: {
       clientId: process.env["NX_AZURE_CLIENT_ID"] || 'your-client-id',
       authority: process.env["NX_AZURE_AUTHORITY_URL"] || 'https://login.microsoftonline.com/your-tenant-id',
-      redirectUri: 'http://localhost:4200',
+      redirectUri: redirectUri,
     },
     cache: {
       cacheLocation: BrowserCacheLocation.LocalStorage,
