@@ -3,6 +3,8 @@ import {ActivatedRoute, NavigationEnd, Router, RouterModule, RouterOutlet} from 
 import {filter, map, Subject, takeUntil} from "rxjs";
 import {Title} from "@angular/platform-browser";
 import {TranslateService} from "@ngx-translate/core";
+import {MsalService, MsalBroadcastService} from "@azure/msal-angular";
+import {InteractionStatus} from "@azure/msal-browser";
 
 @Component({
     selector: 'app-root',
@@ -17,6 +19,8 @@ export class AppComponent implements OnInit, OnDestroy{
     private activatedRoute: ActivatedRoute,
     private title: Title,
     private router: Router,
+    private msalService: MsalService,
+    private msalBroadcastService: MsalBroadcastService,
     translate: TranslateService
   ) {
       translate.setDefaultLang('en');
@@ -24,7 +28,25 @@ export class AppComponent implements OnInit, OnDestroy{
   }
 
   ngOnInit(): void {
+      this.handleMsalRedirect();
       this.setPageTitle();
+  }
+
+  private handleMsalRedirect(): void {
+    this.msalService.handleRedirectObservable()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (result) => {
+          if (result) {
+            console.log('AppComponent: MSAL Redirect handled successfully', result);
+          }
+        },
+        error: (error) => {
+          if (error.errorCode !== 'no_token_request_cache_error') {
+            console.error('AppComponent: MSAL Redirect error', error);
+          }
+        }
+      });
   }
 
   ngOnDestroy() {
