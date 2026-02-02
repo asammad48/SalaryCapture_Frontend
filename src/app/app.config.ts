@@ -34,14 +34,14 @@ export function MSALInterceptorConfigFactory(): MsalInterceptorConfiguration {
   const protectedResourceMap = new Map<string, Array<string>>();
   protectedResourceMap.set(`${process.env["NX_BASE_DPS_URL"]}/*`, ['User.Read']);
   return {
-    interactionType: InteractionType.Popup,
+    interactionType: InteractionType.Redirect,
     protectedResourceMap,
   };
 }
 
 export function MSALGuardConfigFactory(): MsalGuardConfiguration {
   return {
-    interactionType: InteractionType.Popup,
+    interactionType: InteractionType.Redirect,
     authRequest: {
       scopes: ['User.Read'],
     },

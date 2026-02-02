@@ -23,6 +23,10 @@ author = "agent"
 task = "workflow.run"
 args = "Frontend Server"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Angular Dev Server"
+
 [[workflows.workflow]]
 name = "Frontend Server"
 author = "agent"
@@ -34,6 +38,18 @@ outputType = "webview"
 task = "shell.exec"
 args = "NX_DAEMON=false NX_TUI=false npx nx serve daily-planning --host 0.0.0.0 --port 5000 --disable-host-check --poll 2000"
 waitForPort = 5000
+
+[[workflows.workflow]]
+name = "Angular Dev Server"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd /home/runner/workspace && NX_DAEMON=false NX_TUI=false npx nx serve daily-planning --configuration=development --host 0.0.0.0 --port 5000 --poll 2000"
+waitForPort = 5000
+
+[workflows.workflow.metadata]
+outputType = "webview"
 
 [nix]
 channel = "stable-25_05"

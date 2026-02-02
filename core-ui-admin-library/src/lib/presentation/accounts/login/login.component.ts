@@ -40,19 +40,7 @@ export class LoginComponent
   ngOnInit(): void {}
 
   loginWithEntra(): void {
-    this.msalService.loginPopup()
-      .subscribe({
-        next: (result: AuthenticationResult) => {
-          this.handleAuthResponse(result);
-        },
-        error: (error) => {
-          this.msgService.add({
-            severity: 'error',
-            summary: 'Login Failed',
-            detail: 'Authentication failed. Please try again.'
-          });
-        }
-      });
+    this.msalService.loginRedirect();
   }
 
   private handleAuthResponse(result: AuthenticationResult) {
