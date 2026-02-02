@@ -7,11 +7,33 @@ export const authGuard = (next: ActivatedRouteSnapshot, state: RouterStateSnapsh
   const msalService = inject(MsalService);
   const router = inject(Router);
 
-  return msalService.instance.getAllAccounts().length > 0 || msalService.handleRedirectObservable().pipe(
-    map(() => {
-      if (msalService.instance.getAllAccounts().length > 0) {
+  const accounts = msalService.instance.getAllAccounts();
+  const activeAccount = msalService.instance.getActiveAccount();
+  
+  console.log('AuthGuard: Checking access for route:', state.url);
+  console.log('AuthGuard: All accounts count:', accounts.length);
+  console.log('AuthGuard: Active account:', activeAccount?.username || 'none');
+
+  if (accounts.length > 0) {
+    if (!activeAccount && accounts.length > 0) {
+      msalService.instance.setActiveAccount(accounts[0]);
+      console.log('AuthGuard: Set active account to:', accounts[0].username);
+    }
+    return true;
+  }
+
+  return msalService.handleRedirectObservable().pipe(
+    map((result) => {
+      const accountsAfterRedirect = msalService.instance.getAllAccounts();
+      console.log('AuthGuard: After redirect, accounts count:', accountsAfterRedirect.length);
+      
+      if (accountsAfterRedirect.length > 0) {
+        if (!msalService.instance.getActiveAccount()) {
+          msalService.instance.setActiveAccount(accountsAfterRedirect[0]);
+        }
         return true;
       }
+      console.log('AuthGuard: No accounts found, redirecting to login');
       router.navigate(['/accounts/login']);
       return false;
     }),
