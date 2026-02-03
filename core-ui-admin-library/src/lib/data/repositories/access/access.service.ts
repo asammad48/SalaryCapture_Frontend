@@ -87,6 +87,16 @@ export class AccessService {
     );
   }
 
+  fetchAndSaveRoleClaims(): Observable<string[]> {
+    return (this.adminApiClient.getRoleClaims() as any).pipe(
+      map((response: any) => response?.data || []),
+      tap((claims: string[]) => {
+        this.localStorage.add(LocalStorageKeys.ROLE_CLAIMS, claims);
+        this.refreshClaims();
+      })
+    );
+  }
+
   getUserRegions(): Observable<Area[]> {
     const cachedRegions = this.getUserRegionsFromLocalStorage();
     return of(cachedRegions.length > 0 ? cachedRegions : []);
