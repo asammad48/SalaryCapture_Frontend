@@ -72,6 +72,7 @@ export class AppComponent implements OnInit, OnDestroy {
             this.msalService.instance.setActiveAccount(result.account);
             this.localStorage.add(LocalStorageKeys.ACCESS_TOKEN, result.accessToken);
             this.fetchUserData();
+            this.router.navigateByUrl('/daily-planning/base-plan');
             console.log('AppComponent: MSAL Redirect handled successfully', result);
           }
         },

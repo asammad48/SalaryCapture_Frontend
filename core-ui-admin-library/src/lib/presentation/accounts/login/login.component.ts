@@ -37,7 +37,12 @@ export class LoginComponent
     super(inject);
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    const account = this.msalService.instance.getActiveAccount() || this.msalService.instance.getAllAccounts()[0];
+    if (account) {
+      this.router.navigateByUrl('/daily-planning/base-plan');
+    }
+  }
 
   loginWithEntra(): void {
     this.msalService.loginRedirect();
@@ -48,10 +53,10 @@ export class LoginComponent
     if (result.account) {
       this.msalService.instance.setActiveAccount(result.account);
     }
-    
+
     // Save token and navigate
     this.storageService.add(LocalStorageKeys.ACCESS_TOKEN, result.accessToken);
-    
+
     // Fetch claims and navigate (as requested, keeping existing logic but triggered by MSAL)
     this.accessService.fetchAndSaveUserRegions()
       .pipe(takeUntil(this.destroyer$))
