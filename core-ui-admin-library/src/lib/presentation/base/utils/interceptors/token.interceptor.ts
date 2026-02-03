@@ -1,8 +1,8 @@
-import {HttpErrorResponse, HttpInterceptorFn} from "@angular/common/http";
-import {inject} from "@angular/core";
-import {Router} from "@angular/router";
-import {MsalService} from "@azure/msal-angular";
-import {catchError, from, switchMap} from "rxjs";
+import { HttpErrorResponse, HttpInterceptorFn } from "@angular/common/http";
+import { inject } from "@angular/core";
+import { Router } from "@angular/router";
+import { MsalService } from "@azure/msal-angular";
+import { catchError, from, switchMap } from "rxjs";
 import { LocalStorageService } from "../../../services/local-storage.service";
 import { LocalStorageKeys } from "../../../../data/repositories/access/local-storage-keys";
 
@@ -17,7 +17,7 @@ export const tokenInterceptor: HttpInterceptorFn = (req, next) => {
   }
 
   return from(msalService.acquireTokenSilent({
-    scopes: ['User.Read'],
+    scopes: [process.env["NX_AZURE_SCOPES"] || 'api://cubivue-api-test-001/.default'],
     account: account
   })).pipe(
     switchMap(result => {

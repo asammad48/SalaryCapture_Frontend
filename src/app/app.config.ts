@@ -15,6 +15,9 @@ import { MessageService } from 'primeng/api';
 import { API_BASE_URL, Client } from 'core-ui-admin-library/src/lib/data/api-clients/admin-api.client';
 import { PublicClientApplication, InteractionType, BrowserCacheLocation, LogLevel } from '@azure/msal-browser';
 import { MsalInterceptor, MSAL_INSTANCE, MSAL_GUARD_CONFIG, MSAL_INTERCEPTOR_CONFIG, MsalGuardConfiguration, MsalInterceptorConfiguration, MsalService, MsalGuard, MsalBroadcastService } from '@azure/msal-angular';
+import { AccessService } from 'core-ui-admin-library/src/lib/data/repositories/access/access.service';
+import { LocalStorageService } from 'core-ui-admin-library/src/lib/presentation/services/local-storage.service';
+import { TenantConfigurationService } from 'core-ui-admin-library/src/lib/presentation/services/tenant-configuration.service';
 
 export function MSALInstanceFactory(): PublicClientApplication {
   const redirectUri = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5000';
@@ -32,7 +35,7 @@ export function MSALInstanceFactory(): PublicClientApplication {
 
 export function MSALInterceptorConfigFactory(): MsalInterceptorConfiguration {
   const protectedResourceMap = new Map<string, Array<string>>();
-  protectedResourceMap.set(`${process.env["NX_BASE_DPS_URL"]}/*`, ['User.Read']);
+  protectedResourceMap.set(`${process.env["NX_BASE_DPS_URL"]}/*`, [process.env["NX_AZURE_SCOPES"] || 'api://cubivue-api-test-001/.default']);
   return {
     interactionType: InteractionType.Redirect,
     protectedResourceMap,
@@ -43,7 +46,7 @@ export function MSALGuardConfigFactory(): MsalGuardConfiguration {
   return {
     interactionType: InteractionType.Redirect,
     authRequest: {
-      scopes: ['User.Read'],
+      scopes: [process.env["NX_AZURE_SCOPES"] || 'api://cubivue-api-test-001/.default'],
     },
   };
 }
@@ -79,6 +82,9 @@ export const appConfig: ApplicationConfig = {
     MsalService,
     MsalGuard,
     MsalBroadcastService,
+    AccessService,
+    LocalStorageService,
+    TenantConfigurationService,
     {
       provide: APP_INITIALIZER,
       useFactory: initializeMsal,
@@ -107,8 +113,8 @@ export const appConfig: ApplicationConfig = {
           tenantInterceptor,
           tokenInterceptor,
           errorInterceptor
-      ]
-    )),
+        ]
+      )),
     providePrimeNG({
       theme: {
         preset: Aura,

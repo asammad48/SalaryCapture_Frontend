@@ -10,7 +10,9 @@ import { LocalStorageKeys } from "./local-storage-keys";
 import { TenantConfigurationService } from "core-ui-admin-library/src/lib/presentation/services/tenant-configuration.service";
 import { Area } from "core-ui-admin-library/src/lib/core/domain/models/area.model";
 
-@Injectable()
+@Injectable({
+  providedIn: 'root'
+})
 export class AccessService {
   private claims: string[] = [];
 
