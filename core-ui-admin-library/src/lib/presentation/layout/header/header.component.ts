@@ -6,11 +6,14 @@ import { Authorize } from 'core-ui-admin-library/src/lib/core/domain/models';
 import { AccessService } from 'core-ui-admin-library/src/lib/data/repositories/access/access.service';
 import { Popover } from 'primeng/popover';
 import { LocalStorageKeys } from 'core-ui-admin-library/src/lib/data/repositories/access/local-storage-keys';
+import { Client } from 'core-ui-admin-library/src/lib/data/api-clients/admin-api.client';
+
 @Component({
   selector: 'app-header',
   imports: [CommonModule, Popover],
   templateUrl: './header.component.html',
   styleUrls: [],
+  providers: [Client]
 })
 export class HeaderComponent
   extends AppPortalBase
@@ -21,7 +24,8 @@ export class HeaderComponent
 
   constructor(
     inject: Injector,
-    private localStorageService: LocalStorageService
+    private localStorageService: LocalStorageService,
+    private adminClient: Client
   ) {
     super(inject);
     const firstName = this.localStorageService.get<string>(LocalStorageKeys.FIRST_NAME);
@@ -32,6 +36,21 @@ export class HeaderComponent
   }
   ngOnInit() {
     this.addLoaderClass();
+    this.loadUserInfo();
+  }
+
+  loadUserInfo() {
+    this.adminClient.getUserInfo().subscribe({
+      next: (response) => {
+        if (response && response.data) {
+          this.fullName = response.data.fullName;
+          this.role = response.data.roleName;
+        }
+      },
+      error: (err) => {
+        console.error('Error fetching user info', err);
+      }
+    });
   }
 
   logout() {
