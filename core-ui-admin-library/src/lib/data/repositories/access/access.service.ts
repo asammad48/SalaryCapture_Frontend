@@ -74,6 +74,8 @@ export class AccessService {
   logout(): void {
     this.localStorage.remove(...Object.values(LocalStorageKeys));
     this.tenantConfig.clearConfigs();
+    localStorage.clear();
+    sessionStorage.clear();
   }
 
   getUserRegionsFromLocalStorage(): Area[] {

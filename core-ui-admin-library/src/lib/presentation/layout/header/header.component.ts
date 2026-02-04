@@ -7,6 +7,7 @@ import { AccessService } from 'core-ui-admin-library/src/lib/data/repositories/a
 import { Popover } from 'primeng/popover';
 import { LocalStorageKeys } from 'core-ui-admin-library/src/lib/data/repositories/access/local-storage-keys';
 import { Client } from 'core-ui-admin-library/src/lib/data/api-clients/admin-api.client';
+import { MsalService } from '@azure/msal-angular';
 
 @Component({
   selector: 'app-header',
@@ -25,7 +26,8 @@ export class HeaderComponent
   constructor(
     inject: Injector,
     private localStorageService: LocalStorageService,
-    private adminClient: Client
+    private adminClient: Client,
+    private msalService: MsalService
   ) {
     super(inject);
     const firstName = this.localStorageService.get<string>(LocalStorageKeys.FIRST_NAME);
@@ -55,8 +57,10 @@ export class HeaderComponent
 
   logout() {
     this.accessService.logout();
-    this.router.navigate(['/accounts/login']);
     this.removeLoaderClass();
+    this.msalService.logoutRedirect({
+      postLogoutRedirectUri: window.location.origin + '/accounts/login'
+    });
   }
 
   addLoaderClass() {
