@@ -22,6 +22,31 @@ import { LocalStorageService } from '../../services/local-storage.service';
     ToastModule,
     ProgressLoadingComponent,
   ],
+  styles: [`
+    .microsoft-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #0067b8;
+      color: white;
+      border: 1px solid #0067b8;
+      border-radius: 4px;
+      padding: 8px 16px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 1.5rem;
+      margin-bottom: 0.5rem;
+      transition: background-color 0.2s;
+    }
+    .microsoft-btn:hover {
+      background-color: #005da6;
+    }
+    .microsoft-btn svg {
+      margin-right: 12px;
+    }
+  `],
   templateUrl: './login.component.html'
 })
 export class LoginComponent
