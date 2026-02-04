@@ -5,54 +5,6 @@
     "version": "v1"
   },
   "paths": {
-    "/api/Account/Login": {
-      "post": {
-        "tags": [
-          "Account"
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/LoginRequestDto"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/LoginRequestDto"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/LoginRequestDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/LoginResponseDtoResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/LoginResponseDtoResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/LoginResponseDtoResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/Account/GetRoleClaims": {
       "get": {
         "tags": [
@@ -75,6 +27,35 @@
               "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/StringListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Account/GetUserInfo": {
+      "get": {
+        "tags": [
+          "Account"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetUserInfoDtoResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetUserInfoDtoResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetUserInfoDtoResponse"
                 }
               }
             }
@@ -7156,6 +7137,43 @@
         },
         "additionalProperties": false
       },
+      "GetUserInfoDto": {
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "type": "string",
+            "nullable": true
+          },
+          "roleName": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "GetUserInfoDtoResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/GetUserInfoDto"
+          }
+        },
+        "additionalProperties": false
+      },
       "GetWorkersForBasePlanDto": {
         "type": "object",
         "properties": {
@@ -7415,108 +7433,6 @@
               "$ref": "#/components/schemas/LastSyncDTO"
             },
             "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "LoginRequestDto": {
-        "required": [
-          "email",
-          "password"
-        ],
-        "type": "object",
-        "properties": {
-          "email": {
-            "minLength": 1,
-            "type": "string"
-          },
-          "password": {
-            "minLength": 1,
-            "type": "string"
-          }
-        },
-        "additionalProperties": false
-      },
-      "LoginResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "createdOn": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "firstName": {
-            "type": "string",
-            "nullable": true
-          },
-          "lastName": {
-            "type": "string",
-            "nullable": true
-          },
-          "email": {
-            "type": "string",
-            "nullable": true
-          },
-          "isVerified": {
-            "type": "boolean"
-          },
-          "accessToken": {
-            "type": "string",
-            "nullable": true
-          },
-          "role": {
-            "type": "string",
-            "nullable": true
-          },
-          "tenantId": {
-            "type": "string",
-            "format": "uuid",
-            "nullable": true
-          },
-          "serviceProviderId": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "expiresOn": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "tenantFrontEndConfigs": {
-            "type": "object",
-            "additionalProperties": { },
-            "nullable": true
-          },
-          "hasDailyPlanning": {
-            "type": "boolean"
-          },
-          "hasSalaryCapture": {
-            "type": "boolean"
-          }
-        },
-        "additionalProperties": false
-      },
-      "LoginResponseDtoResponse": {
-        "type": "object",
-        "properties": {
-          "success": {
-            "type": "boolean"
-          },
-          "message": {
-            "type": "string",
-            "nullable": true
-          },
-          "errors": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "nullable": true
-          },
-          "data": {
-            "$ref": "#/components/schemas/LoginResponseDto"
           }
         },
         "additionalProperties": false
@@ -9035,17 +8951,23 @@
       }
     },
     "securitySchemes": {
-      "Bearer": {
-        "type": "http",
-        "description": "Enter 'JWT Bearer token",
-        "scheme": "Bearer",
-        "bearerFormat": "JWT"
+      "EntraUserToApiAuthoauth2": {
+        "type": "oauth2",
+        "flows": {
+          "implicit": {
+            "authorizationUrl": "https://cubivueidentityqa.ciamlogin.com/daab6ee4-6b2c-4c68-90b1-8abc2a621a27/oauth2/v2.0/authorize",
+            "tokenUrl": "https://cubivueidentityqa.ciamlogin.com/daab6ee4-6b2c-4c68-90b1-8abc2a621a27/oauth2/v2.0/token",
+            "scopes": {
+              "api://cubivue-api-test-001/.default": ""
+            }
+          }
+        }
       }
     }
   },
   "security": [
     {
-      "Bearer": [ ]
+      "EntraUserToApiAuthoauth2": [ ]
     }
   ]
 }
