@@ -87,143 +87,71 @@ export class FiltersSidebarComponent extends DailyPlanningPortalBase implements 
   }
 
   buildTreeFromRegions(regions: OrganizationUserDto[]): TreeNode[] {
-    return regions.map(region => {
-      const regionNode: TreeNode = {
-        key: region.areaId,
-        label: region.displayName,
-        data: region,
-        selectable: false, // Regions cannot be selected
-        leaf: false,
-        expanded: false, // Start collapsed
-        children: []
-      };
-      // Build areas and set parent reference
-      regionNode.children = this.buildAreasForRegion(region, regionNode);
-      return regionNode;
-    });
+    return regions.map(region => this.mapDtoToTreeNode(region));
   }
 
-  buildAreasForRegion(region: OrganizationUserDto, parentNode: TreeNode): TreeNode[] {
-    const areas = region.subAreas?.filter(area => area.parentId === region.areaId) || [];
-    return areas.map(area => {
-      const areaNode: TreeNode = {
-        key: area.areaId,
-        label: area.displayName,
-        data: area,
-        selectable: false, // Areas cannot be selected
-        leaf: false, // Areas have depots as children
-        expanded: false, // Start collapsed
-        children: [], // Will be loaded on demand
-        parent: parentNode // Set parent reference
-      };
-      return areaNode;
-    });
+  mapDtoToTreeNode(dto: OrganizationUserDto, parentNode?: TreeNode): TreeNode {
+    const hasChildren = dto.subAreas && dto.subAreas.length > 0;
+    const node: TreeNode = {
+      key: dto.areaId,
+      label: dto.displayName,
+      data: dto,
+      selectable: !hasChildren,
+      leaf: !hasChildren,
+      expanded: false,
+      children: [],
+      parent: parentNode
+    };
+
+    if (hasChildren) {
+      node.children = dto.subAreas!.map(child => this.mapDtoToTreeNode(child, node));
+    }
+
+    return node;
   }
 
   onNodeExpand(event: any): void {
     const node = event.node;
-
-    // Collapse all siblings at the same level before expanding this node
     this.collapseSiblings(node);
-
-    // Mark node as expanded
     if (node) {
       node.expanded = true;
-    }
-
-    // Only load children if the node has no children yet and is not a leaf
-    if (node && !node.leaf && (!node.children || node.children.length === 0)) {
-      // Mark node as loading
-      const nodeKey = node.key as string;
-      if (this.loadingNodes.has(nodeKey)) {
-        return; // Already loading, prevent duplicate calls
-      }
-      this.loadDepots(node);
     }
   }
 
   onNodeCollapse(event: any): void {
     const node = event.node;
-    // Mark node as collapsed
     if (node) {
       node.expanded = false;
     }
   }
 
-  loadDepots(areaNode: TreeNode): void {
-    const areaId = areaNode.key as string;
-
-    // Mark as loading and show loader
-    this.loadingNodes.add(areaId);
-    this.isLoadingTree = true;
-
-    this.apiClient.geChildOUsByParentId(areaId)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (response) => {
-          const depots = response.data || [];
-          areaNode.children = depots.map(depot => {
-            const depotNode: TreeNode = {
-              key: depot.areaId,
-              label: depot.displayName,
-              data: depot,
-              selectable: true, // Only depots are selectable
-              leaf: true // Depots have no children
-            };
-            return depotNode;
-          });
-
-          // Clear loading state
-          this.loadingNodes.delete(areaId);
-          this.isLoadingTree = false;
-        },
-        error: (error: any) => {
-          console.error('Error loading depots for area:', areaId, error);
-
-          // Clear loading state on error
-          this.loadingNodes.delete(areaId);
-          this.isLoadingTree = false;
-        }
-      });
+  setDefaultDepot(): void {
+    const firstSelectable = this.findFirstSelectableNode(this.organizationTree);
+    if (firstSelectable) {
+      this.selectedDepot = firstSelectable;
+      this.expandPathToNode(firstSelectable);
+      this.applyFilters();
+    }
   }
 
-  setDefaultDepot(): void {
-    if (!this.organizationTree || this.organizationTree.length === 0) return;
+  findFirstSelectableNode(nodes: TreeNode[]): TreeNode | null {
+    for (const node of nodes) {
+      if (node.selectable) {
+        return node;
+      }
+      if (node.children && node.children.length > 0) {
+        const found = this.findFirstSelectableNode(node.children);
+        if (found) return found;
+      }
+    }
+    return null;
+  }
 
-    // Get first region
-    const firstRegion = this.organizationTree[0];
-
-    // Get first area
-    if (firstRegion.children && firstRegion.children.length > 0) {
-      const firstArea = firstRegion.children[0];
-
-      // Load depots for the first area
-      this.apiClient.geChildOUsByParentId(firstArea.key as string)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: (response) => {
-            const depots = response.data || [];
-            firstArea.children = depots.map(depot => ({
-              key: depot.areaId,
-              label: depot.displayName,
-              data: depot,
-              selectable: true,
-              leaf: true
-            }));
-
-            // Select first depot
-            if (firstArea.children && firstArea.children.length > 0) {
-              this.selectedDepot = firstArea.children[0];
-              // Expand the path to the selected depot
-              firstRegion.expanded = true;
-              firstArea.expanded = true;
-              this.applyFilters();
-            }
-          },
-          error: (error: any) => {
-            console.error('Error loading default depots:', error);
-          }
-        });
+  expandPathToNode(node: TreeNode): void {
+    let current = node.parent;
+    while (current) {
+      current.expanded = true;
+      current = current.parent;
     }
   }
 
@@ -260,39 +188,16 @@ export class FiltersSidebarComponent extends DailyPlanningPortalBase implements 
   }
 
   onDepotSelect(event: any): void {
-    // When a depot is selected, collapse all other paths and expand only to this depot
     this.collapseAllNodes();
-
     if (this.selectedDepot) {
-      // Find the parent area and region
-      for (const region of this.organizationTree) {
-        for (const area of region.children || []) {
-          if (area.children?.some(d => d.key === this.selectedDepot?.key)) {
-            region.expanded = true;
-            area.expanded = true;
-            return;
-          }
-        }
-      }
+      this.expandPathToNode(this.selectedDepot);
     }
   }
 
   onPanelShow(): void {
-    // When panel opens, collapse all nodes first, then expand only path to selected depot
     this.collapseAllNodes();
-
     if (this.selectedDepot) {
-      // Find and expand the path to the selected depot
-      for (const region of this.organizationTree) {
-        for (const area of region.children || []) {
-          if (area.children?.some(d => d.key === this.selectedDepot?.key)) {
-            // Expand only region and area containing selected depot
-            region.expanded = true;
-            area.expanded = true;
-            return;
-          }
-        }
-      }
+      this.expandPathToNode(this.selectedDepot);
     }
   }
 
@@ -343,7 +248,7 @@ export class FiltersSidebarComponent extends DailyPlanningPortalBase implements 
 
   resetDailyPlan(): void {
 
-    if(!(this.planningMode === PlanningMode.DailyPlan)) {
+    if (!(this.planningMode === PlanningMode.DailyPlan)) {
       return;
     }
 
@@ -384,10 +289,10 @@ export class FiltersSidebarComponent extends DailyPlanningPortalBase implements 
 
   setTomorrowAsDefault(): void {
 
-    if(this.planningMode === PlanningMode.BasePlan) {
+    if (this.planningMode === PlanningMode.BasePlan) {
       this.setTomorrowDayOfWeek();
 
-    } else if(this.planningMode === PlanningMode.DailyPlan) {
+    } else if (this.planningMode === PlanningMode.DailyPlan) {
       this.setTomorrowDate();
     }
 
