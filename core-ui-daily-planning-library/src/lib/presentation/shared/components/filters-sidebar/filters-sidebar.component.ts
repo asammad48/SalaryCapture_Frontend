@@ -161,14 +161,17 @@ export class FiltersSidebarComponent extends DailyPlanningPortalBase implements 
 
   onDaySelect(value: DayOfWeek | string): void {
     this.selectedDay = typeof value === 'string' ? parseInt(value, 10) as DayOfWeek : value;
+    this.applyFilters();
   }
 
   onSelectStatus(value: JobPackageStatus | string): void {
     this.selectedStatus = typeof value === 'string' ? parseInt(value, 10) as JobPackageStatus : value;
+    this.applyFilters();
   }
 
   onDateSelect(value: Date): void {
     this.selectedDate = value;
+    this.applyFilters();
   }
 
   applyFilters(): void {
@@ -192,6 +195,7 @@ export class FiltersSidebarComponent extends DailyPlanningPortalBase implements 
     if (this.selectedDepot) {
       this.expandPathToNode(this.selectedDepot);
     }
+    this.applyFilters();
   }
 
   onPanelShow(): void {
