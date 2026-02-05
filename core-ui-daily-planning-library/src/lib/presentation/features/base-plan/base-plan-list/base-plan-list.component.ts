@@ -225,6 +225,11 @@ export class BasePlanListComponent extends DailyPlanningPortalBase implements On
 
     return [
       {
+        label: 'Download file Plan',
+        command: () => this.downloadPlan(plan),
+        styleClass: 'color-gray-900',
+      },
+      {
         label: 'Edit Plan',
         command: () => this.editPlan(plan),
         styleClass: 'color-gray-900',
@@ -240,6 +245,37 @@ export class BasePlanListComponent extends DailyPlanningPortalBase implements On
 
   editPlan(plan: any): void {
     this.editBasePlanRequest.emit(plan);
+  }
+
+
+  downloadPlan(plan: any): void {
+    this.apiClient.downloadBasePlanFile(plan.id)
+      .pipe(takeUntil(this.destroyer$))
+      .subscribe({
+        next: (resp: any) => {
+          try {
+            if (resp && resp.data) {
+              const byteArray = this.base64ToUint8Array(resp.data.fileContents);
+              const blob = new Blob([byteArray], { type: resp.data.contentType || 'text/csv;charset=utf-8;' });
+              const fileName = resp.data.fileName || `${plan.name}_Base_Plan.csv`;
+
+              const url = window.URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = fileName;
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+              window.URL.revokeObjectURL(url);
+            }
+          } catch (err) {
+            console.error('File download processing failed', err);
+          }
+        },
+        error: err => {
+          console.error('File download failed', err);
+        }
+      });
   }
   deletePlanModal(basePlan: any): void {
 
@@ -258,8 +294,8 @@ export class BasePlanListComponent extends DailyPlanningPortalBase implements On
         messages: [
           'All the settings and assignments for all the job packages in the following base plan will be removed permanently.',
           'Plan Name:',
-           basePlan.name,
-           `${startDateFormatted} - ${endDateFormatted}`,
+          basePlan.name,
+          `${startDateFormatted} - ${endDateFormatted}`,
         ],
       },
     });
@@ -396,5 +432,15 @@ export class BasePlanListComponent extends DailyPlanningPortalBase implements On
   getFormattedDate(date: Date | string | undefined | null): string {
     return DateHelper.formatDateDDMMYYYY(date);
   }
+
+  base64ToUint8Array(base64:any) {
+  const binaryString = atob(base64); // decode base64 to binary string
+  const len = binaryString.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes;
+}
 
 }

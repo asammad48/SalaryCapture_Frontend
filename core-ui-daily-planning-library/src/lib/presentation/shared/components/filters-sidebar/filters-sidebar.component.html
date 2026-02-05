@@ -1,14 +1,13 @@
 <div class="card border-gray-200 max-w-18 transition-ease-in-1s rounded-6"
-  [ngClass]=" filterPanelCollapsed ? 'width-4' : 'min-w-18'">
-  <div
-    class="card-header bg-white border-bottom-2 border-gray-300 d-flex align-items-center height-px-70 justify-content-between"
-    [ngClass]=" filterPanelCollapsed ? 'justify-content-center' : 'ps-3 justify-content-between'">
+     [ngClass]=" filterPanelCollapsed ? 'width-4' : 'min-w-18'">
+  <div class="card-header bg-white border-bottom-2 border-gray-300 d-flex align-items-center height-px-70 justify-content-between"
+       [ngClass]=" filterPanelCollapsed ? 'justify-content-center' : 'ps-3 justify-content-between'">
     <div [ngClass]=" filterPanelCollapsed ? 'd-none' : 'd-block'">
       <h6 class="fw-bold m-0">Daily Planning System</h6>
     </div>
     <span [title]="filterPanelCollapsed ? 'Open Panel':'Close Panel'" id="capture-filter-toggler"
-      class="cursor-pointer focus-visible rounded-2" (click)="filterPanelToggler()"
-      (keydown.enter)="filterPanelToggler()" tabindex="0" #filterToggler>
+          class="cursor-pointer focus-visible rounded-2" (click)="filterPanelToggler()"
+          (keydown.enter)="filterPanelToggler()" tabindex="0" #filterToggler>
       <svg class="width-px-24 height-px-24 fill-600 hover-fill-gray-700">
         <use [attr.xlink:href]="filterPanelCollapsed ? '#left-panel-open' : '#left-panel-close'">
         </use>
@@ -26,25 +25,24 @@
 
         <label class="form-label">Depo</label>
 
-        <p-treeSelect
-          [(ngModel)]="selectedDepot"
-          [options]="organizationTree"
-          name="depot"
-          placeholder="Select a depo"
-          class="w-100"
-          containerStyleClass="w-100"
-          panelStyleClass="width-16"
-          [filter]="true"
-          filterPlaceholder="Search..."
-          [loading]="isLoadingTree"
-          selectionMode="single"
-          [propagateSelectionDown]="false"
-          [propagateSelectionUp]="false"
-          (onNodeExpand)="onNodeExpand($event)"
-          (onNodeCollapse)="onNodeCollapse($event)"
-          (onNodeSelect)="onDepotSelect($event)"
-          (onShow)="onPanelShow()"
-          appendTo="body">
+        <p-treeSelect [(ngModel)]="selectedDepot"
+                      [options]="organizationTree"
+                      name="depot"
+                      placeholder="Select a depo"
+                      class="w-100"
+                      containerStyleClass="w-100"
+                      panelStyleClass="width-16"
+                      [filter]="true"
+                      filterPlaceholder="Search..."
+                      [loading]="isLoadingTree"
+                      selectionMode="single"
+                      [propagateSelectionDown]="false"
+                      [propagateSelectionUp]="false"
+                      (onNodeExpand)="onNodeExpand($event)"
+                      (onNodeCollapse)="onNodeCollapse($event)"
+                      (onNodeSelect)="onDepotSelect($event)"
+                      (onShow)="onPanelShow()"
+                      appendTo="body">
         </p-treeSelect>
 
       </div>
@@ -56,10 +54,10 @@
           @for (day of daysOfWeek; track $index; let i = $index) {
           <div class="w-33-3" [ngClass]="{ 'pe-2': !((i + 1) % 3 === 0)}">
             <input type="radio" class="btn-check" name="daysOfWeek" [value]="day.value" [id]="'daysOfWeek' + (i+1)"
-              autocomplete="off" (change)="onDaySelect(day.value)" />
+                   autocomplete="off" (change)="onDaySelect(day.value)" />
             <label class="btn btn-sm btn-outline-primary fw-normal border border-gray-400 w-100 hover-gray-100"
-              [for]="'daysOfWeek' + (i+1)"
-              [ngClass]="[selectedDay === day.value ? 'btn-primary text-white' : 'color-gray-900']">
+                   [for]="'daysOfWeek' + (i+1)"
+                   [ngClass]="[selectedDay === day.value ? 'btn-primary text-white' : 'color-gray-900']">
               {{ day.label }}
             </label>
           </div>
@@ -70,19 +68,18 @@
       <!-- Date Selection for Daily Plan -->
       <div class="mb-3 d-flex flex-column" *ngIf="planningMode === PlanningMode.DailyPlan">
         <label class="form-label">Date</label>
-        <p-datepicker
-          [(ngModel)]="selectedDate"
-          [showIcon]="true"
-          [iconDisplay]="'input'"
-          inputStyleClass="pe-28 fs-15"
-          appendTo="body"
-          styleClass="w-100"
-          panelStyleClass="z-index-1"
-          placeholder="Select date"
-          dateFormat="dd-mm-yy"
-          (onSelect)="onDateSelect($event)"
-          name="selectedDate"
-          id="daily-plan-date-select">
+        <p-datepicker [(ngModel)]="selectedDate"
+                      [showIcon]="true"
+                      [iconDisplay]="'input'"
+                      inputStyleClass="pe-28 fs-15"
+                      appendTo="body"
+                      styleClass="w-100"
+                      panelStyleClass="z-index-1"
+                      placeholder="Select date"
+                      dateFormat="dd-mm-yy"
+                      (onSelect)="onDateSelect($event)"
+                      name="selectedDate"
+                      id="daily-plan-date-select">
         </p-datepicker>
       </div>
 
@@ -91,7 +88,7 @@
         @for (s of statusList; track $index) {
         <div class="form-check ps-0 mb-2">
           <input class="form-check-input" type="radio" name="statusRadios" [value]="s.value"
-            [checked]="selectedStatus === s.value" [id]="'status' + ($index + 1)" (change)="onSelectStatus(s.value)" />
+                 [checked]="selectedStatus === s.value" [id]="'status' + ($index + 1)" (change)="onSelectStatus(s.value)" />
           <label class="form-check-label" [for]="'status' + ($index + 1)">
             {{ s.label }}
           </label>
@@ -103,35 +100,16 @@
   </div>
 
   <div class="card-footer bg-white border-gray-300 p-3" [ngClass]=" filterPanelCollapsed ? 'd-none' : 'd-block'">
-    <button type="button" class="btn btn-sm btn-primary w-100" pButton pRipple
-      [disabled]="isLoadingJobPackages"
-      [ngClass]="filterPanelCollapsed ? 'd-none' : 'd-block'" id="capture-applyfilter-btn"
-      (click)="applyFilters()">
-      Apply Filters
-    </button>
-    <button
-      [disabled]="isLoadingJobPackages"
-      *ngIf="showResetButton()"
-      type="button" 
-      class="btn btn-sm btn-outline-secondary w-100 mt-2" 
-      pButton 
-      pRipple
-      [ngClass]=" (planningMode === PlanningMode.DailyPlan && !filterPanelCollapsed) ? 'd-block' : 'd-none'" 
-      id="capture-resetfilter-btn"
-      (click)="resetDailyPlan()">
+    <button [disabled]="isLoadingJobPackages"
+            *ngIf="showResetButton()"
+            type="button"
+            class="btn btn-sm btn-outline-secondary w-100"
+            pButton
+            pRipple
+            [ngClass]=" (planningMode === PlanningMode.DailyPlan && !filterPanelCollapsed) ? 'd-block' : 'd-none'"
+            id="capture-resetfilter-btn"
+            (click)="resetDailyPlan()">
       Reset Daily Plan
-    </button>
-    <button
-      [disabled]="isLoadingJobPackages"
-      *ngIf="showEditDailyPlanButton()"
-      type="button" 
-      class="btn btn-sm btn-outline-secondary w-100 mt-2" 
-      pButton 
-      pRipple
-      [ngClass]=" (planningMode === PlanningMode.DailyPlan && !filterPanelCollapsed) ? 'd-block' : 'd-none'" 
-      id="capture-edit-dailyplan-btn"
-      (click)="createDailyPlan()">
-      Create Daily Plan
     </button>
   </div>
 
