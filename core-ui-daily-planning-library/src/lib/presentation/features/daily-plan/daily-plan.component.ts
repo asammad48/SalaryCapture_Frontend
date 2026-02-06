@@ -189,6 +189,9 @@ export class DailyPlanComponent extends DailyPlanningPortalBase implements OnIni
 
   onFiltersApplied(filters: JobPackageFilters): void {
     this.lastFilters = filters;
+   
+    filters.date = DateHelper.getTomorrowDate();
+    console.log('Filters applied:', filters);
     this.loadJobPackages(filters);
     this.loadServiceWorkers(filters);
     this.loadVehicles();
@@ -205,7 +208,6 @@ export class DailyPlanComponent extends DailyPlanningPortalBase implements OnIni
   loadJobPackages(filters: JobPackageFilters | undefined): void {
 
     this.isLoadingJobPackages = true;
-
     if(!filters) {
       this.isLoadingJobPackages = false;
       return;

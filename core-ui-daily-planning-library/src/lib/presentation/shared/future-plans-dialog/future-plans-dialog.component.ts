@@ -22,21 +22,23 @@ export interface FuturePlansDialogResult {
 export class FuturePlansDialogComponent implements AfterViewInit {
 
   readonly FuturePlansDialogAction = FuturePlansDialogAction;
-  
+
   data: string[] = [];
   confirmation!: string;
+  hasFuturePlans: boolean = true;
   @ViewChild('updateBtn') updateBtn: any;
   private keyPressed: string | null = null;
 
   constructor(
     public ref: DynamicDialogRef,
     public config: DynamicDialogConfig
-  ) {}
+  ) { }
 
   ngOnInit(): void {
-    const { messages = [], confirmation = '' } = this.config.data || {};
+    const { messages = [], confirmation = '', hasFuturePlans = true } = this.config.data || {};
     this.data = messages;
     this.confirmation = confirmation;
+    this.hasFuturePlans = hasFuturePlans;
   }
 
   ngAfterViewInit(): void {

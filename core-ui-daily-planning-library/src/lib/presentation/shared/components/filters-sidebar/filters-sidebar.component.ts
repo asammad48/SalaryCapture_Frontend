@@ -41,8 +41,8 @@ export class FiltersSidebarComponent extends DailyPlanningPortalBase implements 
     filterPanelCollapsed = true;
 
     selectedDepot: TreeNode | null = null;
-    selectedDay: DayOfWeek | null = DayOfWeek.Monday;
-    selectedDate: Date | null = null;
+    selectedDay: DayOfWeek | null = DateHelper.getTomorrowDayOfWeek();
+    selectedDate: Date | null = DateHelper.getTomorrowDate();
     selectedStatus: JobPackageStatus = JobPackageStatus.All;
 
     organizationTree: TreeNode[] = [];
@@ -184,7 +184,8 @@ export class FiltersSidebarComponent extends DailyPlanningPortalBase implements 
         if (this.planningMode === PlanningMode.BasePlan) {
             filters.day = this.selectedDay;
         } else if (this.planningMode === PlanningMode.DailyPlan) {
-            filters.date = this.selectedDate;
+          filters.date = this.selectedDate;
+          console.log('Selected date for filter:', this.selectedDate);
         }
 
         this.filtersApplied.emit(filters);
