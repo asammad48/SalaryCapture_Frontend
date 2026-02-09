@@ -350,9 +350,9 @@ export class JobPackageMapComponent implements AfterViewInit, OnDestroy, OnChang
 
   private formatDistance(distanceInMeters: number): string {
 
-    if (distanceInMeters < 1000) {
-      return `${Math.round(distanceInMeters)} m`;
-    }
+    //if (distanceInMeters < 1000) {
+    //  return `${Math.round(distanceInMeters)} m`;
+    //}
 
     return `${(distanceInMeters / 1000).toFixed(2)} km`;
   }
